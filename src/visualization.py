@@ -191,25 +191,35 @@ def plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter):
     # plot start
     rec_size = [start[1] * pixel_per_meter, start[0] * pixel_per_meter]
     center_axis1, center_axis2 = org_to_img(start[2], start[3], fig.shape, pixel_per_meter)
-    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start[4]], r=3,
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start[4]], r=4,
                                color="blue")
     # plot goal
     rec_size = [goal[1] * pixel_per_meter, goal[0] * pixel_per_meter]
     center_axis1, center_axis2 = org_to_img(goal[2], goal[3], fig.shape, pixel_per_meter)
-    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal[4]], r=3,
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal[4]], r=4,
                                color="red")
 
     return fig
 
 
 def plot_rotat_rec_path_2D(fig, path, pixel_per_meter):
+    # plot rectangles
+    centers = []
     for rec in path:
-        # print(rec)
         # attention coordinate transformation from map to img!
         rec_size = [rec[1] * pixel_per_meter, rec[0] * pixel_per_meter]
         center_axis1, center_axis2 = org_to_img(rec[2], rec[3], fig.shape, pixel_per_meter)
+        centers.append([center_axis1, center_axis2])
         fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, rec[4]], r=2,
                                    color="shallow_green")
+
+    # plot line connecting configurations
+    l = len(centers)
+    if l >= 2:
+        for i in range(l - 1):
+            p1 = l[i]
+            p2 = l[i + 1]
+            fig = plot_line_in_fig_2D(fig, start=p1, end=p2, r=1, color='red')
 
     return fig
 

@@ -26,10 +26,10 @@ def get_quaternion_from_euler(roll, pitch, yaw):
 
     return [qx, qy, qz, qw]
 
-def get_rotation_matrix_from_angle_z(theta):
-    matrix = np.array([[math.cos(theta), -math.sin(theta), 0],[math.sin(theta), math.cos(theta), 0],[0, 0, 1]])
-    return matrix
 
+def get_rotation_matrix_from_angle_z(theta):
+    matrix = np.array([[math.cos(theta), -math.sin(theta), 0], [math.sin(theta), math.cos(theta), 0], [0, 0, 1]])
+    return matrix
 
 
 class Env_Robot:
@@ -49,6 +49,11 @@ class Env_Robot:
             robot_tf = fcl.Transform(robot_t)
             robot_model = fcl.Box(1, 2, 0)
             self.robot = fcl.CollisionObject(robot_model, robot_tf)
+
+        if robot == "2-link":
+            self.robot_type = robot
+            self.robot_size = [1, 0.1, 1, 0.1]
+            robot
 
         # init obstacles
         if obs is None:
