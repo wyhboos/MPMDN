@@ -53,15 +53,14 @@ class Env_Robot:
         if robot == "2-link":
             self.robot_type = robot
             self.robot_size = [1, 0.1, 1, 0.1]
-            robot
 
         # init obstacles
         if obs is None:
             self.obstacles = []
             self.obstacles_vis = []
-            for i in range(70):
+            for i in range(50):
                 obs_i_model = fcl.Box(1, 1, 0)
-                obs_i_t = np.array([20, 20, 0]) * np.random.rand(3) + np.array([2.5, 2.5, 0])
+                obs_i_t = np.array([20, 20, 0]) * np.random.rand(3) + np.array([0, 0, 0])
                 # obs_i_t = np.array([10, 10, 0])
 
                 self.obstacles_vis.append([1, 1] + list(obs_i_t)[:2] + [0])

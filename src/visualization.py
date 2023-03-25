@@ -217,8 +217,8 @@ def plot_rotat_rec_path_2D(fig, path, pixel_per_meter):
     l = len(centers)
     if l >= 2:
         for i in range(l - 1):
-            p1 = l[i]
-            p2 = l[i + 1]
+            p1 = centers[i]
+            p2 = centers[i + 1]
             fig = plot_line_in_fig_2D(fig, start=p1, end=p2, r=1, color='red')
 
     return fig
