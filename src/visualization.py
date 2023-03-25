@@ -195,9 +195,9 @@ def plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter):
     fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start[4]], r=5,
                                color="blue")
     # plot goal
-    rec_size = [start[1] * pixel_per_meter, start[0] * pixel_per_meter]
-    center_axis1, center_axis2 = org_to_img(start[2], start[3], fig.shape, pixel_per_meter)
-    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start[4]], r=5,
+    rec_size = [goal[1] * pixel_per_meter, goal[0] * pixel_per_meter]
+    center_axis1, center_axis2 = org_to_img(goal[2], goal[3], fig.shape, pixel_per_meter)
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal[4]], r=5,
                                color="red")
 
     return fig

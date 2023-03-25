@@ -29,30 +29,34 @@ def get_quaternion_from_euler(roll, pitch, yaw):
 
 class Env_Robot:
     def __init__(self) -> None:
+        self.obstacles = None
         self.robot = None
-        self.obstcales = None
+        self.config_path = None
 
         # init rectangle robot
         self.robot_type = "Rectangle"
+        self.robot_size = [1, 2]
         robot_r = np.array([[0.0, -1.0, 0.0],
                            [1.0,  0.0, 0.0],
                            [0.0,  0.0, 1.0]])
         robot_t = np.array([0, 0, 0])
         robot_tf = fcl.Transform(robot_r, robot_t)
-        robot_model = fcl.Box(1, 2, 3)
+        robot_model = fcl.Box(1, 2, 0)
         self.robot = fcl.CollisionObject(robot_model, robot_tf)
 
         # init obstacles
-        self.obstcales = []
+        self.obstacles = []
+        self.obstacles_vis = []
         for i in range(7):
             obs_i_model = fcl.Box(5, 5, 0)
             obs_i_t = np.array([15, 15, 0])*np.random.rand(3) +np.array([2.5, 2.5, 0])
+            self.obstacles_vis.append([5, 5]+list(obs_i_t)[:2]+[0])
             obs_i_tf = fcl.Transform(obs_i_t)
             obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
-            self.obstcales.append(obs_i)
+            self.obstacles.append(obs_i)
 
     def add_obstacles(self, obstacles):
-        self.obstcales = obstacles
+        self.obstacles = obstacles
 
     def add_robot(self, robot):
         self.robot = robot
@@ -77,3 +81,16 @@ class Env_Robot:
                 valid_flag = False
                 break
         return valid_flag
+
+    def get_config_path_with_robot_info_2D(self, path):
+        """
+        :param path:[[X,Y,Yaw],[]]
+        :return:[[x_length, y_length, X, Y, Yaw]]
+        """
+        path_with_robot = []
+        for cfg in path:
+            path_with_robot.append(self.robot_size+cfg)
+        return path_with_robot
+
+
+

@@ -51,6 +51,7 @@ except ImportError:
     from ompl import geometric as og
 
 from env_robot import Env_Robot
+from visualization import vis_for_2D_planning
 
 er = Env_Robot()
 
@@ -66,6 +67,7 @@ def isStateValid(state):
 
 def planWithSimpleSetup():
     global er
+    path = []
     # create an SE2 state space
     space = ob.SE2StateSpace()
 
@@ -103,6 +105,21 @@ def planWithSimpleSetup():
         ss.simplifySolution()
         # print the simplified path
         print(ss.getSolutionPath())
+        states = ss.getSolutionPath.getStates()
+        path_len = len(states)
+        for i in range(path_len):
+            X = states[i].getX()
+            Y = states[i].getY()
+            Yaw = states[i].getYaw()
+            path.append([X, Y, Yaw])
+
+    # for vis
+    path_wit_robot = er.get_config_path_with_robot_info_2D(path)
+    fig_file = "test"
+    vis_for_2D_planning(rec_env=er.obstacles_vis, start=path_wit_robot[0], goal=path_wit_robot[-1],path=path_wit_robot,
+                        size=10, pixel_per_meter=20, save_fig_dir=fig_file)
+
+
 
 
 def planTheHardWay():
