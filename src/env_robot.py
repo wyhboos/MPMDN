@@ -45,9 +45,8 @@ class Env_Robot:
         # init obstacles
         self.obstcales = []
         for i in range(7):
-            obs_i_model = fcl.Box(5, 5)
-            obs_i_t = np.array(15, 15, 0)*np.random.rand(3) + \
-                np.array(2.5, 2.5, 0)
+            obs_i_model = fcl.Box(5, 5, 0)
+            obs_i_t = np.array([15, 15, 0])*np.random.rand(3) +np.array([2.5, 2.5, 0])
             obs_i_tf = fcl.Transform(obs_i_t)
             obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
             self.obstcales.append(obs_i)
@@ -62,19 +61,19 @@ class Env_Robot:
         # get robot's state
         x = state.getX()
         y = state.getY()
-        t = np.array(x, y, 0)
+        t = np.array([x, y, 0])
         angle = state.getYaw()
         quaternion = get_quaternion_from_euler(0, 0, angle)
         # set robot's state
         self.robot.setTransform(t)
         self.robot.setQuatRotation(quaternion)
 
-        colli_flag = False
+        valid_flag = True
         for obs in self.obstcales:
             request = fcl.DistanceRequest()
             result = fcl.DistanceResult()
-            dis = fcl.distance(self.robot, obs, request, request)
+            dis = fcl.distance(self.robot, obs)
             if dis < 0.1:
-                colli_flag = True
+                valid_flag = False
                 break
-        return colli_flag
+        return valid_flag

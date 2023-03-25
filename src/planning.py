@@ -60,7 +60,8 @@ def isStateValid(state):
     # to convert state to an SE2State.)
     global er
     flag = er.is_state_valid_2D(state)
-    return flag
+    print(flag)
+    return False
 
 
 def planWithSimpleSetup():
@@ -94,6 +95,7 @@ def planWithSimpleSetup():
 
     # this will automatically choose a default planner with
     # default parameters
+    print("start solving")
     solved = ss.solve(1.0)
 
     if solved:
