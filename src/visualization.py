@@ -128,7 +128,7 @@ def plot_line_in_fig_2D(fig, start, end, r, color):
     l = compute_length_2D(start, end)
     x_r = end[0] - start[0]
     y_r = end[1] - start[1]
-    cnt = int(l + 0.5) + 1
+    cnt = int(l + 0.5)
     for i in range(cnt):
         x = start[0] + int(i / l * x_r)
         y = start[1] + int(i / l * y_r)
@@ -175,14 +175,14 @@ def plot_rotat_rec_env_2D(rec_env, size, pixel_per_meter):
     :return:
     """
     l = size * pixel_per_meter
-    fig = 255 * np.ones((int(l * 1.2), int(l * 1.2), 3), dtype=np.int8)
+    fig = 255 * np.ones((int(l * 1), int(l * 1), 3), dtype=np.int8)
     # plot rotating rectangle obstacles
     for rec in rec_env:
         # print(rec)
         # attention coordinate transformation from map to img!
         rec_size = [rec[1] * pixel_per_meter, rec[0] * pixel_per_meter]
         center_axis1, center_axis2 = org_to_img(rec[2], rec[3], fig.shape, pixel_per_meter)
-        fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, rec[4]], r=5,
+        fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, rec[4]], r=2,
                                    color="black")
     return fig
 
@@ -191,12 +191,12 @@ def plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter):
     # plot start
     rec_size = [start[1] * pixel_per_meter, start[0] * pixel_per_meter]
     center_axis1, center_axis2 = org_to_img(start[2], start[3], fig.shape, pixel_per_meter)
-    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start[4]], r=5,
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start[4]], r=3,
                                color="blue")
     # plot goal
     rec_size = [goal[1] * pixel_per_meter, goal[0] * pixel_per_meter]
     center_axis1, center_axis2 = org_to_img(goal[2], goal[3], fig.shape, pixel_per_meter)
-    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal[4]], r=5,
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal[4]], r=3,
                                color="red")
 
     return fig

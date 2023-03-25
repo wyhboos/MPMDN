@@ -26,6 +26,11 @@ def get_quaternion_from_euler(roll, pitch, yaw):
 
     return [qx, qy, qz, qw]
 
+def get_rotation_matrix_from_angle_z(theta):
+    matrix = np.array([[math.cos(theta), -math.sin(theta), 0],[math.sin(theta), math.cos(theta), 0],[0, 0, 1]])
+    return matrix
+
+
 
 class Env_Robot:
     def __init__(self, robot=None, obs=None):
@@ -49,11 +54,12 @@ class Env_Robot:
         if obs is None:
             self.obstacles = []
             self.obstacles_vis = []
-            for i in range(7):
-                obs_i_model = fcl.Box(5, 5, 0)
-                obs_i_t = np.array([15, 15, 0]) * np.random.rand(3) + np.array([2.5, 2.5, 0])
+            for i in range(70):
+                obs_i_model = fcl.Box(1, 1, 0)
+                obs_i_t = np.array([20, 20, 0]) * np.random.rand(3) + np.array([2.5, 2.5, 0])
                 # obs_i_t = np.array([10, 10, 0])
-                self.obstacles_vis.append([5, 5] + list(obs_i_t)[:2] + [0])
+
+                self.obstacles_vis.append([1, 1] + list(obs_i_t)[:2] + [0])
                 obs_i_tf = fcl.Transform(obs_i_t)
                 obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
                 self.obstacles.append(obs_i)
@@ -72,14 +78,17 @@ class Env_Robot:
         # print(x, y)
         angle = state.getYaw()
         quaternion = get_quaternion_from_euler(0, 0, angle)
+        matrix = get_rotation_matrix_from_angle_z(angle)
         # set robot's state
         self.robot.setTranslation(t)
-        self.robot.setQuatRotation(quaternion)
+        # self.robot.setQuatRotation(quaternion)
+        self.robot.setRotation(matrix)
 
         valid_flag = True
         for obs in self.obstacles:
             dis = fcl.distance(self.robot, obs)
-            if dis < 0.2:
+            ret = fcl.collide(self.robot, obs)
+            if ret > 0:
                 valid_flag = False
                 break
         return valid_flag
