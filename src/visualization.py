@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 
 import math
 import os
-import torch
 import cv2
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -179,7 +178,7 @@ def plot_rotat_rec_env_2D(rec_env, size, pixel_per_meter):
     fig = 255 * np.ones((int(l * 1.2), int(l * 1.2), 3), dtype=np.int8)
     # plot rotating rectangle obstacles
     for rec in rec_env:
-        print(rec)
+        # print(rec)
         # attention coordinate transformation from map to img!
         rec_size = [rec[1] * pixel_per_meter, rec[0] * pixel_per_meter]
         center_axis1, center_axis2 = org_to_img(rec[2], rec[3], fig.shape, pixel_per_meter)
@@ -205,7 +204,7 @@ def plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter):
 
 def plot_rotat_rec_path_2D(fig, path, pixel_per_meter):
     for rec in path:
-        print(rec)
+        # print(rec)
         # attention coordinate transformation from map to img!
         rec_size = [rec[1] * pixel_per_meter, rec[0] * pixel_per_meter]
         center_axis1, center_axis2 = org_to_img(rec[2], rec[3], fig.shape, pixel_per_meter)

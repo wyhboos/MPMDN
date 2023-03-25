@@ -40,7 +40,7 @@ class Env_Robot:
                            [1.0,  0.0, 0.0],
                            [0.0,  0.0, 1.0]])
         robot_t = np.array([0, 0, 0])
-        robot_tf = fcl.Transform(robot_r, robot_t)
+        robot_tf = fcl.Transform(robot_t)
         robot_model = fcl.Box(1, 2, 0)
         self.robot = fcl.CollisionObject(robot_model, robot_tf)
 
@@ -50,6 +50,7 @@ class Env_Robot:
         for i in range(7):
             obs_i_model = fcl.Box(5, 5, 0)
             obs_i_t = np.array([15, 15, 0])*np.random.rand(3) +np.array([2.5, 2.5, 0])
+            # obs_i_t = np.array([10, 10, 0])
             self.obstacles_vis.append([5, 5]+list(obs_i_t)[:2]+[0])
             obs_i_tf = fcl.Transform(obs_i_t)
             obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
@@ -66,18 +67,21 @@ class Env_Robot:
         x = state.getX()
         y = state.getY()
         t = np.array([x, y, 0])
+        # print(x, y)
         angle = state.getYaw()
         quaternion = get_quaternion_from_euler(0, 0, angle)
         # set robot's state
-        self.robot.setTransform(t)
+        self.robot.setTranslation(t)
         self.robot.setQuatRotation(quaternion)
 
         valid_flag = True
-        for obs in self.obstcales:
+        for obs in self.obstacles:
             request = fcl.DistanceRequest()
             result = fcl.DistanceResult()
-            dis = fcl.distance(self.robot, obs)
-            if dis < 0.1:
+            dis = fcl.distance(self.robot, obs, request, result)
+            # print("dis", dis)
+            # print(fcl.collide(self.robot, obs))
+            if dis < 1 or fcl.collide(self.robot, obs)>0:
                 valid_flag = False
                 break
         return valid_flag

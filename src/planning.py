@@ -46,7 +46,8 @@ except ImportError:
     from os.path import abspath, dirname, join
     import sys
 
-    sys.path.insert(0, join(dirname(dirname(abspath(__file__))), 'py-bindings'))
+    sys.path.insert(
+        0, join(dirname(dirname(abspath(__file__))), 'py-bindings'))
     from ompl import base as ob
     from ompl import geometric as og
 
@@ -54,6 +55,7 @@ from env_robot import Env_Robot
 from visualization import vis_for_2D_planning
 
 er = Env_Robot()
+
 
 def isStateValid(state):
     # Some arbitrary condition on the state (note that thanks to
@@ -66,15 +68,18 @@ def isStateValid(state):
 
 
 def planWithSimpleSetup():
+    import time
+    time1 = time.time()
     global er
+    print(66666)
     path = []
     # create an SE2 state space
     space = ob.SE2StateSpace()
 
     # set lower and upper bounds
     bounds = ob.RealVectorBounds(2)
-    bounds.setLow(-1)
-    bounds.setHigh(1)
+    bounds.setLow(0)
+    bounds.setHigh(20)
     space.setBounds(bounds)
 
     # create a simple setup object
@@ -83,29 +88,42 @@ def planWithSimpleSetup():
 
     start = ob.State(space)
     # we can pick a random start state...
-    start.random()
+    while True:
+        start.random()
+        if er.is_state_valid_2D(start()):
+            break
+    # start().setX(14)
+    # start().setY(14)
+    # start().setYaw(0)
     # ... or set specific values
-    start().setX(.5)
+    # start().setX(.5)
 
     goal = ob.State(space)
     # we can pick a random goal state...
-    goal.random()
+    while True:
+        goal.random()
+        if er.is_state_valid_2D(goal()):
+            break
+    # goal().setX(5)
+    # goal().setY(5)
     # ... or set specific values
-    goal().setX(-.5)
-
+    # goal().setX(-.5)
+    print("111")
     ss.setStartAndGoalStates(start, goal)
 
     # this will automatically choose a default planner with
     # default parameters
     print("start solving")
-    solved = ss.solve(1.0)
-
+    print("time1", time.time()-time1)
+    solved = ss.solve(20)
+    print("time2", time.time()-time1)
     if solved:
         # try to shorten the path
         ss.simplifySolution()
         # print the simplified path
         print(ss.getSolutionPath())
-        states = ss.getSolutionPath.getStates()
+        print("finish")
+        states = ss.getSolutionPath().getStates()
         path_len = len(states)
         for i in range(path_len):
             X = states[i].getX()
@@ -116,10 +134,9 @@ def planWithSimpleSetup():
     # for vis
     path_wit_robot = er.get_config_path_with_robot_info_2D(path)
     fig_file = "test"
-    vis_for_2D_planning(rec_env=er.obstacles_vis, start=path_wit_robot[0], goal=path_wit_robot[-1],path=path_wit_robot,
-                        size=10, pixel_per_meter=20, save_fig_dir=fig_file)
-
-
+    vis_for_2D_planning(rec_env=er.obstacles_vis, start=path_wit_robot[0], goal=path_wit_robot[-1], path=path_wit_robot,
+                        size=20, pixel_per_meter=100, save_fig_dir=fig_file)
+    print("time3", time.time()-time1)
 
 
 def planTheHardWay():
@@ -165,8 +182,53 @@ def planTheHardWay():
     else:
         print("No solution found")
 
+# def get_quaternion_from_euler(roll, pitch, yaw):
+#     """
+#     Convert an Euler angle to a quaternion.
+
+#     Input
+#       :param roll: The roll (rotation around x-axis) angle in radians.
+#       :param pitch: The pitch (rotation around y-axis) angle in radians.
+#       :param yaw: The yaw (rotation around z-axis) angle in radians.
+
+#     Output
+#       :return qx, qy, qz, qw: The orientation in quaternion [x,y,z,w] format
+#     """
+#     qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - \
+#         np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+#     qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + \
+#         np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
+#     qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - \
+#         np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
+#     qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + \
+#         np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+
+#     return [qx, qy, qz, qw]
 
 if __name__ == "__main__":
     planWithSimpleSetup()
-    print("")
+    # print("")
     # planTheHardWay()
+    # import fcl
+    # import numpy as np
+    # g1 = fcl.Box(0, 1, 0)
+    # l1 = np.array([4, 0, 0])
+    # q = get_quaternion_from_euler(0,0,0)
+    # t1 = fcl.Transform(l1)
+    # o1 = fcl.CollisionObject(g1, t1)
+    # o1.se
+
+    # g2 = fcl.Box(2, 2, 0)
+    # t2 = fcl.Transform()
+    # o2 = fcl.CollisionObject(g2, t2)
+
+    # request = fcl.CollisionRequest()
+    # result = fcl.CollisionResult()
+
+    # ret = fcl.collide(o1, o2, request, result)
+    # print(ret)
+
+    # request = fcl.DistanceRequest()
+    # result = fcl.DistanceResult()
+    # dis = fcl.distance(o1, o2, request, result)
+    # print(dis)
