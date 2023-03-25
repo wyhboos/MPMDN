@@ -33,13 +33,14 @@ class Planning_Setup:
         self.obstcales = None
 
         # init rectangle robot
+        self.robot_type = "Rectangle"
         robot_r = np.array([[0.0, -1.0, 0.0],
                            [1.0,  0.0, 0.0],
                            [0.0,  0.0, 1.0]])
         robot_t = np.array([0, 0, 0])
         robot_tf = fcl.Transform(robot_r, robot_t)
         robot_model = fcl.Box(1, 2, 3)
-        robot = fcl.CollisionObject(robot_model, robot_tf)
+        self.robot = fcl.CollisionObject(robot_model, robot_tf)
 
         # init obstacles
         self.obstcales = []

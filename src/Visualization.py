@@ -39,7 +39,7 @@ def coordinate_transform_2D(origin, angle):
     origin_y = origin[1]
     new_x = origin_x * math.cos(angle) + origin_y * math.sin(angle)
     new_y = -origin_x * math.sin(angle) + origin_y * math.cos(angle)
-    return np.array([int(new_x+0.5), int(new_y+0.5)])
+    return np.array([int(new_x + 0.5), int(new_y + 0.5)])
 
 
 def plot_nearby(pic, aixs1, aixs2, r, color):
@@ -120,12 +120,6 @@ def sample(alpha, sigma, mean):
     return sample
 
 
-
-
-
-
-
-
 def compute_length_2D(start, end):
     l = ((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2) ** 0.5
     return l
@@ -172,7 +166,7 @@ def plot_rotating_rec_2D(fig, rec_size, state, r, color):
 
 
 # def plot_rotat_rec_env_start_goal_2D(rec_env, cur_loc, goal_loc, next_loc, pixel_per_meter):
-def plot_rotat_rec_env_2D(rec_env, pixel_per_meter):
+def plot_rotat_rec_env_2D(rec_env, size, pixel_per_meter):
     """
     :param rec_env:[[x_length, y_length, center_x, center_y, angle],[]]
     :param cur_loc:
@@ -181,7 +175,7 @@ def plot_rotat_rec_env_2D(rec_env, pixel_per_meter):
     :param pixel_per_meter:
     :return:
     """
-    l = 10 * pixel_per_meter
+    l = size * pixel_per_meter
     fig = 255 * np.ones((int(l * 1.2), int(l * 1.2), 3), dtype=np.int8)
     # plot rotating rectangle obstacles
     for rec in rec_env:
@@ -192,6 +186,7 @@ def plot_rotat_rec_env_2D(rec_env, pixel_per_meter):
         fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, rec[4]], r=5,
                                    color="black")
     return fig
+
 
 def plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter):
     # plot start
@@ -207,8 +202,8 @@ def plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter):
 
     return fig
 
-def plot_rotat_rec_path_2D(fig, path, pixel_per_meter):
 
+def plot_rotat_rec_path_2D(fig, path, pixel_per_meter):
     for rec in path:
         print(rec)
         # attention coordinate transformation from map to img!
@@ -219,19 +214,16 @@ def plot_rotat_rec_path_2D(fig, path, pixel_per_meter):
 
     return fig
 
-def vis_for_2D_planning(rec_env, start, goal, path, pixel_per_meter, save_fig_dir):
+
+def vis_for_2D_planning(rec_env, start, goal, path, size, pixel_per_meter, save_fig_dir):
     # create the fig and plot obstacles
-    fig = plot_rotat_rec_env_2D(rec_env, pixel_per_meter)
+    fig = plot_rotat_rec_env_2D(rec_env, size, pixel_per_meter)
     # plot start and goal state
     fig = plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter)
     # plot the path
     fig = plot_rotat_rec_path_2D(fig, path, pixel_per_meter)
-    cv2.imwrite("save_fig_file" + '.png', fig)
+    cv2.imwrite(save_fig_dir + '.png', fig)
     return fig
-
-
-
-
 
 # if __name__ == '__main__':
 #     rec_obs = [[4, 5, 5, 6, -0.1*math.pi]]
