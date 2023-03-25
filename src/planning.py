@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# -*- encoding:utf-8 -*-
+
 
 ######################################################################
 # Software License Agreement (BSD License)
@@ -35,9 +37,6 @@
 ######################################################################
 
 # Author: Mark Moll
-from rtree import index
-import fcl
-import uuid
 try:
     from ompl import base as ob
     from ompl import geometric as og
@@ -46,37 +45,26 @@ except ImportError:
     # subdirectory of the parent directory called "py-bindings."
     from os.path import abspath, dirname, join
     import sys
+
     sys.path.insert(0, join(dirname(dirname(abspath(__file__))), 'py-bindings'))
     from ompl import base as ob
     from ompl import geometric as og
 
+from env_robot import Env_Robot
 
-def obstacle_generator(obstacles):
-    """
-    Add obstacles to r-tree
-    :param obstacles: list of obstacles
-    """
-    for obstacle in obstacles:
-        yield (uuid.uuid4(), obstacle, obstacle)
-
-class rectangle_planning:
-    def __init__(self, obs, robot_size=[0.1, 0.2]):
-        self.env_rec = obs
-
-        self.p = index.Property()
-        self.p.dimension = 2
-        self.obstacles = index.Index(obstacle_generator(self.env_rec), interleaved=True, properties=self.p)
-
-
-
+er = Env_Robot()
 
 def isStateValid(state):
     # Some arbitrary condition on the state (note that thanks to
     # dynamic type checking we can just call getX() and do not need
     # to convert state to an SE2State.)
-    return state.getX() < .6
+    global er
+    flag = er.is_state_valid_2D(state)
+    return flag
+
 
 def planWithSimpleSetup():
+    global er
     # create an SE2 state space
     space = ob.SE2StateSpace()
 
@@ -85,11 +73,10 @@ def planWithSimpleSetup():
     bounds.setLow(-1)
     bounds.setHigh(1)
     space.setBounds(bounds)
-    
 
     # create a simple setup object
     ss = og.SimpleSetup(space)
-    ss.setStateValidityChecker(ob.StateValidityCheckerFn(isStateValid))
+    ss.setStateValidityChecker(ob.StateValidityCheckerFn(er.is_state_valid_2D))
 
     start = ob.State(space)
     # we can pick a random start state...
@@ -163,4 +150,4 @@ def planTheHardWay():
 if __name__ == "__main__":
     planWithSimpleSetup()
     print("")
-    planTheHardWay()
+    # planTheHardWay()

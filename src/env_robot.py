@@ -27,7 +27,7 @@ def get_quaternion_from_euler(roll, pitch, yaw):
     return [qx, qy, qz, qw]
 
 
-class Planning_Setup:
+class Env_Robot:
     def __init__(self) -> None:
         self.robot = None
         self.obstcales = None
@@ -60,10 +60,10 @@ class Planning_Setup:
 
     def is_state_valid_2D(self, state):
         # get robot's state
-        x = state[0]
-        y = state[1]
+        x = state.getX()
+        y = state.getY()
         t = np.array(x, y, 0)
-        angle = state[2]
+        angle = state.getYaw()
         quaternion = get_quaternion_from_euler(0, 0, angle)
         # set robot's state
         self.robot.setTransform(t)
