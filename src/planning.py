@@ -3,7 +3,7 @@
 
 from plan_ompl import Plan_OMPL
 from env_robot import Env_Robot
-from visualization import vis_for_2D_planning
+from visualization import vis_for_2D_planning_rigidbody,vis_for_2D_planning_two_link
 
 from ompl import base, geometric
 # print(dir(geometric.SimpleSetup))
@@ -11,8 +11,8 @@ from ompl import base, geometric
 
 class Plan:
     def __init__(self):
-        self.pl_ompl = Plan_OMPL()
-        self.env_rob = Env_Robot()
+        self.pl_ompl = Plan_OMPL(configure_type="two_link")
+        self.env_rob = Env_Robot(robot_type="two_link")
 
         self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
         self.pl_ompl.set_planner()
@@ -29,28 +29,29 @@ class Plan:
             start = self.env_rob.robot_size + [start().getX(), start().getY(), start().getYaw()]
             goal = self.env_rob.robot_size + [goal().getX(), goal().getY(), goal().getYaw()]
             path_rob = self.env_rob.get_config_path_with_robot_info_2D(path)
-            vis_for_2D_planning(rec_env=self.env_rob.obstacles_vis, start=start, goal=goal,
+
+            vis_for_2D_planning_two_link(rec_env=self.env_rob.obstacles_vis, start=start, goal=goal,
                                 path=path_rob, size=20, pixel_per_meter=50, save_fig_dir=vis)
             print("Fig Saved!")
 
-        if solved is not None:
-            states = self.pl_ompl.ss.getSolutionPath()
-            a = states.getStates()
-            print(a[0])
-            print(a[0][0][0])
-            # print("Found solution with length", path.length())
-            # path.interpolate(50)
-            for i in range(len(states)):
-                state = states[i]
-                print(state)
-                print(state.getSubspaceCount())
-                
-                vec = state.getComponent(0).getValues()
-                angle1 = state.getComponent(1).value
-                angle2 = state.getComponent(2).value
-                print("(", vec[0], ", ", vec[1], ") (", angle1, ", ", angle2, ")")
-        else:
-            print("No solution found.")
+        # if solved is not None:
+        #     states = self.pl_ompl.ss.getSolutionPath()
+        #     a = states.getStates()
+        #     print(a[0])
+        #     print(a[0][0][0])
+        #     # print("Found solution with length", path.length())
+        #     # path.interpolate(50)
+        #     for i in range(len(states)):
+        #         state = states[i]
+        #         print(state)
+        #         print(state.getSubspaceCount())
+        #
+        #         vec = state.getComponent(0).getValues()
+        #         angle1 = state.getComponent(1).value
+        #         angle2 = state.getComponent(2).value
+        #         print("(", vec[0], ", ", vec[1], ") (", angle1, ", ", angle2, ")")
+        # else:
+        #     print("No solution found.")
 
 
 if __name__ == '__main__':

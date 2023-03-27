@@ -3,56 +3,42 @@ import numpy as np
 import math
 
 
-def get_quaternion_from_euler(roll, pitch, yaw):
-    """
-    Convert an Euler angle to a quaternion.
-
-    Input
-      :param roll: The roll (rotation around x-axis) angle in radians.
-      :param pitch: The pitch (rotation around y-axis) angle in radians.
-      :param yaw: The yaw (rotation around z-axis) angle in radians.
-
-    Output
-      :return qx, qy, qz, qw: The orientation in quaternion [x,y,z,w] format
-    """
-    qx = np.sin(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) - \
-         np.cos(roll / 2) * np.sin(pitch / 2) * np.sin(yaw / 2)
-    qy = np.cos(roll / 2) * np.sin(pitch / 2) * np.cos(yaw / 2) + \
-         np.sin(roll / 2) * np.cos(pitch / 2) * np.sin(yaw / 2)
-    qz = np.cos(roll / 2) * np.cos(pitch / 2) * np.sin(yaw / 2) - \
-         np.sin(roll / 2) * np.sin(pitch / 2) * np.cos(yaw / 2)
-    qw = np.cos(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) + \
-         np.sin(roll / 2) * np.sin(pitch / 2) * np.sin(yaw / 2)
-
-    return [qx, qy, qz, qw]
-
-
 def get_rotation_matrix_from_angle_z(theta):
     matrix = np.array([[math.cos(theta), -math.sin(theta), 0], [math.sin(theta), math.cos(theta), 0], [0, 0, 1]])
     return matrix
 
 
 class Env_Robot:
-    def __init__(self, robot=None, obs=None):
+    def __init__(self, robot_type="Rigidbody_2D", obs=None):
+        self.robot_type = robot_type
         self.obstacles = None
         self.robot = None
         self.config_path = None
 
         # init rectangle robot
-        if robot is None:
-            self.robot_type = "Rectangle"
+        if robot_type == "Rigidbody_2D":
             self.robot_size = [1, 2]
-            robot_r = np.array([[0.0, -1.0, 0.0],
-                                [1.0, 0.0, 0.0],
-                                [0.0, 0.0, 1.0]])
             robot_t = np.array([0, 0, 0])
             robot_tf = fcl.Transform(robot_t)
             robot_model = fcl.Box(1, 2, 0)
             self.robot = fcl.CollisionObject(robot_model, robot_tf)
 
-        if robot == "2-link":
-            self.robot_type = robot
-            self.robot_size = [1, 0.1, 1, 0.1]
+        if robot_type == "Two_Link_2D":
+            self.robot_size = [1, 0.1, 1, 0.1]  # [link1_length, link1_width, link2_length, link2_width]
+            link1_l = self.robot_size[0]
+            link1_w = self.robot_size[1]
+            link2_l = self.robot_size[2]
+            link2_w = self.robot_size[3]
+
+            link1_t = np.array([0, 0, 0])
+            link1_tf = fcl.Transform(link1_t)
+            link1_model = fcl.Box(link1_l, link1_w, 0)
+            self.link1 = fcl.CollisionObject(link1_model, link1_tf)
+
+            link2_t = np.array([0, 0, 0])
+            link2_tf = fcl.Transform(link2_t)
+            link2_model = fcl.Box(link2_l, link2_w, 0)
+            self.link2 = fcl.CollisionObject(link2_model, link2_tf)
 
         # init obstacles
         if obs is None:
@@ -68,42 +54,82 @@ class Env_Robot:
                 obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
                 self.obstacles.append(obs_i)
 
-    def add_obstacles(self, obstacles):
-        self.obstacles = obstacles
+    def get_link_config_two_link_2D(self, link_state, link_size):
+        """
 
-    def add_robot(self, robot):
-        self.robot = robot
+        :param link_state: [x,y,yaw1,yaw2],note that yaw2 is relative to yaw1
+        :param link_size: [link1_length, link1_width, link2_length, link2_width]
+        :return:
+        """
+        x = link_state[0]
+        y = link_state[1]
+        yaw1 = link_state[2]
+        yaw2 = link_state[3]
+
+        link1_l = link_size[0]
+        link1_w = link_size[1]
+        link2_l = link_size[2]
+        link2_w = link_size[3]
+
+        link1_state = [x, y, yaw1]
+        link2_x = x + 0.5 * link1_l * math.cos(yaw1) + 0.5 * link2_l * math.cos(yaw1 + yaw2)
+        link2_y = y + 0.5 * link1_l * math.sin(yaw1) + 0.5 * link2_l * math.sin(yaw1 + yaw2)
+        link2_yaw = yaw1 + yaw2
+
+        link2_state = [link2_x, link2_y, link2_yaw]
+        return [link1_state, link2_state]
 
     def is_state_valid_2D(self, state):
-        # return True
 
-        x = state[0][0]
-        y = state[0][1]
-        angle1 = state[1].value
-        angle2 = state[2].value
-        print(x, y, angle1, angle2)
-        # return True
-        # get robot's state
-        x = state.getX()
-        y = state.getY()
-        t = np.array([x, y, 0])
-        # print(x, y)
-        angle = state.getYaw()
-        quaternion = get_quaternion_from_euler(0, 0, angle)
-        matrix = get_rotation_matrix_from_angle_z(angle)
-        # set robot's state
-        self.robot.setTranslation(t)
-        # self.robot.setQuatRotation(quaternion)
-        self.robot.setRotation(matrix)
+        if self.robot_type == "Rigidbody_2D":
+            x = state.getX()
+            y = state.getY()
+            t = np.array([x, y, 0])
+            angle = state.getYaw()
+            matrix = get_rotation_matrix_from_angle_z(angle)
+            self.robot.setTranslation(t)
+            self.robot.setRotation(matrix)
 
-        valid_flag = True
-        for obs in self.obstacles:
-            dis = fcl.distance(self.robot, obs)
-            ret = fcl.collide(self.robot, obs)
-            if ret > 0:
-                valid_flag = False
-                break
-        return valid_flag
+            valid_flag = True
+            for obs in self.obstacles:
+                dis = fcl.distance(self.robot, obs)
+                ret = fcl.collide(self.robot, obs)
+                if ret > 0:
+                    valid_flag = False
+                    break
+            return valid_flag
+
+        if self.robot_type == "Two_Link_2D":
+            Vec = state[0][0]
+            Angle1 = state[0][1]
+            Angle2 = state[0][2]
+            Vec_X = Vec[0]
+            Vec_Y = Vec[1]
+            Angle1_Yaw = Angle1.value
+            Angle2_Yaw = Angle2.value
+            link_states = self.get_link_config_two_link_2D([Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw], self.robot_size)
+
+            t_1 = np.array([link_states[0][0], link_states[0][1], 0])
+            matrix_1 = get_rotation_matrix_from_angle_z(link_states[0][2])
+            self.link1.setTranslation(t_1)
+            self.link1.setRotation(matrix_1)
+
+            t_2 = np.array([link_states[1][0], link_states[1][1], 0])
+            matrix_2 = get_rotation_matrix_from_angle_z(link_states[1][2])
+            self.link1.setTranslation(t_2)
+            self.link1.setRotation(matrix_2)
+
+            valid_flag = True
+            for obs in self.obstacles:
+                # dis = fcl.distance(self.robot, obs)
+                ret1 = fcl.collide(self.link1, obs)
+                ret2 = fcl.collide(self.link2, obs)
+                if ret1+ret2 > 0:
+                    valid_flag = False
+                    break
+            return valid_flag
+
+
 
     def get_config_path_with_robot_info_2D(self, path):
         """
@@ -111,6 +137,19 @@ class Env_Robot:
         :return:[[x_length, y_length, X, Y, Yaw]]
         """
         path_with_robot = []
-        for cfg in path:
-            path_with_robot.append(self.robot_size + cfg)
-        return path_with_robot
+        if self.robot_type == "Rigidbody_2D":
+            for cfg in path:
+                path_with_robot.append(self.robot_size + cfg)
+
+            return path_with_robot
+        if self.robot_type == "Two_Link_2D":
+            for cfg in path:
+                state = self.get_link_config_two_link_2D(cfg, self.robot_size)
+                recs = []
+                for i, rec in enumerate(state):
+                    recs.append(self.robot_size[2*i:2*i+2] + cfg)
+                path_with_robot.append(recs)
+            return path_with_robot
+
+
+
