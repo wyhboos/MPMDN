@@ -17,7 +17,7 @@ class Plan:
         self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
         self.pl_ompl.set_planner()
 
-    def plan(self, start=None, goal=None, vis=None, time_lim=10, simple=False):
+    def plan(self, start=None, goal=None, vis=None, time_lim=1, simple=False):
         if start is None:
             start, goal = self.pl_ompl.generate_valid_start_goal()
         solved, path = self.pl_ompl.solve_planning_2D(start=start, goal=goal, time_lim=time_lim, simple=simple)
@@ -33,8 +33,27 @@ class Plan:
                                 path=path_rob, size=20, pixel_per_meter=50, save_fig_dir=vis)
             print("Fig Saved!")
 
+        if solved is not None:
+            states = self.pl_ompl.ss.getSolutionPath()
+            a = states.getStates()
+            print(a[0])
+            print(a[0][0][0])
+            # print("Found solution with length", path.length())
+            # path.interpolate(50)
+            for i in range(len(states)):
+                state = states[i]
+                print(state)
+                print(state.getSubspaceCount())
+                
+                vec = state.getComponent(0).getValues()
+                angle1 = state.getComponent(1).value
+                angle2 = state.getComponent(2).value
+                print("(", vec[0], ", ", vec[1], ") (", angle1, ", ", angle2, ")")
+        else:
+            print("No solution found.")
+
 
 if __name__ == '__main__':
-    for i in range(10):
+    for i in range(1):
         pl = Plan()
-        pl.plan(vis='./fig/test'+str(i))
+        pl.plan()

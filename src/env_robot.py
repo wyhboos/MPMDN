@@ -75,6 +75,14 @@ class Env_Robot:
         self.robot = robot
 
     def is_state_valid_2D(self, state):
+        # return True
+
+        x = state[0][0]
+        y = state[0][1]
+        angle1 = state[1].value
+        angle2 = state[2].value
+        print(x, y, angle1, angle2)
+        # return True
         # get robot's state
         x = state.getX()
         y = state.getY()

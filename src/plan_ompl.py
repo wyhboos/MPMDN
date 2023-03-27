@@ -20,20 +20,34 @@ from visualization import vis_for_2D_planning
 
 er = Env_Robot()
 
-print(dir(ob.SpaceInformation))
-print(dir(og))
+# print(dir(ob.SpaceInformation))
+# print(dir(og))
 class Plan_OMPL:
     def __init__(self):
 
         self.StateValidityChecker = None
         # create an SE2 state space
-        self.space = ob.SE2StateSpace()
+        # self.space = ob.SE2StateSpace()
+
+        vector_space = ob.RealVectorStateSpace(2)  # 2D vector space
+        angle_space1 = ob.SO2StateSpace()  # 1D angle space 1
+        angle_space2 = ob.SO2StateSpace()  # 1D angle space 2
+
+        bounds = ob.RealVectorBounds(2)
+        bounds.setLow(-5)
+        bounds.setHigh(5)
+        vector_space.setBounds(bounds)
+
+        self.space = ob.CompoundStateSpace()
+        self.space.addSubspace(vector_space, 1.0)
+        self.space.addSubspace(angle_space1, 0.5)
+        self.space.addSubspace(angle_space2, 0.5)
 
         # set lower and upper bounds
-        bounds = ob.RealVectorBounds(2)
-        bounds.setLow(2.5)
-        bounds.setHigh(17.5)
-        self.space.setBounds(bounds)
+        # bounds = ob.RealVectorBounds(2)
+        # bounds.setLow(2.5)
+        # bounds.setHigh(17.5)
+        # self.space.setBounds(bounds)
 
         # create a simple setup object, note that si is needed when setting planner  
         self.si = ob.SpaceInformation(self.space)
@@ -71,12 +85,12 @@ class Plan_OMPL:
             # print the simplified path
             # print(self.ss.getSolutionPath())
 
-            states = self.ss.getSolutionPath().getStates()
-            path_len = len(states)
-            for i in range(path_len):
-                X = states[i].getX()
-                Y = states[i].getY()
-                Yaw = states[i].getYaw()
-                path.append([X, Y, Yaw])
+        #     states = self.ss.getSolutionPath().getStates()
+        #     path_len = len(states)
+        #     for i in range(path_len):
+        #         X = states[i].getX()
+        #         Y = states[i].getY()
+        #         Yaw = states[i].getYaw()
+        #         path.append([X, Y, Yaw])
         return solved, path
 
