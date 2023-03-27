@@ -48,8 +48,8 @@ class Plan_OMPL:
             angle_space1 = ob.SO2StateSpace()  # 1D angle space 1
             angle_space2 = ob.SO2StateSpace()  # 1D angle space 2
             bounds = ob.RealVectorBounds(2)  # set bounds on vector
-            bounds.setLow(-5)
-            bounds.setHigh(5)
+            bounds.setLow(0)
+            bounds.setHigh(20)
             vector_space.setBounds(bounds)
             # create space
             self.space = ob.CompoundStateSpace()
@@ -92,6 +92,7 @@ class Plan_OMPL:
             # print the simplified path
             # print(self.ss.getSolutionPath())
 
+        self.ss.getSolutionPath().interpolate(10)
         states = self.ss.getSolutionPath().getStates()
         path_len = len(states)
         path = []
@@ -105,9 +106,9 @@ class Plan_OMPL:
         if self.configure_type == "Two_Link_2D":
             path_len = len(states)
             for i in range(path_len):
-                Vec = states[0][0]
-                Angle1 = states[0][1]
-                Angle2 = states[0][2]
+                Vec = states[i][0]
+                Angle1 = states[i][1]
+                Angle2 = states[i][2]
                 Vec_X = Vec[0]
                 Vec_Y = Vec[1]
                 Angle1_Yaw = Angle1.value
