@@ -51,7 +51,7 @@ class Plan:
 
 
 def generate_path_main():
-    arg = 0
+    arg = 9
     vis = "./fig/S2D/S2D_Rigidbody/S2D_Rigidbody"
     # vis = "./fig/S2D/S2D_Two_Link/S2D_Two_Link"
     paths_all = []

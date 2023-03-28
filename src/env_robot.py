@@ -22,12 +22,12 @@ class Env_Robot:
             self.robot_size = [2, 4]
             robot_t = np.array([0, 0, 0])
             robot_tf = fcl.Transform(robot_t)
-            robot_model = fcl.Box(1.5, 3, 0)
+            robot_model = fcl.Box(self.robot_size[0], self.robot_size[1], 0)
             self.robot = fcl.CollisionObject(robot_model, robot_tf)
 
         if robot_type == "Two_Link_2D":
             # [link1_length, link1_width, link2_length, link2_width]
-            self.robot_size = [2, 0.1, 2, 0.1]
+            self.robot_size = [2.5, 0.1, 2, 0.1]
             link1_l = self.robot_size[0]
             link1_w = self.robot_size[1]
             link2_l = self.robot_size[2]
