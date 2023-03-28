@@ -27,7 +27,7 @@ class Env_Robot:
 
         if robot_type == "Two_Link_2D":
             # [link1_length, link1_width, link2_length, link2_width]
-            self.robot_size = [2.5, 0.1, 2, 0.1]
+            self.robot_size = [2.5, 0.1, 2.5, 0.1]
             link1_l = self.robot_size[0]
             link1_w = self.robot_size[1]
             link2_l = self.robot_size[2]

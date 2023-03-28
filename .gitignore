@@ -1,4 +1,6 @@
 # Default ignored files
-./idea
-./Data
-./fig
+/idea
+/Data/
+/Data
+/fig/
+/fig

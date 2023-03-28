@@ -15,11 +15,11 @@ import numpy as np
 
 class Plan:
     def __init__(self):
-        # self.pl_ompl = Plan_OMPL(configure_type="Two_Link_2D")
-        # self.env_rob = Env_Robot(robot_type="Two_Link_2D")
+        self.pl_ompl = Plan_OMPL(configure_type="Two_Link_2D")
+        self.env_rob = Env_Robot(robot_type="Two_Link_2D")
 
-        self.pl_ompl = Plan_OMPL(configure_type="Rigidbody_2D")
-        self.env_rob = Env_Robot(robot_type="Rigidbody_2D")
+        # self.pl_ompl = Plan_OMPL(configure_type="Rigidbody_2D")
+        # self.env_rob = Env_Robot(robot_type="Rigidbody_2D")
 
         self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
         self.pl_ompl.set_planner()
@@ -43,7 +43,7 @@ class Plan:
         path_rob_vis = self.env_rob.get_config_path_with_robot_info_2D(path)
         # print(path_rob_vis)
         if vis is not None:
-            vis_for_2D_planning_rigidbody(rec_env=self.env_rob.obstacles_vis, start=start_vis, goal=goal_vis,
+            vis_for_2D_planning_two_link(rec_env=self.env_rob.obstacles_vis, start=start_vis, goal=goal_vis,
                                          path=path_rob_vis, size=30, pixel_per_meter=20, save_fig_dir=vis)
             print("Fig Saved!")
 
@@ -51,14 +51,15 @@ class Plan:
 
 
 def generate_path_main():
-    arg = 9
-    vis = "./fig/S2D/S2D_Rigidbody/S2D_Rigidbody"
-    # vis = "./fig/S2D/S2D_Two_Link/S2D_Two_Link"
+    arg =9
+    # vis = "./fig/S2D/S2D_Rigidbody/S2D_Rigidbody"
+    vis = "./fig/S2D/S2D_Two_Link/S2D_Two_Link"
     paths_all = []
-    # path_save_file = "./Data/S2D/S2D_Two_Link_Path"
-    path_save_file = "./Data/S2D/S2D_Rigidbody_Path_"+str(arg)
+    path_save_file = "./Data/S2D/S2D_Two_Link_Path_"+str(arg)
+    # path_save_file = "./Data/S2D/S2D_Rigidbody_Path_"+str(arg)
     env_file = "./Data/S2D/S2D_env_100_rec.npy"
-    s_g_file = "./Data/S2D/S2D_env_100_pts_4000.npy"
+    # s_g_file = "./Data/S2D/S2D_env_100_pts_4000_Rigidbody.npy"
+    s_g_file = "./Data/S2D/S2D_env_100_pts_4000_Two_Link_Path.npy"
     # load env
     # env_file = "./Data/S2D_env_100_rec.npy"
     rec_envs = np.load(env_file, allow_pickle=True)
