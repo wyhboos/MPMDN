@@ -15,6 +15,8 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 def org_to_img(x, y, pic_shape, ppm):
+    x = x+15
+    y = y+15
     aixs1 = pic_shape[0] - 1 - y * ppm
     aixs2 = x * ppm
     return int(aixs1 + 0.5), int(aixs2 + 0.5)
@@ -282,7 +284,7 @@ def vis_for_2D_planning_rigidbody(rec_env, start, goal, path, size, pixel_per_me
     # create the fig and plot obstacles
     fig = plot_rotat_rec_env_2D(rec_env, size, pixel_per_meter)
     # plot start and goal state
-    fig = plot_rotat_rec_start_goal_2D_two_link(fig, start, goal, pixel_per_meter)
+    fig = plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter)
     # plot the path
     fig = plot_rotat_rec_path_2D(fig, path, pixel_per_meter)
     cv2.imwrite(save_fig_dir + '.png', fig)

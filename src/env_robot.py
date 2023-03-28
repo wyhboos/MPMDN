@@ -15,13 +15,14 @@ class Env_Robot:
         self.obstacles = None
         self.robot = None
         self.config_path = None
+        self.obstacles_vis = None
 
         # init rectangle robot
         if robot_type == "Rigidbody_2D":
-            self.robot_size = [1, 2]
+            self.robot_size = [2, 4]
             robot_t = np.array([0, 0, 0])
             robot_tf = fcl.Transform(robot_t)
-            robot_model = fcl.Box(1, 2, 0)
+            robot_model = fcl.Box(1.5, 3, 0)
             self.robot = fcl.CollisionObject(robot_model, robot_tf)
 
         if robot_type == "Two_Link_2D":
@@ -159,16 +160,20 @@ class Env_Robot:
 
     def get_list_rec_config_with_robot_from_ompl_state(self, state):
         if self.robot_type == "Rigidbody_2D":
-            x = state.getX()
-            y = state.getY()
-            angle = state.getYaw()
+            x = state().getX()
+            y = state().getY()
+            angle = state().getYaw()
             return self.robot_size + [x, y, angle]
 
         if self.robot_type == "Two_Link_2D":
-            link_states = self.get_link_config_two_link_2D(self.robot_size, state)
+            x = state[0]
+            y = state[1]
+            yaw1 = state[2]
+            yaw2 = state[3]
+            link_states = self.get_link_config_two_link_2D([x, y, yaw1, yaw2], self.robot_size)
             recs = []
             for i, rec in enumerate(link_states):
-                recs.append(self.robot_size[2 * i:2 * i + 2] + state[i])
+                recs.append(self.robot_size[2 * i:2 * i + 2] + link_states[i])
             return recs
 
     def convert_ompl_path_to_list_path(self, ompl_path):
@@ -197,6 +202,7 @@ class Env_Robot:
     def load_rec_obs_2D(self, rec_obs):
         if self.obstacles is not None:
             self.obstacles.clear()
+            self.obstacles_vis.clear()
         obs_cnt, pt_c = rec_obs.shape
         for i in range(obs_cnt):
             l_b_x = rec_obs[i, 0]
@@ -207,6 +213,7 @@ class Env_Robot:
             w = r_t_y - l_b_y
             c_x = 0.5*(l_b_x+r_t_x)
             c_y = 0.5 * (l_b_y + r_t_y)
+            self.obstacles_vis.append([l, w, c_x, c_y, 0])
             obs_i_model = fcl.Box(l, w, 0)
             obs_i_t = np.array((c_x, c_y, 0))
             obs_i_tf = fcl.Transform(obs_i_t)
