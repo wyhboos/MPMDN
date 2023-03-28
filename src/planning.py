@@ -68,6 +68,7 @@ def generate_path_main():
         env_pts.append(pts)
     np.save(s_g_file, np.array(env_pts))
     return
+    print(66)
     # load start goal
     env_pts = np.load(s_g_file, allow_pickle=True)
     # planning
