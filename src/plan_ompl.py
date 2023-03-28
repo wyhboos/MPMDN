@@ -35,8 +35,8 @@ class Plan_OMPL:
             self.space = ob.SE2StateSpace()
             # set bounds
             bounds = ob.RealVectorBounds(2)
-            bounds.setLow(2.5)
-            bounds.setHigh(17.5)
+            bounds.setLow(-15)
+            bounds.setHigh(15)
             self.space.setBounds(bounds)
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
@@ -48,8 +48,8 @@ class Plan_OMPL:
             angle_space1 = ob.SO2StateSpace()  # 1D angle space 1
             angle_space2 = ob.SO2StateSpace()  # 1D angle space 2
             bounds = ob.RealVectorBounds(2)  # set bounds on vector
-            bounds.setLow(0)
-            bounds.setHigh(20)
+            bounds.setLow(-15)
+            bounds.setHigh(15)
             vector_space.setBounds(bounds)
             # create space
             self.space = ob.CompoundStateSpace()
@@ -60,6 +60,40 @@ class Plan_OMPL:
             # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
+
+    # This function aims to solve problems when multiple plan with python using C++ ompl lib
+    def reboot(self):
+        if self.configure_type == "Rigidbody_2D":
+            # create an SE2 state space
+            self.space = ob.SE2StateSpace()
+            # set bounds
+            bounds = ob.RealVectorBounds(2)
+            bounds.setLow(-15)
+            bounds.setHigh(15)
+            self.space.setBounds(bounds)
+            # # create a simple setup object, note that si is needed when setting planner
+            self.si = ob.SpaceInformation(self.space)
+            self.ss = og.SimpleSetup(self.si)
+
+        if self.configure_type == "Two_Link_2D":
+            # state space components
+            vector_space = ob.RealVectorStateSpace(2)  # 2D vector space
+            angle_space1 = ob.SO2StateSpace()  # 1D angle space 1
+            angle_space2 = ob.SO2StateSpace()  # 1D angle space 2
+            bounds = ob.RealVectorBounds(2)  # set bounds on vector
+            bounds.setLow(-15)
+            bounds.setHigh(15)
+            vector_space.setBounds(bounds)
+            # create space
+            self.space = ob.CompoundStateSpace()
+            self.space.addSubspace(vector_space, 1.0)  # weight 1.0 as default, set for computing distance
+            self.space.addSubspace(angle_space1, 0.5)
+            self.space.addSubspace(angle_space2, 0.5)
+
+            # create a simple setup object, note that si is needed when setting planner
+            self.si = ob.SpaceInformation(self.space)
+            self.ss = og.SimpleSetup(self.si)
+
 
     def setStateValidityChecker(self, StateValidityChecker):
         self.StateValidityChecker = StateValidityChecker
@@ -82,6 +116,49 @@ class Plan_OMPL:
                 break
         return start, goal
 
+    def convert_ompl_config_to_list_config(self, state_ompl):
+        if self.configure_type == "Rigidbody_2D":
+            X = state_ompl.getX()
+            Y = state_ompl.getY()
+            Yaw = state_ompl.getYaw()
+            return [X, Y, Yaw]
+
+        if self.configure_type == "Two_Link_2D":
+            Vec = state_ompl[0]
+            Angle1 = state_ompl[1]
+            Angle2 = state_ompl[2]
+            Vec_X = Vec[0]
+            Vec_Y = Vec[1]
+            Angle1_Yaw = Angle1.value
+            Angle2_Yaw = Angle2.value
+            return [Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw]
+
+    def conver_list_config_to_ompl_config(self, state_list):
+        if self.configure_type == "Rigidbody_2D":
+            X = state_list[0]
+            Y = state_list[1]
+            Yaw = state_list[2]
+
+            state_ompl = ob.State(self.space)
+            state_ompl().setX(X)
+            state_ompl().setY(Y)
+            state_ompl().setYaw(Yaw)
+            return state_ompl
+
+        if self.configure_type == "Two_Link_2D":
+            Vec_X = state_list[0]
+            Vec_Y = state_list[1]
+            Angle1 = state_list[2]
+            Angle2 = state_list[3]
+
+            state_ompl = ob.State(self.space)
+            state_ompl()[0][0] = Vec_X
+            state_ompl()[0][1] = Vec_Y
+            state_ompl()[1] = Angle1
+            state_ompl()[2] = Angle2
+            return state_ompl
+
+
     def solve_planning_2D(self, start, goal, time_lim=10, simple=False):
         self.ss.setStartAndGoalStates(start, goal)
         solved = self.ss.solve(time_lim)
@@ -92,7 +169,7 @@ class Plan_OMPL:
             # print the simplified path
             # print(self.ss.getSolutionPath())
 
-        self.ss.getSolutionPath().interpolate(10)
+        # self.ss.getSolutionPath().interpolate(10)
         states = self.ss.getSolutionPath().getStates()
         path_len = len(states)
         path = []

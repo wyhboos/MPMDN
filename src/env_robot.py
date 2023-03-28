@@ -5,7 +5,7 @@ import math
 
 def get_rotation_matrix_from_angle_z(theta):
     matrix = np.array([[math.cos(theta), -math.sin(theta), 0],
-                      [math.sin(theta), math.cos(theta), 0], [0, 0, 1]])
+                       [math.sin(theta), math.cos(theta), 0], [0, 0, 1]])
     return matrix
 
 
@@ -49,13 +49,15 @@ class Env_Robot:
             for i in range(50):
                 obs_i_model = fcl.Box(1, 1, 0)
                 obs_i_t = np.array([20, 20, 0]) * \
-                    np.random.rand(3) + np.array([0, 0, 0])
+                          np.random.rand(3) + np.array([0, 0, 0])
                 # obs_i_t = np.array([10, 10, 0])
 
                 self.obstacles_vis.append([1, 1] + list(obs_i_t)[:2] + [0])
                 obs_i_tf = fcl.Transform(obs_i_t)
                 obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
                 self.obstacles.append(obs_i)
+        else:
+            self.load_rec_obs_2D(obs)
 
     def get_link_config_two_link_2D(self, link_state, link_size):
         """
@@ -76,9 +78,9 @@ class Env_Robot:
 
         link1_state = [x, y, yaw1]
         link2_x = x + 0.5 * link1_l * \
-            math.cos(yaw1) + 0.5 * link2_l * math.cos(yaw1 + yaw2)
+                  math.cos(yaw1) + 0.5 * link2_l * math.cos(yaw1 + yaw2)
         link2_y = y + 0.5 * link1_l * \
-            math.sin(yaw1) + 0.5 * link2_l * math.sin(yaw1 + yaw2)
+                  math.sin(yaw1) + 0.5 * link2_l * math.sin(yaw1 + yaw2)
         link2_yaw = yaw1 + yaw2
 
         link2_state = [link2_x, link2_y, link2_yaw]
@@ -151,6 +153,62 @@ class Env_Robot:
                 state = self.get_link_config_two_link_2D(cfg, self.robot_size)
                 recs = []
                 for i, rec in enumerate(state):
-                    recs.append(self.robot_size[2*i:2*i+2] + state[i])
+                    recs.append(self.robot_size[2 * i:2 * i + 2] + state[i])
                 path_with_robot.append(recs)
             return path_with_robot
+
+    def get_list_rec_config_with_robot_from_ompl_state(self, state):
+        if self.robot_type == "Rigidbody_2D":
+            x = state.getX()
+            y = state.getY()
+            angle = state.getYaw()
+            return self.robot_size + [x, y, angle]
+
+        if self.robot_type == "Two_Link_2D":
+            link_states = self.get_link_config_two_link_2D(self.robot_size, state)
+            recs = []
+            for i, rec in enumerate(link_states):
+                recs.append(self.robot_size[2 * i:2 * i + 2] + state[i])
+            return recs
+
+    def convert_ompl_path_to_list_path(self, ompl_path):
+        if self.robot_type == "Rigidbody_2D":
+            list_path = []
+            for state in ompl_path:
+                x = state.getX()
+                y = state.getY()
+                angle = state.getYaw()
+                list_path.append([x, y, angle])
+            return list_path
+
+        if self.robot_type == "Two_Link_2D":
+            list_path = []
+            for state in ompl_path:
+                Vec = state[0]
+                Angle1 = state[1]
+                Angle2 = state[2]
+                Vec_X = Vec[0]
+                Vec_Y = Vec[1]
+                Angle1_Yaw = Angle1.value
+                Angle2_Yaw = Angle2.value
+                list_path.append([Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw])
+            return list_path
+
+    def load_rec_obs_2D(self, rec_obs):
+        if self.obstacles is not None:
+            self.obstacles.clear()
+        obs_cnt, pt_c = rec_obs.shape
+        for i in range(obs_cnt):
+            l_b_x = rec_obs[i, 0]
+            l_b_y = rec_obs[i, 1]
+            r_t_x = rec_obs[i, 2]
+            r_t_y = rec_obs[i, 3]
+            l = r_t_x - l_b_x
+            w = r_t_y - l_b_y
+            c_x = 0.5*(l_b_x+r_t_x)
+            c_y = 0.5 * (l_b_y + r_t_y)
+            obs_i_model = fcl.Box(l, w, 0)
+            obs_i_t = np.array((c_x, c_y, 0))
+            obs_i_tf = fcl.Transform(obs_i_t)
+            obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
+            self.obstacles.append(obs_i)
