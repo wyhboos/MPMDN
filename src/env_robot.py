@@ -176,29 +176,6 @@ class Env_Robot:
                 recs.append(self.robot_size[2 * i:2 * i + 2] + link_states[i])
             return recs
 
-    def convert_ompl_path_to_list_path(self, ompl_path):
-        if self.robot_type == "Rigidbody_2D":
-            list_path = []
-            for state in ompl_path:
-                x = state.getX()
-                y = state.getY()
-                angle = state.getYaw()
-                list_path.append([x, y, angle])
-            return list_path
-
-        if self.robot_type == "Two_Link_2D":
-            list_path = []
-            for state in ompl_path:
-                Vec = state[0]
-                Angle1 = state[1]
-                Angle2 = state[2]
-                Vec_X = Vec[0]
-                Vec_Y = Vec[1]
-                Angle1_Yaw = Angle1.value
-                Angle2_Yaw = Angle2.value
-                list_path.append([Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw])
-            return list_path
-
     def load_rec_obs_2D(self, rec_obs):
         if self.obstacles is not None:
             self.obstacles.clear()
