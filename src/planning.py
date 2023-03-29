@@ -7,6 +7,7 @@ from visualization import vis_for_2D_planning_rigidbody, vis_for_2D_planning_two
 
 from ompl import base, geometric
 import numpy as np
+import argparse
 
 
 # print(dir(geometric.SimpleSetup))
@@ -15,11 +16,11 @@ import numpy as np
 
 class Plan:
     def __init__(self):
-        self.pl_ompl = Plan_OMPL(configure_type="Two_Link_2D")
-        self.env_rob = Env_Robot(robot_type="Two_Link_2D")
+        # self.pl_ompl = Plan_OMPL(configure_type="Two_Link_2D")
+        # self.env_rob = Env_Robot(robot_type="Two_Link_2D")
 
-        # self.pl_ompl = Plan_OMPL(configure_type="Rigidbody_2D")
-        # self.env_rob = Env_Robot(robot_type="Rigidbody_2D")
+        self.pl_ompl = Plan_OMPL(configure_type="Rigidbody_2D")
+        self.env_rob = Env_Robot(robot_type="Rigidbody_2D")
 
         self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
         self.pl_ompl.set_planner()
@@ -35,14 +36,11 @@ class Plan:
             start, goal = self.pl_ompl.generate_valid_start_goal()
         solved, path = self.pl_ompl.solve_planning_2D(
             start=start, goal=goal, time_lim=time_lim, simple=simple)
-        # print("Solve:", solved)
 
-
-        start_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(start)
-        goal_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(goal)
-        path_rob_vis = self.env_rob.get_config_path_with_robot_info_2D(path)
-        # print(path_rob_vis)
         if vis is not None:
+            start_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(start)
+            goal_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(goal)
+            path_rob_vis = self.env_rob.get_config_path_with_robot_info_2D(path)
             vis_for_2D_planning_two_link(rec_env=self.env_rob.obstacles_vis, start=start_vis, goal=goal_vis,
                                          path=path_rob_vis, size=30, pixel_per_meter=20, save_fig_dir=vis)
             print("Fig Saved!")
@@ -50,16 +48,17 @@ class Plan:
         return solved, path
 
 
-def generate_path_main():
-    arg =9
-    # vis = "./fig/S2D/S2D_Rigidbody/S2D_Rigidbody"
-    vis = "./fig/S2D/S2D_Two_Link/S2D_Two_Link"
+def generate_path_main(args):
+    arg = args.part
+    print("Part:", arg)
+    vis = "./fig/S2D/S2D_Rigidbody/S2D_Rigidbody"
+    # vis = "./fig/S2D/S2D_Two_Link/S2D_Two_Link"
     paths_all = []
-    path_save_file = "./Data/S2D/S2D_Two_Link_Path_"+str(arg)
-    # path_save_file = "./Data/S2D/S2D_Rigidbody_Path_"+str(arg)
+    # path_save_file = "./Data/S2D/S2D_Two_Link_Path_"+str(arg)
+    path_save_file = "./Data/S2D/S2D_Rigidbody_Path_"+str(arg)
     env_file = "./Data/S2D/S2D_env_100_rec.npy"
-    # s_g_file = "./Data/S2D/S2D_env_100_pts_4000_Rigidbody.npy"
-    s_g_file = "./Data/S2D/S2D_env_100_pts_4000_Two_Link_Path.npy"
+    s_g_file = "./Data/S2D/S2D_env_100_pts_4000_Rigidbody.npy"
+    # s_g_file = "./Data/S2D/S2D_env_100_pts_4000_Two_Link_Path.npy"
     # load env
     # env_file = "./Data/S2D_env_100_rec.npy"
     rec_envs = np.load(env_file, allow_pickle=True)
@@ -110,7 +109,7 @@ def generate_path_main():
             solved, path = pl.plan(start=start, goal=goal, vis=None, time_lim=0.5, simple=False)
             # print(path)
             # print(solved)
-            if solved.asString() == "Exact solution":
+            if solved and solved.asString() == "Exact solution":
                 suc_cnt += 1
                 paths_env.append(path)
         paths_all.append(paths_env)
@@ -120,7 +119,7 @@ def generate_path_main():
 
 
 if __name__ == '__main__':
-    generate_path_main()
-    # path = np.load("./S2D_Two_Link_Path.npy", allow_pickle=True)
-
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--part', type=int, default=0)
+    args = parser.parse_args()
+    generate_path_main(args)

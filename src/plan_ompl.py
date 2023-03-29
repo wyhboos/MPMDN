@@ -160,6 +160,7 @@ class Plan_OMPL:
     def solve_planning_2D(self, start, goal, time_lim=10, simple=False):
         self.ss.setStartAndGoalStates(start, goal)
         solved = self.ss.solve(time_lim)
+        path = []
         if solved:
             # try to shorten the path
             if simple:
@@ -168,25 +169,26 @@ class Plan_OMPL:
             # print(self.ss.getSolutionPath())
 
         # self.ss.getSolutionPath().interpolate(10)
-        states = self.ss.getSolutionPath().getStates()
-        path_len = len(states)
-        path = []
-        if self.configure_type == "Rigidbody_2D":
-            for i in range(path_len):
-                X = states[i].getX()
-                Y = states[i].getY()
-                Yaw = states[i].getYaw()
-                path.append([X, Y, Yaw])
-
-        if self.configure_type == "Two_Link_2D":
+        if solved:
+            states = self.ss.getSolutionPath().getStates()
             path_len = len(states)
-            for i in range(path_len):
-                Vec = states[i][0]
-                Angle1 = states[i][1]
-                Angle2 = states[i][2]
-                Vec_X = Vec[0]
-                Vec_Y = Vec[1]
-                Angle1_Yaw = Angle1.value
-                Angle2_Yaw = Angle2.value
-                path.append([Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw])
+            path = []
+            if self.configure_type == "Rigidbody_2D":
+                for i in range(path_len):
+                    X = states[i].getX()
+                    Y = states[i].getY()
+                    Yaw = states[i].getYaw()
+                    path.append([X, Y, Yaw])
+
+            if self.configure_type == "Two_Link_2D":
+                path_len = len(states)
+                for i in range(path_len):
+                    Vec = states[i][0]
+                    Angle1 = states[i][1]
+                    Angle2 = states[i][2]
+                    Vec_X = Vec[0]
+                    Vec_Y = Vec[1]
+                    Angle1_Yaw = Angle1.value
+                    Angle2_Yaw = Angle2.value
+                    path.append([Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw])
         return solved, path
