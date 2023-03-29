@@ -128,6 +128,6 @@ def generate_path_main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--part', type=int, default=0)
-    parser.add_argument('--type', type=str, default="Two_Link_2D")
+    parser.add_argument('--type', type=int, default="Two_Link_2D")
     args = parser.parse_args()
     generate_path_main(args)
