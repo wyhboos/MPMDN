@@ -111,44 +111,44 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named test
+# Target rules for targets named main
 
 # Build rule for target.
-test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test
-.PHONY : test
+main: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 main
+.PHONY : main
 
 # fast build rule for target.
-test/fast:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
-.PHONY : test/fast
+main/fast:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
+.PHONY : main/fast
 
-cpp/src/test.o: cpp/src/test.cpp.o
+cpp/src/main.o: cpp/src/main.cpp.o
 
-.PHONY : cpp/src/test.o
+.PHONY : cpp/src/main.o
 
 # target to build an object file
-cpp/src/test.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/cpp/src/test.cpp.o
-.PHONY : cpp/src/test.cpp.o
+cpp/src/main.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/cpp/src/main.cpp.o
+.PHONY : cpp/src/main.cpp.o
 
-cpp/src/test.i: cpp/src/test.cpp.i
+cpp/src/main.i: cpp/src/main.cpp.i
 
-.PHONY : cpp/src/test.i
+.PHONY : cpp/src/main.i
 
 # target to preprocess a source file
-cpp/src/test.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/cpp/src/test.cpp.i
-.PHONY : cpp/src/test.cpp.i
+cpp/src/main.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/cpp/src/main.cpp.i
+.PHONY : cpp/src/main.cpp.i
 
-cpp/src/test.s: cpp/src/test.cpp.s
+cpp/src/main.s: cpp/src/main.cpp.s
 
-.PHONY : cpp/src/test.s
+.PHONY : cpp/src/main.s
 
 # target to generate assembly for a file
-cpp/src/test.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/cpp/src/test.cpp.s
-.PHONY : cpp/src/test.cpp.s
+cpp/src/main.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/cpp/src/main.cpp.s
+.PHONY : cpp/src/main.cpp.s
 
 # Help Target
 help:
@@ -158,10 +158,10 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... test"
-	@echo "... cpp/src/test.o"
-	@echo "... cpp/src/test.i"
-	@echo "... cpp/src/test.s"
+	@echo "... main"
+	@echo "... cpp/src/main.o"
+	@echo "... cpp/src/main.i"
+	@echo "... cpp/src/main.s"
 .PHONY : help
 
 

@@ -103,6 +103,7 @@ class Plan_OMPL:
 
     def set_planner(self):
         self.planner = og.RRTstar(self.si)
+        # self.planner = og.MPN(self.si)
         self.ss.setPlanner(self.planner)
 
     def generate_valid_start_goal(self):

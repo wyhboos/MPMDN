@@ -376,6 +376,24 @@ MKLDNN_DIR:PATH=MKLDNN_DIR-NOTFOUND
 MKL_DIR:PATH=MKL_DIR-NOTFOUND
 
 //Path to a library.
+OMPLAPPBASE_LIBRARY:FILEPATH=/usr/local/lib/libompl_app_base.so
+
+//Paths to OMPL.app libraries
+OMPLAPP_LIBRARIES:STRING=/usr/local/lib/libompl_app_base.so;/usr/local/lib/libompl_app.so;libassimp.so.5;fcl
+
+//Path to a library.
+OMPLAPP_LIBRARY:FILEPATH=/usr/local/lib/libompl_app.so
+
+//Include path for OMPL and its dependencies
+OMPL_INCLUDE_DIRS:STRING=/usr/local/include/ompl-1.6;/usr/include;/usr/include/eigen3;/usr/local/include
+
+//Path to a library.
+OMPL_LIBRARIES:FILEPATH=/usr/local/lib/libompl.so
+
+//Library path for OMPL and its dependencies
+OMPL_LIBRARY_DIRS:STRING=/usr/local/lib;/usr/lib/x86_64-linux-gnu
+
+//Path to a library.
 TORCH_LIBRARY:FILEPATH=/home/wyh/pkg/libtorch_cpu/lib/libtorch.so
 
 //The directory containing a CMake configuration file for Torch.
@@ -392,6 +410,12 @@ custom_ops_SOURCE_DIR:STATIC=/home/wyh/Code/MPMDN
 
 //Path to a library.
 kineto_LIBRARY:FILEPATH=/home/wyh/pkg/libtorch_cpu/lib/libkineto.a
+
+//Dependencies for the target
+mylib_LIB_DEPENDS:STATIC=general;/usr/local/lib/libompl.so;general;/usr/lib/x86_64-linux-gnu/libboost_serialization.so;general;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;general;/usr/lib/x86_64-linux-gnu/libboost_system.so;general;ode;general;spot;general;bddx;
+
+//The directory containing a CMake configuration file for ompl.
+ompl_DIR:PATH=/usr/local/share/ompl/cmake
 
 
 ########################
@@ -656,4 +680,6 @@ CUDA_run_nvcc:INTERNAL=/home/wyh/pkg/libtorch/share/cmake/Caffe2/Modules_CUDA_fi
 FIND_PACKAGE_MESSAGE_DETAILS_CUDA:INTERNAL=[/usr/local/cuda][/usr/local/cuda/bin/nvcc][/usr/local/cuda/include][/usr/local/cuda/lib64/libcudart.so][v12.1()]
 //Details about finding Torch
 FIND_PACKAGE_MESSAGE_DETAILS_Torch:INTERNAL=[/home/wyh/pkg/libtorch_cpu/lib/libtorch.so][/home/wyh/pkg/libtorch_cpu/include;/home/wyh/pkg/libtorch_cpu/include/torch/csrc/api/include][v()]
+//Details about finding ompl
+FIND_PACKAGE_MESSAGE_DETAILS_ompl:INTERNAL=[/usr/local/include/ompl-1.6;/usr/include;/usr/include/eigen3;/usr/local/include][/usr/local/lib;/usr/lib/x86_64-linux-gnu][/usr/local/lib/libompl.so;/usr/lib/x86_64-linux-gnu/libboost_serialization.so;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;/usr/lib/x86_64-linux-gnu/libboost_system.so;ode;spot;bddx][v()]
 

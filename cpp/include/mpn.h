@@ -1,10 +1,10 @@
+#pragma once
 #include <ompl/base/Planner.h>
  
 // often useful headers:
 #include <ompl/util/RandomNumbers.h>
 #include <ompl/tools/config/SelfConfig.h>
-#ifndef OMPL_GEOMETRIC_PLANNERS_MPNET_MPNET_
-#define OMPL_GEOMETRIC_PLANNERS_MPNET_MPNET_
+
 
 namespace ompl
 {
@@ -20,7 +20,7 @@ namespace ompl
                 // specs_.recognizedGoal = ...;
             }
     
-            virtual ~myNewPlanner(void)
+            virtual ~MPN(void)
             {
                 // free any allocated memory
             }

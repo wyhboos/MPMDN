@@ -131,3 +131,6 @@ if __name__ == '__main__':
     parser.add_argument('--type', type=int, default="Two_Link_2D")
     args = parser.parse_args()
     generate_path_main(args)
+    # pl = Plan(type="Rigidbody_2D")
+    # s,p = pl.plan()
+    # print(s, p)
