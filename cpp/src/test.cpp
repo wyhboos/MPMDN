@@ -31,7 +31,7 @@ int main() {
   at::Tensor output = module.forward(inputs_1).toTensor();
   auto end = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "代码执行时间：" << duration.count() << " 毫秒" << std::endl;
+  std::cout << "代码执行时间:" << duration.count() << " 毫秒" << std::endl;
   std::cout<<output<<std::endl;
   std::cout << "ok\n";
   return 0;
