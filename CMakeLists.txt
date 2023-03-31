@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+project(custom_ops)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_BUILD_TYPE Debug)
+find_package(Torch REQUIRED)
+add_executable(test cpp/src/test.cpp)
+target_link_libraries(test "${TORCH_LIBRARIES}")
+set_property(TARGET test PROPERTY CXX_STANDARD 14)
