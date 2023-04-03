@@ -56,17 +56,6 @@ CMAKE_BINARY_DIR = /home/wyh/Code/MPMDN/build
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
@@ -77,6 +66,17 @@ edit_cache:
 edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
+
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/bin/cmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -123,6 +123,19 @@ main/fast:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
 .PHONY : main/fast
 
+#=============================================================================
+# Target rules for targets named mylib
+
+# Build rule for target.
+mylib: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 mylib
+.PHONY : mylib
+
+# fast build rule for target.
+mylib/fast:
+	$(MAKE) -f CMakeFiles/mylib.dir/build.make CMakeFiles/mylib.dir/build
+.PHONY : mylib/fast
+
 cpp/src/main.o: cpp/src/main.cpp.o
 
 .PHONY : cpp/src/main.o
@@ -150,18 +163,49 @@ cpp/src/main.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/cpp/src/main.cpp.s
 .PHONY : cpp/src/main.cpp.s
 
+cpp/src/mpn.o: cpp/src/mpn.cpp.o
+
+.PHONY : cpp/src/mpn.o
+
+# target to build an object file
+cpp/src/mpn.cpp.o:
+	$(MAKE) -f CMakeFiles/mylib.dir/build.make CMakeFiles/mylib.dir/cpp/src/mpn.cpp.o
+.PHONY : cpp/src/mpn.cpp.o
+
+cpp/src/mpn.i: cpp/src/mpn.cpp.i
+
+.PHONY : cpp/src/mpn.i
+
+# target to preprocess a source file
+cpp/src/mpn.cpp.i:
+	$(MAKE) -f CMakeFiles/mylib.dir/build.make CMakeFiles/mylib.dir/cpp/src/mpn.cpp.i
+.PHONY : cpp/src/mpn.cpp.i
+
+cpp/src/mpn.s: cpp/src/mpn.cpp.s
+
+.PHONY : cpp/src/mpn.s
+
+# target to generate assembly for a file
+cpp/src/mpn.cpp.s:
+	$(MAKE) -f CMakeFiles/mylib.dir/build.make CMakeFiles/mylib.dir/cpp/src/mpn.cpp.s
+.PHONY : cpp/src/mpn.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... main"
+	@echo "... rebuild_cache"
+	@echo "... mylib"
 	@echo "... cpp/src/main.o"
 	@echo "... cpp/src/main.i"
 	@echo "... cpp/src/main.s"
+	@echo "... cpp/src/mpn.o"
+	@echo "... cpp/src/mpn.i"
+	@echo "... cpp/src/mpn.s"
 .PHONY : help
 
 

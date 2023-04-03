@@ -39,7 +39,8 @@
 #include <ompl/base/spaces/SE2StateSpace.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/SimpleSetup.h>
-#include <ompl/geometric/planners/mpn/mpn.h>
+// #include <ompl/geometric/planners/mpn/mpn.h>
+#include <mpn.h>
 
 #include <ompl/config.h>
 #include <iostream>
@@ -119,17 +120,20 @@ void plan()
     // pdef->print(std::cout);
 
     // attempt to solve the problem within one second of planning time
+    // ob::PlannerStatus solved = planner->ob::Planner::solve(1.0);
     ob::PlannerStatus solved = planner->ob::Planner::solve(1.0);
 
     if (solved)
     {
         // get the goal representation from the problem definition (not the same as the goal state)
         // and inquire about the found path
+        std::cout<<"class member"<<planner->time_o<<std::endl;
         ob::PathPtr path = pdef->getSolutionPath();
         std::cout << "Found solution:" << std::endl;
 
         // print the path to screen
         path->print(std::cout);
+        
     }
     else
         std::cout << "No solution found" << std::endl;

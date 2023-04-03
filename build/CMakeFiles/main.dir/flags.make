@@ -6,5 +6,5 @@ CXX_FLAGS =  -Wall -g
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/usr/local/include/ompl-1.6 -I/usr/include/eigen3 
+CXX_INCLUDES = -I/usr/local/include/ompl-1.6 -I/usr/include/eigen3 -I/home/wyh/Code/MPMDN/cpp/include 
 

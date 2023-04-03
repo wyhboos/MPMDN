@@ -13,7 +13,7 @@ namespace ompl
         class MPN : public base::Planner
         {
         public:
-            double time_o;
+            double time_o = 100;
             double time_nnrp;
             double time_classical;
             int invalid_o;

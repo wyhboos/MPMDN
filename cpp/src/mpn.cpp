@@ -37,11 +37,9 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
 
     if(!si_->isValid(start.get())) std::cout<<"start invalid"<<std::endl;
 
-    // motion checker
-    auto motion_validator = std::make_shared<ompl::base::DiscreteMotionValidator>(si_);
 
-    // check if the connection between start and goal states is valid
-    bool connection_valid = motion_validator->checkMotion(start_state, goal_state);
+    // // check if the connection between start and goal states is valid
+    bool connection_valid = si_->checkMotion(start_state, goal_state);
 
     if(connection_valid)
     {
@@ -61,9 +59,12 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
     // add the path to the problem definition
     pdef->addSolutionPath(path);
 
-    std::cout<<"This is the MPN, Finished!"<<std::endl;
+    // this->time_o = 50;
 
-    time_o = 50;
+    std::cout<<"before"<<this->time_o<<std::endl;
+    this->time_o = 50;
+    std::cout<<"after"<<this->time_o<<std::endl;
+    std::cout<<"This is the MPN, Finished!"<<std::endl;
 
     // return the status
     return base::PlannerStatus::EXACT_SOLUTION;
