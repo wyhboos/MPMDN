@@ -13,6 +13,11 @@ namespace ompl
         class MPN : public base::Planner
         {
         public:
+            double time_o;
+            double time_nnrp;
+            double time_classical;
+            int invalid_o;
+            int invalid_nnrp;
             MPN(const base::SpaceInformationPtr &si) : base::Planner(si, "MPN")
             {
                 // the specifications of this planner (ompl::base::PlannerSpecs)
