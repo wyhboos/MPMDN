@@ -4,12 +4,16 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/wyh/Code/MPMDN/cpp/src/mpn.cpp" "/home/wyh/Code/MPMDN/build/CMakeFiles/mylib.dir/cpp/src/mpn.cpp.o"
+  "/home/wyh/Code/MPMDN/cpp/src/mppn.cpp" "/home/wyh/Code/MPMDN/build/CMakeFiles/mylib.dir/cpp/src/mppn.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_CXX
+  "USE_C10D_GLOO"
+  "USE_DISTRIBUTED"
+  "USE_RPC"
+  "USE_TENSORPIPE"
   "mylib_EXPORTS"
   )
 
@@ -18,6 +22,8 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/usr/local/include/ompl-1.6"
   "/usr/include/eigen3"
   "../cpp/include"
+  "/home/wyh/pkg/libtorch_cpu_11/include"
+  "/home/wyh/pkg/libtorch_cpu_11/include/torch/csrc/api/include"
   )
 
 # Targets to which this target links.

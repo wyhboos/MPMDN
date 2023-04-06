@@ -8,11 +8,21 @@ set(CMAKE_DEPENDS_CHECK_CXX
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
+# Preprocessor definitions for this target.
+set(CMAKE_TARGET_DEFINITIONS_CXX
+  "USE_C10D_GLOO"
+  "USE_DISTRIBUTED"
+  "USE_RPC"
+  "USE_TENSORPIPE"
+  )
+
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/usr/local/include/ompl-1.6"
   "/usr/include/eigen3"
   "../cpp/include"
+  "/home/wyh/pkg/libtorch_cpu_11/include"
+  "/home/wyh/pkg/libtorch_cpu_11/include/torch/csrc/api/include"
   )
 
 # Targets to which this target links.

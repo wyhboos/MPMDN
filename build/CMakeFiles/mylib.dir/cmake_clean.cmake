@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/mylib.dir/cpp/src/mpn.cpp.o"
+  "CMakeFiles/mylib.dir/cpp/src/mppn.cpp.o"
   "libmylib.pdb"
   "libmylib.so"
 )

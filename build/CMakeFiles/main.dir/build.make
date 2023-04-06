@@ -79,15 +79,15 @@ main_EXTERNAL_OBJECTS =
 
 main: CMakeFiles/main.dir/cpp/src/main.cpp.o
 main: CMakeFiles/main.dir/build.make
-main: /usr/local/lib/libompl.so
-main: /usr/lib/x86_64-linux-gnu/libboost_serialization.so
-main: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so
-main: /usr/lib/x86_64-linux-gnu/libboost_system.so
 main: libmylib.so
 main: /usr/local/lib/libompl.so
 main: /usr/lib/x86_64-linux-gnu/libboost_serialization.so
 main: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so
 main: /usr/lib/x86_64-linux-gnu/libboost_system.so
+main: /home/wyh/pkg/libtorch_cpu_11/lib/libtorch.so
+main: /home/wyh/pkg/libtorch_cpu_11/lib/libc10.so
+main: /home/wyh/pkg/libtorch_cpu_11/lib/libc10.so
+main: /home/wyh/pkg/libtorch_cpu_11/lib/libkineto.a
 main: CMakeFiles/main.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/wyh/Code/MPMDN/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable main"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/main.dir/link.txt --verbose=$(VERBOSE)

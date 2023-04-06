@@ -57,32 +57,36 @@ include CMakeFiles/mylib.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/mylib.dir/flags.make
 
-CMakeFiles/mylib.dir/cpp/src/mpn.cpp.o: CMakeFiles/mylib.dir/flags.make
-CMakeFiles/mylib.dir/cpp/src/mpn.cpp.o: ../cpp/src/mpn.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/wyh/Code/MPMDN/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/mylib.dir/cpp/src/mpn.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mylib.dir/cpp/src/mpn.cpp.o -c /home/wyh/Code/MPMDN/cpp/src/mpn.cpp
+CMakeFiles/mylib.dir/cpp/src/mppn.cpp.o: CMakeFiles/mylib.dir/flags.make
+CMakeFiles/mylib.dir/cpp/src/mppn.cpp.o: ../cpp/src/mppn.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/wyh/Code/MPMDN/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/mylib.dir/cpp/src/mppn.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mylib.dir/cpp/src/mppn.cpp.o -c /home/wyh/Code/MPMDN/cpp/src/mppn.cpp
 
-CMakeFiles/mylib.dir/cpp/src/mpn.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mylib.dir/cpp/src/mpn.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/wyh/Code/MPMDN/cpp/src/mpn.cpp > CMakeFiles/mylib.dir/cpp/src/mpn.cpp.i
+CMakeFiles/mylib.dir/cpp/src/mppn.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mylib.dir/cpp/src/mppn.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/wyh/Code/MPMDN/cpp/src/mppn.cpp > CMakeFiles/mylib.dir/cpp/src/mppn.cpp.i
 
-CMakeFiles/mylib.dir/cpp/src/mpn.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mylib.dir/cpp/src/mpn.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/wyh/Code/MPMDN/cpp/src/mpn.cpp -o CMakeFiles/mylib.dir/cpp/src/mpn.cpp.s
+CMakeFiles/mylib.dir/cpp/src/mppn.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mylib.dir/cpp/src/mppn.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/wyh/Code/MPMDN/cpp/src/mppn.cpp -o CMakeFiles/mylib.dir/cpp/src/mppn.cpp.s
 
 # Object files for target mylib
 mylib_OBJECTS = \
-"CMakeFiles/mylib.dir/cpp/src/mpn.cpp.o"
+"CMakeFiles/mylib.dir/cpp/src/mppn.cpp.o"
 
 # External object files for target mylib
 mylib_EXTERNAL_OBJECTS =
 
-libmylib.so: CMakeFiles/mylib.dir/cpp/src/mpn.cpp.o
+libmylib.so: CMakeFiles/mylib.dir/cpp/src/mppn.cpp.o
 libmylib.so: CMakeFiles/mylib.dir/build.make
 libmylib.so: /usr/local/lib/libompl.so
 libmylib.so: /usr/lib/x86_64-linux-gnu/libboost_serialization.so
 libmylib.so: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so
 libmylib.so: /usr/lib/x86_64-linux-gnu/libboost_system.so
+libmylib.so: /home/wyh/pkg/libtorch_cpu_11/lib/libtorch.so
+libmylib.so: /home/wyh/pkg/libtorch_cpu_11/lib/libc10.so
+libmylib.so: /home/wyh/pkg/libtorch_cpu_11/lib/libkineto.a
+libmylib.so: /home/wyh/pkg/libtorch_cpu_11/lib/libc10.so
 libmylib.so: CMakeFiles/mylib.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/wyh/Code/MPMDN/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libmylib.so"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/mylib.dir/link.txt --verbose=$(VERBOSE)

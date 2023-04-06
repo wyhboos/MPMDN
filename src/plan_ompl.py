@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- encoding:utf-8 -*-
-
+import os
 try:
     from ompl import base as ob
     from ompl import geometric as og
@@ -17,7 +17,9 @@ except ImportError:
 
 from env_robot import Env_Robot
 from visualization import vis_for_2D_planning_rigidbody, vis_for_2D_planning_two_link
-
+import sys
+sys.path.append("./build")
+from MPPN import *
 er = Env_Robot()
 
 
@@ -102,8 +104,9 @@ class Plan_OMPL:
             ob.StateValidityCheckerFn(self.StateValidityChecker))
 
     def set_planner(self):
-        self.planner = og.RRTstar(self.si)
-        # self.planner = og.MPN(self.si)
+        # self.planner = og.RRTstar(self.si)
+        self.planner = MPPN(self.si)
+        # self.planner = MPPN("Rigidbody_2D")
         self.ss.setPlanner(self.planner)
 
     def generate_valid_start_goal(self):

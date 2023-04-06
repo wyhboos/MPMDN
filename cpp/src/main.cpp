@@ -40,11 +40,12 @@
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/SimpleSetup.h>
 // #include <ompl/geometric/planners/mpn/mpn.h>
-#include <mpn.h>
-
+#include <torch/script.h> // One-stop header.
 #include <ompl/config.h>
 #include <iostream>
-
+#include <memory>
+#include <chrono>
+#include <mppn.h>
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
@@ -102,10 +103,12 @@ void plan()
 
     // set the start and goal states
     pdef->setStartAndGoalStates(start, goal);
-
+    std::string si_info;
+    si_info = "Rigidbody_2D";
     // create a planner for the defined space
     // auto planner(std::make_shared<og::RRTConnect>(si));
-    auto planner(std::make_shared<og::MPN>(si));
+    auto planner(std::make_shared<og::MPPN>(si));
+    // auto planner(std::make_shared<og::MPPN>(si_info));
 
     // set the problem we are trying to solve for the planner
     planner->setProblemDefinition(pdef);
@@ -120,20 +123,17 @@ void plan()
     // pdef->print(std::cout);
 
     // attempt to solve the problem within one second of planning time
-    // ob::PlannerStatus solved = planner->ob::Planner::solve(1.0);
     ob::PlannerStatus solved = planner->ob::Planner::solve(1.0);
 
     if (solved)
     {
         // get the goal representation from the problem definition (not the same as the goal state)
         // and inquire about the found path
-        std::cout<<"class member"<<planner->time_o<<std::endl;
         ob::PathPtr path = pdef->getSolutionPath();
         std::cout << "Found solution:" << std::endl;
 
         // print the path to screen
         path->print(std::cout);
-        
     }
     else
         std::cout << "No solution found" << std::endl;
@@ -197,5 +197,4 @@ int main(int /*argc*/, char ** /*argv*/)
 
     // planWithSimpleSetup();
 
-    return 0;
 }
