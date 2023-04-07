@@ -20,6 +20,8 @@ namespace ompl
             int invalid_nnrp;
             std::string env_file;
             std::string state_type = "Rigidbody_2D";
+            std::string Enet_file = "/home/wyh/Code/MPMDN/Data/Model_structure/Encoder_S2D.pt";
+            std::string Pnet_file = "/home/wyh/Code/MPMDN/Data/Model_structure/MPN_Pnet_S2D_RB.pt";
             torch::jit::script::Module Pnet;
             torch::jit::script::Module Enet;
             at::Tensor Env_encoding;
@@ -28,7 +30,7 @@ namespace ompl
                 // the specifications of this planner (ompl::base::PlannerSpecs)
                 // specs_.approximateSolutions = true;
                 // specs_.recognizedGoal = ...;
-                load_Enet_Pnet("test", "test");
+                load_Enet_Pnet(Enet_file, Pnet_file);
             }
 
             MPPN(std::string si_info) : base::Planner(si_info, "MPPN")

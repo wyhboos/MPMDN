@@ -133,7 +133,7 @@ void plan()
         std::cout << "Found solution:" << std::endl;
 
         // print the path to screen
-        // path->print(std::cout);
+        path->print(std::cout);
     }
     else
         std::cout << "No solution found" << std::endl;

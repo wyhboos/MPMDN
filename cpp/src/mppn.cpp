@@ -35,7 +35,7 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     auto path(std::make_shared<PathGeometric>(si_));
 
     // // create the start state
-    ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start(space);
+    ompl::base::ScopedState<ompl::base::CompoundStateSpace> start(space);
     // ompl::base::ScopedState<> start_test(space);
     auto a = start.get();
     // base::CompoundState* b = start_test.get();
@@ -44,14 +44,14 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     // std::cout<<typeid(*a).name()<<std::endl;
     // std::cout<<typeid(*b).name()<<std::endl;
     // auto y = (*b).as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
-    // auto x = a->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
-    // std::cout<<"x"<<x<<std::endl;
+    auto x = a->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
+    std::cout<<"x"<<x<<std::endl;
     // std::cout<<"y"<<x<<std::endl;
 
     start = start_state;
 
     // // create the goal state
-    ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal(space);
+    ompl::base::ScopedState<ompl::base::CompoundStateSpace> goal(space);
     goal = goal_state;
 
     // if(!si_->isValid(start.get())) std::cout<<"start invalid"<<std::endl;
@@ -87,11 +87,20 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
 
     // return the status
 
-    std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ = bidirectional_plan(start, goal);
-    int l = path_.size();
-    for (size_t i = 0; i < l; i++)
+    std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_b = bidirectional_plan(&start, &goal);
+    int l = path_b.size();
+    std::cout<<"lasdasdasdasdasd"<<l<<std::endl;
+    for (int i = 0; i < l; i++)
     {
-        path->append(path_[i]->get());
+        auto state = path_b[i];
+        std::cout<<"ADD PATH"<<i<<std::endl;
+        float x = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
+        float y = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
+        float yaw = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
+        path->append(path_b[i]->get());
+        std::cout<<"x"<<x<<std::endl;
+        std::cout<<"y"<<y<<std::endl;
+        std::cout<<"yaw"<<yaw<<std::endl;
     }
     pdef->addSolutionPath(path);
     return base::PlannerStatus::EXACT_SOLUTION;
@@ -140,7 +149,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             inputs.push_back(start_t);
             inputs.push_back(goal_t);
             at::Tensor output = Pnet.forward(inputs).toTensor();
-            ompl::base::ScopedState<>* next_state = get_state_ompl_from_tensor(output);
+            ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = get_state_ompl_from_tensor(output);
             path2.push_back(next_state);
             turn = 1;
         }
@@ -150,7 +159,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
         if (connect)
         {
             //connect the two paths
-            int l = path1.size();
+            int l = path2.size();
             for(int i=0; i<l;i++)
             {
                 path1.push_back(path2[l-1-i]);
@@ -161,14 +170,13 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
         else
         {
             // std::cout<<"Not find solution in bidirectional planning!"<<std::endl;
-            int l = path1.size();
+            int l = path2.size();
             for(int i=0; i<l;i++)
             {
                 path1.push_back(path2[l-1-i]);
-                std::cout<<"Find solution in bidirectional planning!"<<std::endl;
+                std::cout<<"Not find solution in bidirectional planning!"<<std::endl;
                 return path1;
             } 
-            return path1;
         }
     }
 }
@@ -207,15 +215,13 @@ at::Tensor ompl::geometric::MPPN::get_state_tensor_from_state(ompl::base::Scoped
     if (state_type=="Rigidbody_2D")
     {
         at::Tensor state_t = torch::ones({1, 3});
-        const auto *se3state = state->get()->as<ompl::base::SE2StateSpace::StateType>();
-        // const auto *pos = se3state->as<ob::RealVectorStateSpace::StateType>(0);
-        // const auto *rot = se3state->as<ob::SO3StateSpace::StateType>(1);
-        float x = se3state->getX();
-        float y = se3state->getY();
-        float yaw = se3state->getYaw();
-        state_t[0] = x;
-        state_t[1] = y;
-        state_t[2] = yaw;
+        float x = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
+        float y = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
+        float yaw = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
+        state_t[0][0] = x;
+        state_t[0][1] = y;
+        state_t[0][2] = yaw;
+        return state_t;
     }
     if (state_type=="Two_Link_2D")
     {
@@ -224,37 +230,44 @@ at::Tensor ompl::geometric::MPPN::get_state_tensor_from_state(ompl::base::Scoped
         float y = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
         float yaw1 = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
         float yaw2 = state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value;
-        state_t[0] = x;
-        state_t[1] = y;
-        state_t[2] = yaw1;
-        state_t[3] = yaw2;
+        state_t[0][0] = x;
+        state_t[0][1] = y;
+        state_t[0][2] = yaw1;
+        state_t[0][3] = yaw2;
+        return state_t;
     }
-    return state_t;
 }
 
 ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPPN::get_state_ompl_from_tensor(at::Tensor state_t)
  {
     base::StateSpacePtr space = si_->getStateSpace();
-    ompl::base::ScopedState<ompl::base::CompoundStateSpace>* = new state(space);
+    ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state =new ompl::base::ScopedState<ompl::base::CompoundStateSpace>(space);
+    float *float_ptr = state_t.data_ptr<float>();
     if (state_type=="Rigidbody_2D")
     {   
-        const auto *se3state = state->get()->as<ompl::base::SE2StateSpace::StateType>();
-        se3state->setX(state_t[0]);
-        se3state->setY(state_t[1]);
-        se3state->setYaw(state_t[2]);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]=float_ptr[0];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=float_ptr[1];
+        state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value=float_ptr[2];
     }
     if (state_type=="Two_Link_2D")
     {
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]= state_t[0];
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]= state_t[1];
-        state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value = state_t[1]£»
-        state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value = state_t[2]£»
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]= float_ptr[0];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]= float_ptr[1];
+        state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value = float_ptr[2];
+        state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value = float_ptr[3];
     }
     return state;
  }
 
 void ompl::geometric::MPPN::load_Enet_Pnet(std::string Enet_file, std::string Pnet_file)
 {
-    Pnet = torch::jit::load(Enet_file);
-    Enet = torch::jit::load(Pnet_file);
+    // Enet = torch::jit::load(Pnet_file);
+    try {
+    // Deserialize the ScriptModule from a file using torch::jit::load().
+        Pnet = torch::jit::load(Pnet_file);
+    }
+    catch (const c10::Error& e) {
+        std::cerr << "error loading the model\n";
+    }
+    std::cout<<"load suc"<<std::endl;
 }
