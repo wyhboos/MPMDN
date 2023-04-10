@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named MPPN
+
+# Build rule for target.
+MPPN: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 MPPN
+.PHONY : MPPN
+
+# fast build rule for target.
+MPPN/fast:
+	$(MAKE) -f CMakeFiles/MPPN.dir/build.make CMakeFiles/MPPN.dir/build
+.PHONY : MPPN/fast
+
+#=============================================================================
 # Target rules for targets named main
 
 # Build rule for target.
@@ -135,6 +148,33 @@ mylib: cmake_check_build_system
 mylib/fast:
 	$(MAKE) -f CMakeFiles/mylib.dir/build.make CMakeFiles/mylib.dir/build
 .PHONY : mylib/fast
+
+cpp/src/bind.o: cpp/src/bind.cpp.o
+
+.PHONY : cpp/src/bind.o
+
+# target to build an object file
+cpp/src/bind.cpp.o:
+	$(MAKE) -f CMakeFiles/MPPN.dir/build.make CMakeFiles/MPPN.dir/cpp/src/bind.cpp.o
+.PHONY : cpp/src/bind.cpp.o
+
+cpp/src/bind.i: cpp/src/bind.cpp.i
+
+.PHONY : cpp/src/bind.i
+
+# target to preprocess a source file
+cpp/src/bind.cpp.i:
+	$(MAKE) -f CMakeFiles/MPPN.dir/build.make CMakeFiles/MPPN.dir/cpp/src/bind.cpp.i
+.PHONY : cpp/src/bind.cpp.i
+
+cpp/src/bind.s: cpp/src/bind.cpp.s
+
+.PHONY : cpp/src/bind.s
+
+# target to generate assembly for a file
+cpp/src/bind.cpp.s:
+	$(MAKE) -f CMakeFiles/MPPN.dir/build.make CMakeFiles/MPPN.dir/cpp/src/bind.cpp.s
+.PHONY : cpp/src/bind.cpp.s
 
 cpp/src/main.o: cpp/src/main.cpp.o
 
@@ -197,9 +237,13 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... MPPN"
 	@echo "... main"
 	@echo "... rebuild_cache"
 	@echo "... mylib"
+	@echo "... cpp/src/bind.o"
+	@echo "... cpp/src/bind.i"
+	@echo "... cpp/src/bind.s"
 	@echo "... cpp/src/main.o"
 	@echo "... cpp/src/main.i"
 	@echo "... cpp/src/main.s"

@@ -38,17 +38,19 @@ class Plan:
             start_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(start)
             goal_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(goal)
             path_rob_vis = self.env_rob.get_config_path_with_robot_info_2D(path)
-            self.vis(rec_env=self.env_rob.rec_env, start=start_vis, goal=goal_vis,
+            self.vis(rec_env=self.env_rob.obstacles_vis, start=start_vis, goal=goal_vis,
                                          path=path_rob_vis, size=30, pixel_per_meter=20, save_fig_dir=vis)
             print("Fig Saved!")
         return solved, path
 
     def vis(self, rec_env, start, goal, path, size, pixel_per_meter, save_fig_dir):
+        print(self.type)
         if self.type == "Two_Link_2D":
             vis_for_2D_planning_two_link(rec_env=rec_env, start=start, goal=goal,
                                          path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
 
-        if self.type == "S2D_Rigidbody":
+        if self.type == "Rigidbody_2D":
+            print(6666)
             vis_for_2D_planning_rigidbody(rec_env=rec_env, start=start, goal=goal,
                                           path=path, size=30, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
 
@@ -109,28 +111,33 @@ def generate_path_main(args):
         paths_env = []
         for j in range(4000):
             pl.reboot()
-            vis_i_j = vis + "_env_" + str(i) + "_pts_" + str(j)
+            vis_i_j = vis + "_env_" + str(i) + "_pts_" + str(j) + "mpn"
             start = env_pts[i][j][0]
             goal = env_pts[i][j][1]
             start = pl.pl_ompl.conver_list_config_to_ompl_config(start)
             goal = pl.pl_ompl.conver_list_config_to_ompl_config(goal)
             rec_env = rec_envs[i, :, :]
             pl.env_rob.load_rec_obs_2D(rec_env)
-            solved, path = pl.plan(start=start, goal=goal, vis=None, time_lim=0.5, simple=False)
+            solved, path = pl.plan(start=start, goal=goal, vis=vis_i_j, time_lim=0.5, simple=False)
             if solved and solved.asString() == "Exact solution":
                 suc_cnt += 1
                 paths_env.append(path)
         paths_all.append(paths_env)
-    np.save(path_save_file, np.array(paths_all))
+    # np.save(path_save_file, np.array(paths_all))
     print("suc_cnt", suc_cnt)
 
 
 if __name__ == '__main__':
     # parser = argparse.ArgumentParser()
     # parser.add_argument('--part', type=int, default=0)
-    # parser.add_argument('--type', type=int, default="Two_Link_2D")
+    # parser.add_argument('--type', type=int, default="Rigidbody_2D")
     # args = parser.parse_args()
     # generate_path_main(args)
+    vis = "./fig/S2D/S2D_RB/MPN/mpn_test"
     pl = Plan(type="Rigidbody_2D")
-    s,p = pl.plan()
+    env_file = "./Data/S2D/S2D_env_100_rec.npy"
+    rec_envs = np.load(env_file, allow_pickle=True)
+    rec_env = rec_envs[0, :, :]
+    pl.env_rob.load_rec_obs_2D(rec_env)
+    s,p = pl.plan(vis=vis)
     print(s, p)

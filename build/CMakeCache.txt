@@ -281,7 +281,7 @@ custom_ops_SOURCE_DIR:STATIC=/home/wyh/Code/MPMDN
 kineto_LIBRARY:FILEPATH=/home/wyh/pkg/libtorch_cpu_11/lib/libkineto.a
 
 //Dependencies for the target
-mylib_LIB_DEPENDS:STATIC=general;/usr/local/lib/libompl.so;general;/usr/lib/x86_64-linux-gnu/libboost_serialization.so;general;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;general;/usr/lib/x86_64-linux-gnu/libboost_system.so;general;ode;general;spot;general;bddx;general;torch;general;/home/wyh/pkg/libtorch_cpu_11/lib/libc10.so;general;/home/wyh/pkg/libtorch_cpu_11/lib/libkineto.a;
+mylib_LIB_DEPENDS:STATIC=general;/usr/local/lib/libompl.so;general;/usr/lib/x86_64-linux-gnu/libboost_serialization.so;general;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;general;/usr/lib/x86_64-linux-gnu/libboost_system.so;general;ode;general;spot;general;bddx;general;torch;general;/home/wyh/pkg/libtorch_cpu_11/lib/libc10.so;general;/home/wyh/pkg/libtorch_cpu_11/lib/libkineto.a;general;cnpy;
 
 //The directory containing a CMake configuration file for ompl.
 ompl_DIR:PATH=/usr/local/share/ompl/cmake

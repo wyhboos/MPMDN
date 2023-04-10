@@ -83,24 +83,24 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     // std::cout<<"before"<<this->time_o<<std::endl;
     // this->time_o = 50;
     // std::cout<<"after"<<this->time_o<<std::endl;
-    std::cout<<"This is the MPPN, Finished!"<<std::endl;
+    std::cout<<"This is the MPPN, Start to plan!"<<std::endl;
 
     // return the status
     Env_encoding = get_env_encoding(env_index);
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_b = bidirectional_plan(&start, &goal);
     int l = path_b.size();
-    std::cout<<"lasdasdasdasdasd"<<l<<std::endl;
+    // std::cout<<"lasdasdasdasdasd"<<l<<std::endl;
     for (int i = 0; i < l; i++)
     {
         auto state = path_b[i];
-        std::cout<<"ADD PATH"<<i<<std::endl;
+        // std::cout<<"ADD PATH"<<i<<std::endl;
         float x = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
         float y = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
         float yaw = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
         path->append(path_b[i]->get());
-        std::cout<<"x"<<x<<std::endl;
-        std::cout<<"y"<<y<<std::endl;
-        std::cout<<"yaw"<<yaw<<std::endl;
+        // std::cout<<"x"<<x<<std::endl;
+        // std::cout<<"y"<<y<<std::endl;
+        // std::cout<<"yaw"<<yaw<<std::endl;
     }
     pdef->addSolutionPath(path);
     return base::PlannerStatus::EXACT_SOLUTION;
@@ -110,14 +110,14 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
 std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPPN::bidirectional_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
 {
     int iter_cnt = 0;
-    int iter_cnt_lim = 500;
+    int iter_cnt_lim = 100;
     int turn = 0;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path1;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path2;
     path1.push_back(start);
     path2.push_back(goal);
     bool connect;
-    while(iter_cnt<iter_cnt_lim)
+    while(true)
     {   
         iter_cnt += 1;
         // from start to goal, path1
@@ -163,20 +163,20 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             for(int i=0; i<l;i++)
             {
                 path1.push_back(path2[l-1-i]);
-                std::cout<<"Find solution in bidirectional planning!"<<std::endl;
-                return path1;
             } 
+            std::cout<<"Find solution in bidirectional planning!"<<std::endl;
+            return path1;
         }
-        else
+        else if(iter_cnt>iter_cnt_lim)
         {
             // std::cout<<"Not find solution in bidirectional planning!"<<std::endl;
             int l = path2.size();
             for(int i=0; i<l;i++)
             {
                 path1.push_back(path2[l-1-i]);
-                std::cout<<"Not find solution in bidirectional planning!"<<std::endl;
-                return path1;
             } 
+            std::cout<<"Not find solution in bidirectional planning!"<<std::endl;
+            return path1;
         }
     }
 }
@@ -265,7 +265,7 @@ void ompl::geometric::MPPN::load_Enet_Pnet(std::string Enet_file, std::string Pn
     try {
     // Deserialize the ScriptModule from a file using torch::jit::load().
         Pnet = torch::jit::load(Pnet_file);
-        Pnet = torch::jit::load(Enet_file);
+        Enet = torch::jit::load(Enet_file);
     }
     catch (const c10::Error& e) {
         std::cerr << "error loading the model\n";
@@ -277,16 +277,17 @@ void ompl::geometric::MPPN::load_Enet_Pnet(std::string Enet_file, std::string Pn
 void ompl::geometric::MPPN::load_obs_cloud(std::string cloud_file)
 {
     cnpy::NpyArray arr = cnpy::npy_load(cloud_file);
-    *obs_clouds = arr.data<float>();
-    std::cout<<"Size0"<<arr.shape[0]<<endl;
-    std::cout<<"Size1"<<arr.shape[1]<<endl;
+    obs_clouds = arr.data<float>();
+    std::cout<<"Size0"<<arr.shape[0]<<std::endl;
+    std::cout<<"Size1"<<arr.shape[1]<<std::endl;
     std::cout<<"Load obs clouds Suc!"<<std::endl;
 }
 
-at::Tensor get_env_encoding(int index)
+at::Tensor ompl::geometric::MPPN::get_env_encoding(int index)
 {
     float *cloud_start = obs_clouds + index*2800;
-    at::Tensor obs_cloud = torch::from_blob(*cloud_start, {1,2800});
+    at::Tensor obs_cloud = torch::from_blob(cloud_start, {1,2800});
+    // at::Tensor obs_cloud1 = torch::ones({1, 2800});
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();

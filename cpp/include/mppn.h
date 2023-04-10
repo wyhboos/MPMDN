@@ -19,7 +19,7 @@ namespace ompl
             int invalid_o;
             int invalid_nnrp;
             int env_index=0;
-            std::string env_file = "/home/wyh/Code/MPMDN/Data/S2D/obs_cloud_100.npy";
+            std::string env_file = "/home/wyh/Code/MPMDN/Data/S2D/obs_cloud_110.npy";
             std::string state_type = "Rigidbody_2D";
             std::string Enet_file = "/home/wyh/Code/MPMDN/Data/Model_structure/Encoder_S2D.pt";
             std::string Pnet_file = "/home/wyh/Code/MPMDN/Data/Model_structure/MPN_Pnet_S2D_RB.pt";
@@ -27,7 +27,6 @@ namespace ompl
             torch::jit::script::Module Enet;
             at::Tensor Env_encoding;
             float *obs_clouds;
-            std::
             MPPN(const base::SpaceInformationPtr &si) : base::Planner(si, "MPPN")
             {
                 // the specifications of this planner (ompl::base::PlannerSpecs)

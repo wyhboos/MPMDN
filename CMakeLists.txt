@@ -14,7 +14,7 @@ find_package(Boost COMPONENTS python REQUIRED)
 include_directories(${OMPL_INCLUDE_DIRS} ${TORCH_INCLUDE_DIRS} /home/wyh/Code/MPMDN/cpp/include)
 link_directories(/home/wyh/Code/MPMDN/build)
 add_library(mylib SHARED cpp/src/mppn.cpp)
-target_link_libraries(mylib PUBLIC ${OMPL_LIBRARIES} ${TORCH_LIBRARIES})
+target_link_libraries(mylib PUBLIC ${OMPL_LIBRARIES} ${TORCH_LIBRARIES} cnpy)
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 add_executable(main cpp/src/main.cpp)
@@ -25,7 +25,7 @@ target_link_libraries(main mylib)
 set_property(TARGET main PROPERTY CXX_STANDARD 14)
 
 
-# add_library(MPPN MODULE cpp/src/bind.cpp)
-# # # Set up the libraries and header search paths for this target
-# target_link_libraries(MPPN ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} mylib)
-# target_include_directories(MPPN PRIVATE ${PYTHON_INCLUDE_DIRS})
+add_library(MPPN MODULE cpp/src/bind.cpp)
+# # Set up the libraries and header search paths for this target
+target_link_libraries(MPPN ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} mylib)
+target_include_directories(MPPN PRIVATE ${PYTHON_INCLUDE_DIRS})

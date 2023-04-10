@@ -287,7 +287,9 @@ def vis_for_2D_planning_rigidbody(rec_env, start, goal, path, size, pixel_per_me
     fig = plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter)
     # plot the path
     fig = plot_rotat_rec_path_2D(fig, path, pixel_per_meter)
+    print(save_fig_dir)
     cv2.imwrite(save_fig_dir + '.png', fig)
+
     return fig
 
 

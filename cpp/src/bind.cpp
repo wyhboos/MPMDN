@@ -11,6 +11,7 @@ BOOST_PYTHON_MODULE(MPPN) {
     class_<ompl::geometric::MPPN, bases<ompl::base::Planner>>("MPPN", init<const ompl::base::SpaceInformationPtr>())
         .def("test", &ompl::geometric::MPPN::test)
         .def_readwrite("state_type", &ompl::geometric::MPPN::state_type)
-        .def_readwrite("time_o", &ompl::geometric::MPPN::time_o);
+        .def_readwrite("time_o", &ompl::geometric::MPPN::time_o)
+        .def_readwrite("env_index", &ompl::geometric::MPPN::env_index);
 
 }
