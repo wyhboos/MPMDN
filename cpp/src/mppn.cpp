@@ -44,8 +44,8 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     // std::cout<<typeid(*a).name()<<std::endl;
     // std::cout<<typeid(*b).name()<<std::endl;
     // auto y = (*b).as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
-    auto x = a->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
-    std::cout<<"x"<<x<<std::endl;
+    // auto x = a->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
+    // std::cout<<"x"<<x<<std::endl;
     // std::cout<<"y"<<x<<std::endl;
 
     start = start_state;
@@ -92,11 +92,11 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     // std::cout<<"lasdasdasdasdasd"<<l<<std::endl;
     for (int i = 0; i < l; i++)
     {
-        auto state = path_b[i];
-        // std::cout<<"ADD PATH"<<i<<std::endl;
-        float x = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
-        float y = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
-        float yaw = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
+        // auto state = path_b[i];
+        // // std::cout<<"ADD PATH"<<i<<std::endl;
+        // float x = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
+        // float y = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
+        // float yaw = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
         path->append(path_b[i]->get());
         // std::cout<<"x"<<x<<std::endl;
         // std::cout<<"y"<<y<<std::endl;
@@ -181,7 +181,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     }
 }
 
-std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPPN::replan_with_nn(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori)
+std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPPN::replan(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori, bool orcle)
 {
     int l = path_ori.size();
     int l_r;
@@ -197,7 +197,15 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
         }
         else
         {
-            auto rep_path = bidirectional_plan(path_ori[i], path_ori[i+1]);
+            if (orcle)
+            {
+                auto rep_path = orcle_plan(path_ori[i], path_ori[i+1]);
+            }
+            else
+            {
+                auto rep_path = bidirectional_plan(path_ori[i], path_ori[i+1]);
+            }
+
             l_r = rep_path.size();
             for (int i = 0; i < l_r; i++)
             {
@@ -209,6 +217,22 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     return path_new;
     
 }
+
+std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPPN::orcle_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
+{
+    ss.setStartAndGoalStates(*start, *goal);
+    ob::PlannerStatus solved = ss.solve(1.0);
+    if (solved)
+    {   
+        std::cout << "Orcle solution found!" << std::endl;
+        std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_;
+        std::vector<ompl::base::CompoundStateSpace*> states = ss.getSolutionPath().getStates();
+        return states;
+    }
+    else
+        std::cout << "No solution found" << std::endl;
+}
+
 
 at::Tensor ompl::geometric::MPPN::get_state_tensor_from_state(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state)
 {
@@ -273,7 +297,6 @@ void ompl::geometric::MPPN::load_Enet_Pnet(std::string Enet_file, std::string Pn
     std::cout<<"Load Model Suc!"<<std::endl;
 }
 
-
 void ompl::geometric::MPPN::load_obs_cloud(std::string cloud_file)
 {
     cnpy::NpyArray arr = cnpy::npy_load(cloud_file);
@@ -292,4 +315,49 @@ at::Tensor ompl::geometric::MPPN::get_env_encoding(int index)
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();
     return output;
+}
+
+ompl::geometric::SimpleSetup* ompl::geometric::MPPN::setup_orcle_planner()
+{
+    //We need to reconstruct space information£¡
+    if (state_type = "Rigidbody_2D")
+    {   
+        base::StateSpacePtr space_ = si_->getStateSpace();
+        // ompl::base::RealVectorBounds bounds = space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        ompl::base::RealVectorStateSpace* vector_space =new ompl::base::RealVectorStateSpace(2);
+        ompl::base::SO2StateSpace* angle_space1 = new ompl::base::SO2StateSpace;
+        ompl::base::RealVectorBounds bounds = space_->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        vector_space.setBounds(bounds);
+
+        auto cs(std::make_shared<ompl::base::CompoundStateSpace>());
+        cs->addSubspace(vector_space, 1.0);
+        cs->addSubspace(angle_space1, 0.5);
+
+        auto ss(std::make_shared<ompl::geometric::SimpleSetup>(space));
+        ss.setStateValidityChecker(si_->getStateValidityChecker());
+        ss.setPlanner(std::make_shared<ompl::geometric::RRTstar>(ss.getSpaceInformation()));
+        return ss;
+    }
+    if (state_type = "Two_Link_2D")
+    {   
+        base::StateSpacePtr space_ = si_->getStateSpace();
+        // ompl::base::RealVectorBounds bounds = space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        ompl::base::RealVectorStateSpace* vector_space =new ompl::base::RealVectorStateSpace(2);
+        ompl::base::SO2StateSpace* angle_space1 = new ompl::base::SO2StateSpace;
+        ompl::base::SO2StateSpace* angle_space2 = new ompl::base::SO2StateSpace;
+        ompl::base::RealVectorBounds bounds = space_->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        vector_space.setBounds(bounds);
+
+        auto cs(std::make_shared<ompl::base::CompoundStateSpace>());
+        cs->addSubspace(vector_space, 1.0);
+        cs->addSubspace(angle_space1, 0.5);
+        cs->addSubspace(angle_space1, 0.5);
+
+        auto ss(std::make_shared<ompl::geometric::SimpleSetup>(space));
+        ss.setStateValidityChecker(si_->getStateValidityChecker());
+        ss.setPlanner(std::make_shared<ompl::geometric::RRTstar>(ss.getSpaceInformation()));
+        return ss;
+    }
+
+
 }
