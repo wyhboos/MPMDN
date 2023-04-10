@@ -12,7 +12,7 @@
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <string>
 #include <iostream>
-
+#include "cnpy.h"
 
 // #include <torch/script.h> // One-stop header.
 #include <mppn.h>
@@ -86,7 +86,7 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     std::cout<<"This is the MPPN, Finished!"<<std::endl;
 
     // return the status
-
+    Env_encoding = get_env_encoding(env_index);
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_b = bidirectional_plan(&start, &goal);
     int l = path_b.size();
     std::cout<<"lasdasdasdasdasd"<<l<<std::endl;
@@ -126,7 +126,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start_now = path1.back();
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal_now = path2.back();
             std::vector<torch::jit::IValue> inputs;
-            at::Tensor env_encoding = torch::ones({1,28});
+            at::Tensor env_encoding = Env_encoding;
             at::Tensor start_t = get_state_tensor_from_state(start_now);
             at::Tensor goal_t = get_state_tensor_from_state(goal_now);
             inputs.push_back(env_encoding);
@@ -265,9 +265,30 @@ void ompl::geometric::MPPN::load_Enet_Pnet(std::string Enet_file, std::string Pn
     try {
     // Deserialize the ScriptModule from a file using torch::jit::load().
         Pnet = torch::jit::load(Pnet_file);
+        Pnet = torch::jit::load(Enet_file);
     }
     catch (const c10::Error& e) {
         std::cerr << "error loading the model\n";
     }
-    std::cout<<"load suc"<<std::endl;
+    std::cout<<"Load Model Suc!"<<std::endl;
+}
+
+
+void ompl::geometric::MPPN::load_obs_cloud(std::string cloud_file)
+{
+    cnpy::NpyArray arr = cnpy::npy_load(cloud_file);
+    *obs_clouds = arr.data<float>();
+    std::cout<<"Size0"<<arr.shape[0]<<endl;
+    std::cout<<"Size1"<<arr.shape[1]<<endl;
+    std::cout<<"Load obs clouds Suc!"<<std::endl;
+}
+
+at::Tensor get_env_encoding(int index)
+{
+    float *cloud_start = obs_clouds + index*2800;
+    at::Tensor obs_cloud = torch::from_blob(*cloud_start, {1,2800});
+    std::vector<torch::jit::IValue> inputs;
+    inputs.push_back(obs_cloud);
+    at::Tensor output = Enet.forward(inputs).toTensor();
+    return output;
 }
