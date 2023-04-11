@@ -67,6 +67,7 @@ namespace ompl
             void load_obs_cloud(std::string cloud_file);
             at::Tensor get_env_encoding(int index);
             ompl::geometric::SimpleSetup* setup_orcle_planner();
+            bool is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path);
             void test()
             {
                 std::cout << "This is a test which test the py-binding for new function!" << std::endl;
