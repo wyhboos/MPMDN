@@ -21,9 +21,15 @@ namespace ompl
             double time_o;
             double time_nnrp;
             double time_classical;
+            int nn_rep_cnt_lim = 10;
+            int iter_cnt_lim = 100;
+            int forward_ori;
+            int forward_nnrep;
             int invalid_o;
-            int invalid_nnrp;
+            int invalid_nnrep;
             int env_index = 0;
+            bool failed = false;
+            bool rep_flg = false; //help count the rep forward
             std::string env_file = "/home/wyh/Code/MPMDN/Data/S2D/obs_cloud_110.npy";
             std::string state_type = "Rigidbody_2D";
             std::string Enet_file = "/home/wyh/Code/MPMDN/Data/Model_structure/Encoder_S2D.pt";
@@ -62,6 +68,7 @@ namespace ompl
             std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> bidirectional_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace> *start, ompl::base::ScopedState<ompl::base::CompoundStateSpace> *goal);
             std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> orcle_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace> *start, ompl::base::ScopedState<ompl::base::CompoundStateSpace> *goal);
             std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> replan(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> path_ori, bool orcle);
+            std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> simplify_path(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> path_ori);
             at::Tensor get_state_tensor_from_state(ompl::base::ScopedState<ompl::base::CompoundStateSpace> *state);
             ompl::base::ScopedState<ompl::base::CompoundStateSpace> *get_state_ompl_from_tensor(at::Tensor state_t);
             void load_Enet_Pnet(std::string Enet_file, std::string Pnet_file);
