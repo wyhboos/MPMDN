@@ -139,5 +139,6 @@ if __name__ == '__main__':
     rec_envs = np.load(env_file, allow_pickle=True)
     rec_env = rec_envs[0, :, :]
     pl.env_rob.load_rec_obs_2D(rec_env)
-    s,p = pl.plan(vis=vis)
-    print(s, p)
+    for i in range(10):
+        s,p = pl.plan(vis=vis+str(i))
+        print(s, p)

@@ -110,12 +110,12 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     else
     {
         std::cout<<"not feasible!"<<std::endl;
-        int nn_rep_cnt_lim = 100;
+        int nn_rep_cnt_lim = 2;
         int nn_rep_cnt_cnt = 0;
-        bool orcle = false;
+        bool orcle = true;
         while (!is_feasible(path_b))
         {
-            path_b = replan(path_b, orcle)
+            path_b = replan(path_b, orcle);
             nn_rep_cnt_cnt += 1;
             if(nn_rep_cnt_cnt>=nn_rep_cnt_lim)
             {
@@ -148,7 +148,7 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
 std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPPN::bidirectional_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
 {
     int iter_cnt = 0;
-    int iter_cnt_lim = 100;
+    int iter_cnt_lim = 10;
     int turn = 0;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path1;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path2;
@@ -180,7 +180,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start_now = path2.back();
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal_now = path1.back();
             std::vector<torch::jit::IValue> inputs;
-            at::Tensor env_encoding = torch::ones({1,28});
+            at::Tensor env_encoding = Env_encoding;
             at::Tensor start_t = get_state_tensor_from_state(start_now);
             at::Tensor goal_t = get_state_tensor_from_state(goal_now);
             inputs.push_back(env_encoding);
@@ -223,13 +223,16 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
 {
     int l = path_ori.size();
     int l_r;
+    std::cout<<"replannnnn"<<std::endl;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_new;
     for (int i = 0; i < (l-1); i++)
-    {
+    {   
+        std::cout<<"replannnnn1"<<std::endl;
         if(!si_->isValid(path_ori[i]->get())) continue;
 
         if(si_->checkMotion(path_ori[i]->get(), path_ori[i+1]->get()))
         {
+            std::cout<<"good!"<<std::endl;
             path_new.push_back(path_ori[i]);
             path_new.push_back(path_ori[i+1]);
         }
@@ -238,10 +241,16 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> rep_path;
             if (orcle)
             {
+                std::cout<<"replannnnn2"<<std::endl;
+                path_ori[i];
+                std::cout<<"replannnnn2.5"<<std::endl;
+                path_ori[i+1];
+                std::cout<<"replannnnn2.555"<<std::endl;
                 rep_path = orcle_plan(path_ori[i], path_ori[i+1]);
             }
             else
             {
+                std::cout<<"replannnnnbbbbbbiiiii"<<std::endl;
                 rep_path = bidirectional_plan(path_ori[i], path_ori[i+1]);
             }
 
@@ -261,9 +270,12 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
 {
     base::StateSpacePtr space = si_->getStateSpace();
     replan_ss->setStartAndGoalStates(*start, *goal);
+    std::cout<<"replannnnn3"<<std::endl;
     ompl::base::PlannerStatus solved = replan_ss->solve(1.0);
+    std::cout<<"replannnnn4"<<std::endl;
     if (solved)
     {   
+        std::cout<<"replannnnn5"<<std::endl;
         std::cout << "Orcle solution found!" << std::endl;
         std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_;
         // std::vector<ompl::base::CompoundStateSpace*> states = replan_ss->getSolutionPath().getStates();
@@ -416,10 +428,11 @@ ompl::geometric::SimpleSetup* ompl::geometric::MPPN::setup_orcle_planner()
 
 
 }
-bool ompl::geometric::MPPN::is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path)
+
+bool ompl::geometric::MPPN::is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori)
 {
     int l = path_ori.size();
-    int l_r;
+    std::cout<<"bool"<<std::endl;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_new;
     for (int i = 0; i < (l-1); i++)
     {

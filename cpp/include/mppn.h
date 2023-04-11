@@ -23,7 +23,7 @@ namespace ompl
             double time_classical;
             int invalid_o;
             int invalid_nnrp;
-            int env_index=0;
+            int env_index = 0;
             std::string env_file = "/home/wyh/Code/MPMDN/Data/S2D/obs_cloud_110.npy";
             std::string state_type = "Rigidbody_2D";
             std::string Enet_file = "/home/wyh/Code/MPMDN/Data/Model_structure/Encoder_S2D.pt";
@@ -32,7 +32,7 @@ namespace ompl
             torch::jit::script::Module Enet;
             at::Tensor Env_encoding;
             float *obs_clouds;
-            ompl::geometric::SimpleSetup* replan_ss;
+            ompl::geometric::SimpleSetup *replan_ss;
             MPPN(const base::SpaceInformationPtr &si) : base::Planner(si, "MPPN")
             {
                 // the specifications of this planner (ompl::base::PlannerSpecs)
@@ -40,6 +40,7 @@ namespace ompl
                 // specs_.recognizedGoal = ...;
                 load_Enet_Pnet(Enet_file, Pnet_file);
                 load_obs_cloud(env_file);
+                replan_ss = setup_orcle_planner();
             }
 
             MPPN(std::string si_info) : base::Planner(si_info, "MPPN")
@@ -58,16 +59,16 @@ namespace ompl
 
             virtual base::PlannerStatus solve(const base::PlannerTerminationCondition &ptc);
 
-            std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> bidirectional_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal);
-            std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> orcle_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal);
-            std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> replan(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori, bool orcle);
-            at::Tensor get_state_tensor_from_state(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state);
+            std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> bidirectional_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace> *start, ompl::base::ScopedState<ompl::base::CompoundStateSpace> *goal);
+            std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> orcle_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace> *start, ompl::base::ScopedState<ompl::base::CompoundStateSpace> *goal);
+            std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> replan(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> path_ori, bool orcle);
+            at::Tensor get_state_tensor_from_state(ompl::base::ScopedState<ompl::base::CompoundStateSpace> *state);
             ompl::base::ScopedState<ompl::base::CompoundStateSpace> *get_state_ompl_from_tensor(at::Tensor state_t);
             void load_Enet_Pnet(std::string Enet_file, std::string Pnet_file);
             void load_obs_cloud(std::string cloud_file);
             at::Tensor get_env_encoding(int index);
-            ompl::geometric::SimpleSetup* setup_orcle_planner();
-            bool is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path);
+            ompl::geometric::SimpleSetup *setup_orcle_planner();
+            bool is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> path);
             void test()
             {
                 std::cout << "This is a test which test the py-binding for new function!" << std::endl;
