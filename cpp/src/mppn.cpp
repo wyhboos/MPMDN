@@ -85,7 +85,7 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     // std::cout<<"before"<<this->time_o<<std::endl;
     // this->time_o = 50;
     // std::cout<<"after"<<this->time_o<<std::endl;
-    std::cout<<"This is the MPPN, Start to plan!"<<std::endl;
+    std::cout<<"----------This is the MPPN, Start to plan!----------"<<std::endl;
 
     //init statistics
     time_o = 0;
@@ -99,10 +99,10 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
 
     auto start_o = std::chrono::high_resolution_clock::now();
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_b = bidirectional_plan(&start, &goal);
-    if (failed) return base::PlannerStatus::TIME_OUT;
+    if (failed) return base::PlannerStatus::TIMEOUT;
     auto end_o = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_o = end_o - start_o;
-    time_o = elapsed_o.count()
+    time_o = elapsed_o.count();
 
     path_b = simplify_path(path_b);
     if (is_feasible(path_b))
@@ -128,12 +128,12 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
         std::cout<<"not feasible!"<<std::endl;
         // int nn_rep_cnt_lim = 2;
         int nn_rep_cnt_cnt = 0;
-        bool orcle = true;
+        bool orcle = false;
         while (!is_feasible(path_b))
         {
             auto start_rp = std::chrono::high_resolution_clock::now();
             path_b = replan(path_b, orcle);
-            if (failed) return base::PlannerStatus::TIME_OUT;
+            if (failed) return base::PlannerStatus::TIMEOUT;
             auto end_rp = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed_rp = end_rp - start_rp;
             if (orcle) 
@@ -170,6 +170,7 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     }
 
     pdef->addSolutionPath(path);
+    std::cout<<"----------End plan!----------"<<std::endl;
     return base::PlannerStatus::EXACT_SOLUTION;
 }
 
@@ -202,18 +203,18 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             inputs.push_back(goal_t);
             at::Tensor output = Pnet.forward(inputs).toTensor();
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = get_state_ompl_from_tensor(output);
-            isvalid = si_->isValid(next_state->get())
+            isvalid = si_->isValid(next_state->get());
             path1.push_back(next_state);
             turn = 1;
             if(rep_flg)
             {
                 forward_nnrep += 1;
-                if (!isvalid) invalid_nnrep += 1
+                if (!isvalid) invalid_nnrep += 1;
             }
             else
             {
                 forward_ori += 1;
-                if (!isvalid) invalid_o += 1
+                if (!isvalid) invalid_o += 1;
             }
         }
         else
@@ -229,18 +230,18 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             inputs.push_back(goal_t);
             at::Tensor output = Pnet.forward(inputs).toTensor();
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = get_state_ompl_from_tensor(output);
-            isvalid = si_->isValid(next_state->get())
+            isvalid = si_->isValid(next_state->get());
             path2.push_back(next_state);
             turn = 0;
             if(rep_flg)
             {
                 forward_nnrep += 1;
-                if (!isvalid) invalid_nnrep += 1
+                if (!isvalid) invalid_nnrep += 1;
             }
             else
             {
                 forward_ori += 1;
-                if (!isvalid) invalid_o += 1
+                if (!isvalid) invalid_o += 1;
             }
         }
 
@@ -266,7 +267,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
                 path1.push_back(path2[l-1-i]);
             } 
             std::cout<<"Not find solution in bidirectional planning!"<<std::endl;
-            find_solution = false;
+            failed = false;
             return path1;
         }
     }
@@ -314,7 +315,9 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
 {
     base::StateSpacePtr space = si_->getStateSpace();
     replan_ss->setStartAndGoalStates(*start, *goal);
-    ompl::base::PlannerStatus solved = replan_ss->solve(1.0);
+    // ompl::base::PlannerStatus solved = replan_ss->solve(ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()));
+    ompl::base::PlannerStatus solved = replan_ss->solve(ompl::base::plannerOrTerminationCondition(ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()), ompl::base::timedPlannerTerminationCondition(5)));
+    // ompl::base::plannerOrTerminationCondition(ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()), ompl::base::timedPlannerTerminationCondition(10))
     if (solved)
     {   
         std::cout << "Orcle solution found!" << std::endl;
@@ -334,19 +337,21 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
         return path_;
     }
     else
+    {
         failed = true;
         std::cout << "No solution found" << std::endl;
+    }
 }
 
 std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> ompl::geometric::MPPN::simplify_path(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> path_ori)
 {
-    int ll = path_ori.size();
-    std::cout<<"before simplify:"<<ll<<std::endl;
+    int l = path_ori.size();
+    std::cout<<"before simplify:"<<l<<std::endl;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> simpify_path;
     simpify_path.push_back(path_ori[0]);
-    int left = 0
-    int right = l - 1
-    int p_index = 0
+    int left = 0;
+    int right = l - 1;
+    int p_index = 0;
     while (true)
     {
         //termination condition
@@ -372,7 +377,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> ompl::geo
             right = l - 1;
         }
     }
-    ll = simpify_path.size();
+    int ll = simpify_path.size();
     std::cout<<"after simplify:"<<ll<<std::endl;
     return simpify_path;
 }
@@ -507,12 +512,15 @@ ompl::geometric::SimpleSetup* ompl::geometric::MPPN::setup_orcle_planner()
     }
 
 
+
+
+
 }
 
 bool ompl::geometric::MPPN::is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori)
 {
     int l = path_ori.size();
-    std::cout<<"bool"<<std::endl;
+    // std::cout<<"bool"<<std::endl;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_new;
     for (int i = 0; i < (l-1); i++)
     {

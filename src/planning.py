@@ -39,7 +39,7 @@ class Plan:
             goal_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(goal)
             path_rob_vis = self.env_rob.get_config_path_with_robot_info_2D(path)
             self.vis(rec_env=self.env_rob.obstacles_vis, start=start_vis, goal=goal_vis,
-                                         path=path_rob_vis, size=30, pixel_per_meter=20, save_fig_dir=vis)
+                                         path=path_rob_vis, size=50, pixel_per_meter=20, save_fig_dir=vis)
             print("Fig Saved!")
         return solved, path
 
@@ -52,7 +52,7 @@ class Plan:
         if self.type == "Rigidbody_2D":
             print(6666)
             vis_for_2D_planning_rigidbody(rec_env=rec_env, start=start, goal=goal,
-                                          path=path, size=30, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
+                                          path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
 
 
 def generate_path_main(args):
@@ -137,8 +137,9 @@ if __name__ == '__main__':
     pl = Plan(type="Rigidbody_2D")
     env_file = "./Data/S2D/S2D_env_100_rec.npy"
     rec_envs = np.load(env_file, allow_pickle=True)
-    rec_env = rec_envs[0, :, :]
+    rec_env = rec_envs[1, :, :]
+    pl.pl_ompl.planner.env_index = 1
     pl.env_rob.load_rec_obs_2D(rec_env)
-    for i in range(10):
+    for i in range(50):
         s,p = pl.plan(vis=vis+str(i))
         print(s, p)

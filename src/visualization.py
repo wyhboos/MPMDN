@@ -15,8 +15,8 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 def org_to_img(x, y, pic_shape, ppm):
-    x = x+15
-    y = y+15
+    x = x+20
+    y = y+20
     aixs1 = pic_shape[0] - 1 - y * ppm
     aixs2 = x * ppm
     return int(aixs1 + 0.5), int(aixs2 + 0.5)
