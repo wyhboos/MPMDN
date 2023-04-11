@@ -5,7 +5,12 @@
 #include <ompl/util/RandomNumbers.h>
 #include <ompl/tools/config/SelfConfig.h>
 #include <torch/script.h> // One-stop header.
-
+#include <ompl/base/SpaceInformation.h>
+#include <ompl/base/spaces/SE3StateSpace.h>
+#include <ompl/base/spaces/SE2StateSpace.h>
+#include <ompl/geometric/planners/rrt/RRTConnect.h>
+#include <ompl/geometric/SimpleSetup.h>
+// #include <ompl/geometric/planners/mpn/mpn.h>
 namespace ompl
 {
     namespace geometric
@@ -54,14 +59,14 @@ namespace ompl
             virtual base::PlannerStatus solve(const base::PlannerTerminationCondition &ptc);
 
             std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> bidirectional_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal);
-            std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> orcle_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
+            std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> orcle_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal);
             std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> replan(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori, bool orcle);
             at::Tensor get_state_tensor_from_state(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state);
             ompl::base::ScopedState<ompl::base::CompoundStateSpace> *get_state_ompl_from_tensor(at::Tensor state_t);
             void load_Enet_Pnet(std::string Enet_file, std::string Pnet_file);
             void load_obs_cloud(std::string cloud_file);
             at::Tensor get_env_encoding(int index);
-            void set_up_orcle_planner();
+            ompl::geometric::SimpleSetup* setup_orcle_planner();
             void test()
             {
                 std::cout << "This is a test which test the py-binding for new function!" << std::endl;
