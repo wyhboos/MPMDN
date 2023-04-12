@@ -38,10 +38,17 @@
 #include <ompl/base/spaces/SE3StateSpace.h>
 #include <ompl/base/spaces/SE2StateSpace.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
+#include <ompl/geometric/planners/rrt/RRT.h>
+
+#include <ompl/geometric/planners/rrt/RRTstar.h>
+
 #include <ompl/geometric/SimpleSetup.h>
+#include <ompl/base/PlannerTerminationCondition.h>
 // #include <ompl/geometric/planners/mpn/mpn.h>
 #include <torch/script.h> // One-stop header.
 #include <ompl/config.h>
+#include <ompl/base/Planner.h>
+
 #include <iostream>
 #include <memory>
 #include <chrono>
@@ -63,8 +70,8 @@ bool isStateValid(const ob::State *state)
     // check validity of state defined by pos & rot
 
     // return a value that is always true but uses the two variables we define, so we avoid compiler warnings
-    std::cout<<"This is a collision checker!"<<std::endl;
-    return false;
+    // std::cout<<"This is a collision checker!"<<std::endl;
+    return true;
     return (const void *)rot != (const void *)pos;
 }
 
@@ -106,8 +113,8 @@ void plan()
     std::string si_info;
     si_info = "Rigidbody_2D";
     // create a planner for the defined space
-    // auto planner(std::make_shared<og::RRTConnect>(si));
-    auto planner(std::make_shared<og::MPPN>(si));
+    auto planner(std::make_shared<og::RRTConnect>(si));
+    // auto planner(std::make_shared<og::MPPN>(si));
     // auto planner(std::make_shared<og::MPPN>(si_info));
 
     // set the problem we are trying to solve for the planner
@@ -157,7 +164,7 @@ void planWithSimpleSetup()
     // set state validity checking for this space
     ss.setStateValidityChecker([](const ob::State *state)
                                { return isStateValid(state); });
-
+    ss.setPlanner(std::make_shared<ompl::geometric::RRT>(ss.getSpaceInformation()));
     // create a random start state
     ob::ScopedState<> start(space);
     start.random();
@@ -174,14 +181,16 @@ void planWithSimpleSetup()
     ss.print();
 
     // attempt to solve the problem within one second of planning time
-    ob::PlannerStatus solved = ss.solve(1.0);
+    ob::PlannerStatus solved = ss.solve(ompl::base::plannerAndTerminationCondition(
+            ompl::base::exactSolnPlannerTerminationCondition(ss.getProblemDefinition()), 
+            ompl::base::timedPlannerTerminationCondition(10)));
 
     if (solved)
     {
         std::cout << "Found solution:" << std::endl;
         // print the path to screen
-        ss.simplifySolution();
-        ss.getSolutionPath().print(std::cout);
+        // ss.simplifySolution();
+        // ss.getSolutionPath().print(std::cout);
     }
     else
         std::cout << "No solution found" << std::endl;
@@ -191,10 +200,10 @@ int main(int /*argc*/, char ** /*argv*/)
 {
     std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
 
-     plan();
+    //  plan();
 
-     std::cout << std::endl << std::endl;
-
-    // planWithSimpleSetup();
+    //  std::cout << std::endl << std::endl;
+// 
+    planWithSimpleSetup();
 
 }

@@ -32,6 +32,8 @@ class Plan:
     def plan(self, start=None, goal=None, vis=None, time_lim=0.5, simple=False):
         if start is None:
             start, goal = self.pl_ompl.generate_valid_start_goal()
+        print("start", start)
+        print("goal", goal)
         solved, path = self.pl_ompl.solve_planning_2D(
             start=start, goal=goal, time_lim=time_lim, simple=simple)
         if vis is not None:
@@ -140,6 +142,7 @@ if __name__ == '__main__':
     rec_env = rec_envs[1, :, :]
     pl.pl_ompl.planner.env_index = 1
     pl.env_rob.load_rec_obs_2D(rec_env)
-    for i in range(50):
+    for i in range(100):
+        # pl.reboot()
         s,p = pl.plan(vis=vis+str(i))
         print(s, p)

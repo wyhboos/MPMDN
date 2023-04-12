@@ -11,6 +11,7 @@
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/base/PlannerStatus.h>
+#include <ompl/base/PlannerTerminationCondition.h>
 
 // #include <ompl/geometric/planners/mpn/mpn.h>
 namespace ompl
