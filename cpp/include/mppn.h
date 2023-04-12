@@ -79,6 +79,7 @@ namespace ompl
             at::Tensor get_env_encoding(int index);
             ompl::geometric::SimpleSetup *setup_orcle_planner();
             bool is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> path);
+            bool is_in_bounds(ompl::base::ScopedState<ompl::base::CompoundStateSpace>, ompl::base::RealVectorBounds);
             void test()
             {
                 std::cout << "This is a test which test the py-binding for new function!" << std::endl;

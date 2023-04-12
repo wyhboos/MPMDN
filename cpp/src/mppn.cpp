@@ -112,7 +112,7 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     path_b = simplify_path(path_b);
     if (is_feasible(path_b))
     {
-        std::cout<<"feasible!"<<std::endl;
+        std::cout<<"Origin plan is feasible!"<<std::endl;
         int l1 = path_b.size();
         for (int i = 0; i < l1; i++)
         {
@@ -130,13 +130,15 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     else
     {
         rep_flg = true;
-        std::cout<<"not feasible!"<<std::endl;
+        std::cout<<"Origin plan is not feasible! Turn to replan"<<std::endl;
         // int nn_rep_cnt_lim = 2;
         int nn_rep_cnt_cnt = 0;
         bool orcle = false;
         while (!is_feasible(path_b))
         {
             auto start_rp = std::chrono::high_resolution_clock::now();
+            std::cout<<"Replan cnt:"<<nn_rep_cnt_cnt<<std::endl;
+            std::cout<<"Use orcle:"<<orcle<<std::endl;
             path_b = replan(path_b, orcle);
             if (failed) return base::PlannerStatus::TIMEOUT;
             auto end_rp = std::chrono::high_resolution_clock::now();
@@ -155,8 +157,6 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
             {
                 orcle = true;
             }
-            std::cout<<"replanning:"<<nn_rep_cnt_cnt<<std::endl;
-            std::cout<<"orcle:"<<orcle<<std::endl;
         }
         int l2 = path_b.size();
         for (int i = 0; i < l2; i++)
@@ -340,13 +340,13 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
 std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPPN::orcle_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
 {
     base::StateSpacePtr space = si_->getStateSpace();
-    replan_ss->clear();
+    replan_ss->clear(); //clear the planner!
     replan_ss->setStartAndGoalStates(*start, *goal);
     // ompl::base::PlannerStatus solved = replan_ss->solve(ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()));
     ompl::base::PlannerStatus solved = replan_ss->solve(
         ompl::base::plannerAndTerminationCondition(
             ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()), 
-            ompl::base::timedPlannerTerminationCondition(20)));
+            ompl::base::timedPlannerTerminationCondition(10)));
     // ompl::base::plannerOrTerminationCondition(ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()), ompl::base::timedPlannerTerminationCondition(10))
     if (solved)
     {   
@@ -382,14 +382,11 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> ompl::geo
     ompl::base::RealVectorBounds bounds = space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
     for (int i = 0; i < l; i++)
     {
-        double x = path_ori[i]->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
-        double y = path_ori[i]->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
-        if (si_->isValid(path_ori[i]->get())) 
+        // double x = path_ori[i]->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
+        // double y = path_ori[i]->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
+        if (si_->isValid(path_ori[i]->get()) && is_in_bounds(path_ori[i], bounds)) 
         {
-            if (bounds.low[0]<x && bounds.high[0]>x && bounds.low[1]<y && bounds.high[1]>y)
-            {
-                path_valid.push_back(path_ori[i]);
-            }
+            path_valid.push_back(path_ori[i]);
         }
     }
     std::cout<<"valid simplify:"<<path_valid.size()<<std::endl;
@@ -531,7 +528,7 @@ ompl::geometric::SimpleSetup* ompl::geometric::MPPN::setup_orcle_planner()
 
         ompl::geometric::SimpleSetup* ss=new ompl::geometric::SimpleSetup(space_);
         ss->setStateValidityChecker(si_->getStateValidityChecker());
-        ss->setPlanner(std::make_shared<ompl::geometric::RRT>(ss->getSpaceInformation()));
+        ss->setPlanner(std::make_shared<ompl::geometric::RRT>(ss->getSpaceInformation()));//RRTstar seems to fail to terminate when finding initial solution, so chose RRT
         return ss;
     }
     if (state_type == "Two_Link_2D")
@@ -562,6 +559,25 @@ ompl::geometric::SimpleSetup* ompl::geometric::MPPN::setup_orcle_planner()
 
 
 
+}
+
+bool ompl::geometric::MPPN::is_in_bounds(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state, ompl::base::RealVectorBounds bounds)
+{
+    int dim;
+    dim = bounds.high.size();
+    double value;
+    double high;
+    double low;
+
+    for (int i = 0; i < dim; i++)
+    {
+        value = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[i];
+        high = bounds.high[i];
+        low = bounds.low[i];
+        if(value>high || value<low) return false;
+    }
+    return true;
+    
 }
 
 bool ompl::geometric::MPPN::is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori)

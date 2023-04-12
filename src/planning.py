@@ -129,6 +129,7 @@ def generate_path_main(args):
     print("suc_cnt", suc_cnt)
 
 
+
 if __name__ == '__main__':
     # parser = argparse.ArgumentParser()
     # parser.add_argument('--part', type=int, default=0)

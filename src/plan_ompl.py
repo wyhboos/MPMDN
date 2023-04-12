@@ -103,10 +103,14 @@ class Plan_OMPL:
         self.ss.setStateValidityChecker(
             ob.StateValidityCheckerFn(self.StateValidityChecker))
 
-    def set_planner(self):
-        # self.planner = og.RRTstar(self.si)
-        self.planner = MPPN(self.si)
-        # self.planner = MPPN("Rigidbody_2D")
+    def set_planner(self, planner="MPN"):
+        if planner == "MPN":
+            self.planner = MPPN(self.si)
+        elif planner == "RRTstar":
+            self.planner = og.RRTstar(self.si)
+        elif planner == "RRT":
+            self.planner = og.RRT(self.si)
+            
         self.ss.setPlanner(self.planner)
 
     def generate_valid_start_goal(self):
