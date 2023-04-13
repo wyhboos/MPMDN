@@ -11,7 +11,7 @@ find_package(ompl REQUIRED)
 find_package(PythonLibs REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 
-find_package(Boost REQUIRED COMPONENTS system random)
+# find_package(Boost REQUIRED COMPONENTS system random)
 
 
 include_directories(${OMPL_INCLUDE_DIRS} ${TORCH_INCLUDE_DIRS} /home/wyh/Code/MPMDN/cpp/include)
@@ -21,7 +21,7 @@ target_link_libraries(mylib PUBLIC ${OMPL_LIBRARIES} ${TORCH_LIBRARIES} cnpy)
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 add_executable(main cpp/src/main.cpp)
-add_executable(test cpp/src/guass_test.cpp)
+add_executable(test cpp/src/test_eigenmvn.cpp)
 target_link_libraries(test ${Boost_LIBRARIES})
 
 # add_executable(test cpp/src/test.cpp)
