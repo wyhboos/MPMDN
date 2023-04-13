@@ -1,36 +1,29 @@
-
 #include <iostream>
 #include <boost/random.hpp>
-#include <boost/math/distributions/normal.hpp>
+#include <Eigen/Dense>
 
-int main() {
-    // ´´½¨Ëæ»úÊıÉú³ÉÆ÷ºÍÈıÎ¬¸ßË¹·Ö²¼µÄĞ­·½²î¾ØÕó
-    boost::random::mt19937 rng; // Ëæ»úÊıÉú³ÉÆ÷
-    double mean_x = 0.0; // ¸ßË¹·Ö²¼µÄ¾ùÖµ x
-    double mean_y = 0.0; // ¸ßË¹·Ö²¼µÄ¾ùÖµ y
-    double mean_z = 0.0; // ¸ßË¹·Ö²¼µÄ¾ùÖµ z
-    double cov_xx = 1.0; // Ğ­·½²î¾ØÕóµÄÔªËØ (0, 0)
-    double cov_yy = 2.0; // Ğ­·½²î¾ØÕóµÄÔªËØ (1, 1)
-    double cov_zz = 3.0; // Ğ­·½²î¾ØÕóµÄÔªËØ (2, 2)
-    double cov_xy = 0.5; // Ğ­·½²î¾ØÕóµÄÔªËØ (0, 1) = (1, 0)
-    double cov_xz = 0.3; // Ğ­·½²î¾ØÕóµÄÔªËØ (0, 2) = (2, 0)
-    double cov_yz = 0.4; // Ğ­·½²î¾ØÕóµÄÔªËØ (1, 2) = (2, 1)
-    // boost::math::normal_distribution<> normalDist_x(mean_x, cov_xx); // ¸ßË¹·Ö²¼ x
-    // boost::math::normal_distribution<> normalDist_y(mean_y, cov_yy); // ¸ßË¹·Ö²¼ y
-    // boost::math::normal_distribution<> normalDist_z(mean_z, cov_zz); // ¸ßË¹·Ö²¼ z
-    boost::random::multivariate_normal_distribution<> multivariateNormalDist(
-        {mean_x, mean_y, mean_z}, // ¾ùÖµÏòÁ¿
-        {{cov_xx, cov_xy, cov_xz}, // Ğ­·½²î¾ØÕó
-         {cov_xy, cov_yy, cov_yz},
-         {cov_xz, cov_yz, cov_zz}});
+int main()
+{
+    // åˆ›å»ºéšæœºæ•°ç”Ÿæˆå™¨
+    boost::random::mt19937 rng;
+    rng.seed(std::time(0));
 
-    // Éú³ÉÈıÎ¬¸ßË¹·Ö²¼Ëæ»úÊı
-    int num_samples = 10;
-    for (int i = 0; i < num_samples; ++i) {
-        boost::random::variate_generator<boost::random::mt19937&, boost::random::multivariate_normal_distribution<>> generator(rng, multivariateNormalDist);
-        boost::math::tuple<double, double, double> sample = generator();
-        std::cout << "Sample " << i + 1 << ": x = " << sample.get<0>() << ", y = " << sample.get<1>() << ", z = " << sample.get<2>() << std::endl;
-    }
+    // å®šä¹‰é«˜æ–¯åˆ†å¸ƒçš„å‡å€¼å’Œåæ–¹å·®çŸ©é˜µ
+    Eigen::Vector3d mean(1.0, 2.0, 3.0);
+    Eigen::Matrix3d cov;
+    cov << 2.0, 0.5, 0.1,
+           0.5, 3.0, 0.2,
+           0.1, 0.2, 1.0;
+
+    // åˆ›å»ºå¤šç»´é«˜æ–¯åˆ†å¸ƒå¯¹è±¡
+    boost::random::mvn_distribution<double, 3> mvn(mean, cov);
+    Eigen::EigenMultivariateNormal<double,2> normX(mean,covar);
+
+    // ç”Ÿæˆå¤šç»´é«˜æ–¯åˆ†å¸ƒçš„éšæœºæŠ½æ ·
+    Eigen::Vector3d sample = mvn(rng);
+
+    // è¾“å‡ºéšæœºæŠ½æ ·ç»“æœ
+    std::cout << "Random Sample: " << sample.transpose() << std::endl;
 
     return 0;
 }
