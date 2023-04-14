@@ -18,7 +18,7 @@ namespace ompl
 {
     namespace geometric
     {
-        class MPPN : public base::Planner
+        class MPN : public base::Planner
         {
         public:
             double time_o;
@@ -42,7 +42,7 @@ namespace ompl
             at::Tensor Env_encoding;
             float *obs_clouds;
             ompl::geometric::SimpleSetup *replan_ss;
-            MPPN(const base::SpaceInformationPtr &si) : base::Planner(si, "MPPN")
+            MPN(const base::SpaceInformationPtr &si) : base::Planner(si, "MPN")
             {
                 // the specifications of this planner (ompl::base::PlannerSpecs)
                 // specs_.approximateSolutions = true;
@@ -52,16 +52,16 @@ namespace ompl
                 replan_ss = setup_orcle_planner();
             }
 
-            MPPN(std::string si_info) : base::Planner(si_info, "MPPN")
+            MPN(std::string si_info) : base::Planner(si_info, "MPN")
             {
                 // the specifications of this planner (ompl::base::PlannerSpecs)
                 specs_.approximateSolutions = true;
                 // specs_.recognizedGoal = ...;
             }
-            // MPPN(const MPPN&) = default;
-            // MPPN &operator=(const MPPN&) = default;
+            // MPN(const MPN&) = default;
+            // MPN &operator=(const MPN&) = default;
 
-            virtual ~MPPN(void)
+            virtual ~MPN(void)
             {
                 // free any allocated memory
             }

@@ -19,7 +19,7 @@ from env_robot import Env_Robot
 from visualization import vis_for_2D_planning_rigidbody, vis_for_2D_planning_two_link
 import sys
 sys.path.append("./build")
-from MPPN import *
+from MPN import *
 er = Env_Robot()
 
 
@@ -105,7 +105,7 @@ class Plan_OMPL:
 
     def set_planner(self, planner="MPN"):
         if planner == "MPN":
-            self.planner = MPPN(self.si)
+            self.planner = MPN(self.si)
         elif planner == "RRTstar":
             self.planner = og.RRTstar(self.si)
         elif planner == "RRT":

@@ -141,9 +141,10 @@ namespace Eigen
 
     /// Draw nn samples from the gaussian and return them
     /// as columns in a Dynamic by nn matrix
-    Matrix<Scalar, Dynamic, -1> samples(int nn)
+    Matrix<Scalar, Dynamic, -1> samples(int nn)/
     {
-      setSeed();
+      setSeed();// wyh:setseed according to time 
+      //wyh:note that the first row is invalid!,so we can begin with the second value
       return (_transform * Matrix<Scalar, Dynamic, -1>::NullaryExpr(_covar.rows(), nn, randN)).colwise() + _mean;
     }
   }; // end class EigenMultivariateNormal

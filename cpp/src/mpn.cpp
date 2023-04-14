@@ -20,9 +20,9 @@
 #include "cnpy.h"
 #include <chrono>
 // #include <torch/script.h> // One-stop header.
-#include <mppn.h>
+#include <mpn.h>
 
-ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTerminationCondition &ptc)
+ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTerminationCondition &ptc)
 {
 
     // get the problem definition
@@ -88,7 +88,7 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
     // std::cout<<"before"<<this->time_o<<std::endl;
     // this->time_o = 50;
     // std::cout<<"after"<<this->time_o<<std::endl;
-    std::cout<<"----------This is the MPPN, Start to plan!----------"<<std::endl;
+    std::cout<<"----------This is the MPN, Start to plan!----------"<<std::endl;
 
     //init statistics
     time_o = 0;
@@ -188,7 +188,7 @@ ompl::base::PlannerStatus ompl::geometric::MPPN::solve(const base::PlannerTermin
 }
 
 
-std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPPN::bidirectional_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
+std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPN::bidirectional_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
 {
     int iter_cnt = 0;
     // int iter_cnt_lim = 10;
@@ -286,7 +286,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     }
 }
 
-std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPPN::replan(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori, bool orcle)
+std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPN::replan(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori, bool orcle)
 {
     int l = path_ori.size();
     int l_r;
@@ -337,7 +337,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     
 }
 
-std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPPN::orcle_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
+std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPN::orcle_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
 {
     base::StateSpacePtr space = si_->getStateSpace();
     replan_ss->clear(); //clear the planner!
@@ -373,7 +373,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     }
 }
 
-std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> ompl::geometric::MPPN::simplify_path(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> path_ori)
+std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> ompl::geometric::MPN::simplify_path(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> path_ori)
 {
     int l = path_ori.size();
     base::StateSpacePtr space_ = si_->getStateSpace();
@@ -426,7 +426,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> ompl::geo
     return simpify_path;
 }
 
-at::Tensor ompl::geometric::MPPN::get_state_tensor_from_state(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state)
+at::Tensor ompl::geometric::MPN::get_state_tensor_from_state(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state)
 {
     if (state_type=="Rigidbody_2D")
     {
@@ -454,7 +454,7 @@ at::Tensor ompl::geometric::MPPN::get_state_tensor_from_state(ompl::base::Scoped
     }
 }
 
-ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPPN::get_state_ompl_from_tensor(at::Tensor state_t)
+ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPN::get_state_ompl_from_tensor(at::Tensor state_t)
  {
     base::StateSpacePtr space = si_->getStateSpace();
     ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state =new ompl::base::ScopedState<ompl::base::CompoundStateSpace>(space);
@@ -475,7 +475,7 @@ ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPPN::
     return state;
  }
 
-void ompl::geometric::MPPN::load_Enet_Pnet(std::string Enet_file, std::string Pnet_file)
+void ompl::geometric::MPN::load_Enet_Pnet(std::string Enet_file, std::string Pnet_file)
 {
     // Enet = torch::jit::load(Pnet_file);
     try {
@@ -489,7 +489,7 @@ void ompl::geometric::MPPN::load_Enet_Pnet(std::string Enet_file, std::string Pn
     std::cout<<"Load Model Suc!"<<std::endl;
 }
 
-void ompl::geometric::MPPN::load_obs_cloud(std::string cloud_file)
+void ompl::geometric::MPN::load_obs_cloud(std::string cloud_file)
 {
     cnpy::NpyArray arr = cnpy::npy_load(cloud_file);
     obs_clouds = arr.data<float>();
@@ -498,7 +498,7 @@ void ompl::geometric::MPPN::load_obs_cloud(std::string cloud_file)
     std::cout<<"Load obs clouds Suc!"<<std::endl;
 }
 
-at::Tensor ompl::geometric::MPPN::get_env_encoding(int index)
+at::Tensor ompl::geometric::MPN::get_env_encoding(int index)
 {
     float *cloud_start = obs_clouds + index*2800;
     at::Tensor obs_cloud = torch::from_blob(cloud_start, {1,2800});
@@ -509,7 +509,7 @@ at::Tensor ompl::geometric::MPPN::get_env_encoding(int index)
     return output;
 }
 
-ompl::geometric::SimpleSetup* ompl::geometric::MPPN::setup_orcle_planner()
+ompl::geometric::SimpleSetup* ompl::geometric::MPN::setup_orcle_planner()
 {
     //We need to reconstruct space information
     if (state_type == "Rigidbody_2D")
@@ -561,7 +561,7 @@ ompl::geometric::SimpleSetup* ompl::geometric::MPPN::setup_orcle_planner()
 
 }
 
-bool ompl::geometric::MPPN::is_in_bounds(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state, ompl::base::RealVectorBounds bounds)
+bool ompl::geometric::MPN::is_in_bounds(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state, ompl::base::RealVectorBounds bounds)
 {
     int dim;
     dim = bounds.high.size();
@@ -580,7 +580,7 @@ bool ompl::geometric::MPPN::is_in_bounds(ompl::base::ScopedState<ompl::base::Com
     
 }
 
-bool ompl::geometric::MPPN::is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori)
+bool ompl::geometric::MPN::is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori)
 {
     int l = path_ori.size();
     // std::cout<<"bool"<<std::endl;
