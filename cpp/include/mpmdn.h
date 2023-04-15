@@ -27,12 +27,16 @@ namespace ompl
             double time_o;
             double time_nnrp;
             double time_classical;
+            bool use_orcle = true;
+            float orcle_time_lim = 1;
             int nn_rep_cnt_lim = 10;
             int iter_cnt_lim = 100;
             int forward_ori;
             int forward_nnrep;
             int invalid_o;
             int invalid_nnrep;
+            int colli_o;
+            int colli_nnrep;
             int env_index = 0;
             bool failed = false;
             bool rep_flg = false; //help count the rep forward

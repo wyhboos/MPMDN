@@ -98,6 +98,8 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
     forward_nnrep = 0;
     invalid_o = 0;
     invalid_nnrep = 0;
+    colli_o = 0;
+    colli_nnrep = 0;
     failed = false;
     rep_flg = false;
     Env_encoding = get_env_encoding(env_index);
@@ -155,7 +157,14 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
             nn_rep_cnt_cnt += 1;
             if(nn_rep_cnt_cnt>=nn_rep_cnt_lim)
             {
-                orcle = true;
+                if (use_orcle)
+                {
+                    orcle = true;
+                }
+                else
+                {
+                    return base::PlannerStatus::TIMEOUT;
+                }
             }
         }
         int l2 = path_b.size();
@@ -187,7 +196,6 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
     return base::PlannerStatus::EXACT_SOLUTION;
 }
 
-
 std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geometric::MPN::bidirectional_plan(ompl::base::ScopedState<ompl::base::CompoundStateSpace>* start, ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal)
 {
     int iter_cnt = 0;
@@ -199,6 +207,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     path2.push_back(goal);
     bool connect;
     bool isvalid;
+    bool is_colli;
     while(true)
     {   
         iter_cnt += 1;
@@ -217,17 +226,20 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             at::Tensor output = Pnet.forward(inputs).toTensor();
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = get_state_ompl_from_tensor(output);
             isvalid = si_->isValid(next_state->get());
+            is_colli = !si_->checkMotion(start_now->get(), next_state->get());
             path1.push_back(next_state);
             turn = 1;
             if(rep_flg)
             {
                 forward_nnrep += 1;
                 if (!isvalid) invalid_nnrep += 1;
+                if (!is_colli) colli_nnrep += 1;
             }
             else
             {
                 forward_ori += 1;
                 if (!isvalid) invalid_o += 1;
+                if (!is_colli) colli_o += 1;
             }
         }
         else
@@ -244,17 +256,20 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             at::Tensor output = Pnet.forward(inputs).toTensor();
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = get_state_ompl_from_tensor(output);
             isvalid = si_->isValid(next_state->get());
+            is_colli = !si_->checkMotion(start_now->get(), next_state->get());
             path2.push_back(next_state);
             turn = 0;
             if(rep_flg)
             {
                 forward_nnrep += 1;
                 if (!isvalid) invalid_nnrep += 1;
+                if (!is_colli) colli_nnrep += 1;
             }
             else
             {
                 forward_ori += 1;
                 if (!isvalid) invalid_o += 1;
+                if (!is_colli) colli_o += 1;
             }
         }
 
@@ -346,7 +361,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     ompl::base::PlannerStatus solved = replan_ss->solve(
         ompl::base::plannerAndTerminationCondition(
             ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()), 
-            ompl::base::timedPlannerTerminationCondition(10)));
+            ompl::base::timedPlannerTerminationCondition(orcle_time_lim)));
     // ompl::base::plannerOrTerminationCondition(ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()), ompl::base::timedPlannerTerminationCondition(10))
     if (solved)
     {   
@@ -491,21 +506,21 @@ void ompl::geometric::MPN::load_Enet_Pnet(std::string Enet_file, std::string Pne
 
 void ompl::geometric::MPN::load_obs_cloud(std::string cloud_file)
 {
-    cnpy::NpyArray arr = cnpy::npy_load(cloud_file);
-    obs_clouds = arr.data<float>();
-    std::cout<<"Size0"<<arr.shape[0]<<std::endl;
-    std::cout<<"Size1"<<arr.shape[1]<<std::endl;
+    obs_clouds = cnpy::npy_load(cloud_file);
+    std::cout<<"Size0"<<obs_clouds.shape[0]<<std::endl;
+    std::cout<<"Size1"<<obs_clouds.shape[1]<<std::endl;
     std::cout<<"Load obs clouds Suc!"<<std::endl;
 }
 
 at::Tensor ompl::geometric::MPN::get_env_encoding(int index)
 {
-    float *cloud_start = obs_clouds + index*2800;
+    float *cloud_start = obs_clouds.data<float>();
+    cloud_start += index*2800;
     at::Tensor obs_cloud = torch::from_blob(cloud_start, {1,2800});
-    // at::Tensor obs_cloud1 = torch::ones({1, 2800});
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();
+    std::cout<<"env encoding:"<<output<<std::endl;
     return output;
 }
 
