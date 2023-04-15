@@ -103,9 +103,11 @@ class Plan_OMPL:
         self.ss.setStateValidityChecker(
             ob.StateValidityCheckerFn(self.StateValidityChecker))
 
-    def set_planner(self, planner="MPN"):
+    def set_planner(self, planner="MPMDN"):
         if planner == "MPN":
             self.planner = MPN(self.si)
+        if planner == "MPMDN":
+            self.planner = MPMDN(self.si)
         elif planner == "RRTstar":
             self.planner = og.RRTstar(self.si)
         elif planner == "RRT":

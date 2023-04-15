@@ -162,6 +162,7 @@ ompl::base::PlannerStatus ompl::geometric::MPMDN::solve(const base::PlannerTermi
             if(nn_rep_cnt_cnt>=nn_rep_cnt_lim)
             {
                 orcle = true;
+                break;
             }
         }
         int l2 = path_b.size();
@@ -223,7 +224,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             // at::Tensor output = Pnet.forward(inputs).toTensor();
             // ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = get_state_ompl_from_tensor(output);
 
-            std::vector<torch::jit::IValue> output = Pnet.forward({inputs}).toTuple()->elements();
+            std::vector<torch::jit::IValue> output = Pnet.forward(inputs).toTuple()->elements();
             at::Tensor alpha = output[0].toTensor();
             at::Tensor sigma = output[1].toTensor();
             at::Tensor mean = output[2].toTensor();
@@ -231,6 +232,10 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
 
 
             isvalid = si_->isValid(next_state->get());
+            // std::cout<<"isvalid:"<<isvalid<<std::endl;
+            // std::cout<<*next_state<<std::endl;
+            // std::cout<<mean<<std::endl;
+            // std::cout<<alpha<<std::endl;
             path1.push_back(next_state);
             turn = 1;
             if(rep_flg)
@@ -259,13 +264,14 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             // at::Tensor output = Pnet.forward(inputs).toTensor();
             // ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = get_state_ompl_from_tensor(output);
 
-            std::vector<torch::jit::IValue> output = Pnet.forward({inputs}).toTuple()->elements();
+            std::vector<torch::jit::IValue> output = Pnet.forward(inputs).toTuple()->elements();
             at::Tensor alpha = output[0].toTensor();
             at::Tensor sigma = output[1].toTensor();
             at::Tensor mean = output[2].toTensor();
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = generate_state_from_mvn(alpha, mean, sigma);
             
             isvalid = si_->isValid(next_state->get());
+            // std::cout<<"isvalid:"<<isvalid<<std::endl;
             path2.push_back(next_state);
             turn = 0;
             if(rep_flg)
@@ -481,12 +487,15 @@ ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPMDN:
     //get dim 
     int dim = mean.sizes()[2];//mean(batch mix dim)
     int mix_num = alpha.sizes()[1];
+    // float *alpha_ptr = alpha.data_ptr<float>();
+    // float *mean_ptr = mean.data_ptr<float>();
+    // float *var_ptr = var.data_ptr<float>();
 
     //chose which mix member to sample
     float prior[mix_num];
     for (int i = 0; i < mix_num; i++)
     {
-        prior[i] = alpha[0][i];
+        prior[i] = alpha[0][i].item<float>();
     }
     auto now = std::chrono::system_clock::now();
     auto seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
@@ -518,32 +527,33 @@ ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPMDN:
     }
     
     //set the mean and covariance
-    Eigen::VectorXf mean(dim);
-    Eigen::Matrix<float, dim, dim> covar = Eigen::Matrix<float, dim, dim>::Zero();
+    Eigen::VectorXf mean_v(dim);
+    Eigen::MatrixXf covar(dim, dim);
+    covar.setZero();
     for (int i = 0; i < dim; i++)
     {
-        mean[i] = mean[0][mix_i][i];
-        covar(i, i) = var[0][mix_i];
+        mean_v[i] = mean[0][mix_i][i].item<float>();
+        covar(i, i) = var[0][mix_i].item<float>();
     }
-    mvn_sampler->setMean(mean);
+    mvn_sampler->setMean(mean_v);
     mvn_sampler->setCovar(covar);
 
     //sample, note that first value is invalid, so we take the second
     base::StateSpacePtr space = si_->getStateSpace();
     ompl::base::ScopedState<ompl::base::CompoundStateSpace>* state =new ompl::base::ScopedState<ompl::base::CompoundStateSpace>(space);
-    auto sp = mvn_sampler->samples(2).transpose();
+    auto sp = mvn_sampler->samples(3).transpose();
     if (state_type=="Rigidbody_2D")
     {   
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]=sp(1, 0);
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=sp(1, 1);
-        state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value=sp(1, 2);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]=sp(2, 0);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=sp(2, 1);
+        state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value=sp(2, 2);
     }
     if (state_type=="Two_Link_2D")
     {
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]= sp(1, 0);
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]= sp(1, 1);
-        state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value = sp(1, 2);
-        state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value = sp(1, 3);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]= sp(2, 0);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]= sp(2, 1);
+        state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value = sp(2, 2);
+        state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value = sp(2, 3);
     }
     return state;
 }
@@ -586,21 +596,36 @@ void ompl::geometric::MPMDN::load_Enet_Pnet(std::string Enet_file, std::string P
 
 void ompl::geometric::MPMDN::load_obs_cloud(std::string cloud_file)
 {
-    cnpy::NpyArray arr = cnpy::npy_load(cloud_file);
-    obs_clouds = arr.data<float>();
-    std::cout<<"Size0"<<arr.shape[0]<<std::endl;
-    std::cout<<"Size1"<<arr.shape[1]<<std::endl;
+    // cnpy::NpyArray arr = cnpy::npy_load(cloud_file);
+    obs_clouds = cnpy::npy_load(cloud_file);
+    // obs_clouds = arr.data<float>();
+    std::cout<<"Size0"<<obs_clouds.shape[0]<<std::endl;
+    std::cout<<"Size1"<<obs_clouds.shape[1]<<std::endl;
     std::cout<<"Load obs clouds Suc!"<<std::endl;
+    // return arr;
+    // for (int i = 0; i < 20; i++)
+    // {
+    //     std::cout<<"env cloud:"<<i<<"info:"<<obs_clouds[i]<<std::endl;
+    // }
+    
 }
 
 at::Tensor ompl::geometric::MPMDN::get_env_encoding(int index)
 {
-    float *cloud_start = obs_clouds + index*2800;
+    float *cloud_start = obs_clouds.data<float>();
+    // cloud_start += index*2800;
     at::Tensor obs_cloud = torch::from_blob(cloud_start, {1,2800});
+    //     for (int i = 0; i < 20; i++)
+    // {
+    //     std::cout<<"env cloud:"<<i<<"info:"<<obs_cloud[0][i]<<std::endl;
+    // }
+
+    
     // at::Tensor obs_cloud1 = torch::ones({1, 2800});
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();
+    std::cout<<"env encoding:"<<output<<std::endl;
     return output;
 }
 
@@ -662,13 +687,13 @@ void ompl::geometric::MPMDN::setup_mvn_sampler()
     {
         Eigen::VectorXf mean(3);
         Eigen::Matrix<float, 3, 3> covar;
-        mvn_sampler = new Eigen::EigenMultivariateNormal<float>(mean covar);
+        mvn_sampler = new Eigen::EigenMultivariateNormal<float>(mean, covar);
     }
     if (state_type == "Two_Link_2D")
     {
         Eigen::VectorXf mean(4);
         Eigen::Matrix<float, 4, 4> covar;
-        mvn_sampler = new Eigen::EigenMultivariateNormal<float>(mean covar);
+        mvn_sampler = new Eigen::EigenMultivariateNormal<float>(mean, covar);
     }
 }
 

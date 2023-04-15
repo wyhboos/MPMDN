@@ -12,7 +12,10 @@
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/base/PlannerStatus.h>
 #include <ompl/base/PlannerTerminationCondition.h>
-
+#include <eigenmvn.h>
+#include <string>
+#include <iostream>
+#include "cnpy.h"
 // #include <ompl/geometric/planners/mpn/mpn.h>
 namespace ompl
 {
@@ -40,9 +43,10 @@ namespace ompl
             torch::jit::script::Module Pnet;
             torch::jit::script::Module Enet;
             at::Tensor Env_encoding;
-            float *obs_clouds;
+            // float *obs_clouds;
+            cnpy::NpyArray obs_clouds;
             ompl::geometric::SimpleSetup* replan_ss;
-            Eigen::EigenMultivariateNormal<double>* mvn_sampler;
+            Eigen::EigenMultivariateNormal<float>* mvn_sampler;
             MPMDN(const base::SpaceInformationPtr &si) : base::Planner(si, "MPMDN")
             {
                 // the specifications of this planner (ompl::base::PlannerSpecs)

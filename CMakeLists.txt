@@ -22,7 +22,7 @@ target_link_libraries(mylib PUBLIC ${OMPL_LIBRARIES} ${TORCH_LIBRARIES} cnpy)
 set(CMAKE_SHARED_MODULE_PREFIX "")
 add_executable(main cpp/src/main.cpp)
 # add_executable(test cpp/src/test_eigenmvn.cpp)
-target_link_libraries(test ${Boost_LIBRARIES})
+# target_link_libraries(test ${Boost_LIBRARIES})
 
 # add_executable(test cpp/src/test.cpp)
 target_link_libraries(main mylib ${OMPL_LIBRARIES})

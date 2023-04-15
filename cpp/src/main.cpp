@@ -52,7 +52,7 @@
 #include <iostream>
 #include <memory>
 #include <chrono>
-#include <mppn.h>
+#include <mpn.h>
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 

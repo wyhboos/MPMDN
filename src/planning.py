@@ -21,7 +21,7 @@ class Plan:
         self.env_rob = Env_Robot(robot_type=self.type)
 
         self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
-        self.pl_ompl.set_planner()
+        self.pl_ompl.set_planner("MPN")
 
     # This function aims to solve problems when multiple plan with python using C++ ompl lib
     def reboot(self):
@@ -136,14 +136,14 @@ if __name__ == '__main__':
     # parser.add_argument('--type', type=int, default="Rigidbody_2D")
     # args = parser.parse_args()
     # generate_path_main(args)
-    vis = "./fig/S2D/S2D_RB/MPN/mpn_test"
+    vis = "./fig/S2D/S2D_RB/MPN/MPN1_test"
     pl = Plan(type="Rigidbody_2D")
     env_file = "./Data/S2D/S2D_env_100_rec.npy"
     rec_envs = np.load(env_file, allow_pickle=True)
     rec_env = rec_envs[1, :, :]
     pl.pl_ompl.planner.env_index = 1
     pl.env_rob.load_rec_obs_2D(rec_env)
-    for i in range(100):
+    for i in range(20):
         # pl.reboot()
         s,p = pl.plan(vis=vis+str(i))
         print(s, p)
