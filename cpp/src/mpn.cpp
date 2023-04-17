@@ -94,6 +94,7 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
     time_o = 0;
     time_nnrp = 0;
     time_classical = 0;
+    time_all = 0;
     forward_ori = 0;
     forward_nnrep = 0;
     invalid_o = 0;
@@ -142,7 +143,7 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
             std::cout<<"Replan cnt:"<<nn_rep_cnt_cnt<<std::endl;
             std::cout<<"Use orcle:"<<orcle<<std::endl;
             path_b = replan(path_b, orcle);
-            if (failed) return base::PlannerStatus::TIMEOUT;
+            if (failed) break;
             auto end_rp = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed_rp = end_rp - start_rp;
             if (orcle) 
@@ -163,7 +164,8 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
                 }
                 else
                 {
-                    return base::PlannerStatus::TIMEOUT;
+                    failed = true;
+                    break;
                 }
             }
         }
@@ -193,6 +195,13 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
     std::cout<<"invalid_o:"<<invalid_o<<std::endl;
     std::cout<<"invalid_nnrep:"<<invalid_nnrep<<std::endl;
     std::cout<<"----------End plan!----------"<<std::endl;
+
+    auto end_all = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_all = end_all - start_o;
+    time_all = elapsed_all.count();
+
+
+    if (failed) return base::PlannerStatus::TIMEOUT;
     return base::PlannerStatus::EXACT_SOLUTION;
 }
 
@@ -359,33 +368,32 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     replan_ss->setStartAndGoalStates(*start, *goal);
     // ompl::base::PlannerStatus solved = replan_ss->solve(ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()));
     ompl::base::PlannerStatus solved = replan_ss->solve(
-        ompl::base::plannerAndTerminationCondition(
+        ompl::base::plannerOrTerminationCondition(
             ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()), 
             ompl::base::timedPlannerTerminationCondition(orcle_time_lim)));
     // ompl::base::plannerOrTerminationCondition(ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()), ompl::base::timedPlannerTerminationCondition(10))
-    if (solved)
-    {   
+    std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_;
+    // std::vector<ompl::base::CompoundStateSpace*> states = replan_ss->getSolutionPath().getStates();
+    std::vector<ompl::base::State*> states = replan_ss->getSolutionPath().getStates();
+    int l = replan_ss->getSolutionPath().getStateCount();
+    for (int i = 0; i < l; i++)
+    {
+        auto sco_state_tmp = (states[i]->as<ompl::base::CompoundState>());
+        // auto sco_state = sco_state_tmp->as<ompl::base::ScopedState<ompl::base::CompoundStateSpace>>();
+        ompl::base::ScopedState<ompl::base::CompoundStateSpace>* sco_s = new ompl::base::ScopedState<ompl::base::CompoundStateSpace>(space);
+        *sco_s = sco_state_tmp;
+        path_.push_back(sco_s);
+    }
+    if (solved && solved.asString() == "Exact solution")
+    {
         std::cout << "Orcle solution found!" << std::endl;
-        std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_;
-        // std::vector<ompl::base::CompoundStateSpace*> states = replan_ss->getSolutionPath().getStates();
-        std::vector<ompl::base::State*> states = replan_ss->getSolutionPath().getStates();
-        int l = replan_ss->getSolutionPath().getStateCount();
-        for (int i = 0; i < l; i++)
-        {
-            auto sco_state_tmp = (states[i]->as<ompl::base::CompoundState>());
-            // auto sco_state = sco_state_tmp->as<ompl::base::ScopedState<ompl::base::CompoundStateSpace>>();
-            ompl::base::ScopedState<ompl::base::CompoundStateSpace>* sco_s = new ompl::base::ScopedState<ompl::base::CompoundStateSpace>(space);
-            *sco_s = sco_state_tmp;
-            path_.push_back(sco_s);
-        }
-        
-        return path_;
     }
     else
     {
         failed = true;
         std::cout << "No solution found" << std::endl;
     }
+    return path_;
 }
 
 std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> ompl::geometric::MPN::simplify_path(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace> *> path_ori)
@@ -520,7 +528,7 @@ at::Tensor ompl::geometric::MPN::get_env_encoding(int index)
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();
-    std::cout<<"env encoding:"<<output<<std::endl;
+    std::cout<<"env index:"<<index<<std::endl;
     return output;
 }
 
@@ -591,6 +599,8 @@ bool ompl::geometric::MPN::is_in_bounds(ompl::base::ScopedState<ompl::base::Comp
         low = bounds.low[i];
         if(value>high || value<low) return false;
     }
+    double angle = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
+    if(angle>3.14 || angle<-3.14) return false;
     return true;
     
 }

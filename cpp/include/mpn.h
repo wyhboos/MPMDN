@@ -12,6 +12,7 @@
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/base/PlannerStatus.h>
 #include <ompl/base/PlannerTerminationCondition.h>
+#include "cnpy.h"
 
 // #include <ompl/geometric/planners/mpn/mpn.h>
 namespace ompl
@@ -24,6 +25,7 @@ namespace ompl
             double time_o;
             double time_nnrp;
             double time_classical;
+            double time_all;
             bool use_orcle = true;
             float orcle_time_lim = 1;
             int nn_rep_cnt_lim = 10;
