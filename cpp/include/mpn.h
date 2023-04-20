@@ -25,6 +25,7 @@ namespace ompl
             double time_o;
             double time_nnrp;
             double time_classical;
+            double time_simplify;
             double time_all;
             bool use_orcle = true;
             float orcle_time_lim = 1;
@@ -39,10 +40,11 @@ namespace ompl
             int env_index = 0;
             bool failed = false;
             bool rep_flg = false; //help count the rep forward
-            std::string env_file = "/home/wyh/Code/MPMDN/Data/S2D/obs_cloud_110.npy";
+            bool ori_simplify = true;//simplify the original path or not,for debug
+            std::string env_file = "/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy";
             std::string state_type = "Rigidbody_2D";
-            std::string Enet_file = "/home/wyh/Code/MPMDN/Data/Model_structure/Encoder_S2D.pt";
-            std::string Pnet_file = "/home/wyh/Code/MPMDN/Data/Model_structure/MPN_Pnet_S2D_RB.pt";
+            std::string Enet_file = "/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt";
+            std::string Pnet_file = "/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt";
             torch::jit::script::Module Pnet;
             torch::jit::script::Module Enet;
             at::Tensor Env_encoding;
@@ -58,12 +60,12 @@ namespace ompl
                 replan_ss = setup_orcle_planner();
             }
 
-            MPN(std::string si_info) : base::Planner(si_info, "MPN")
-            {
-                // the specifications of this planner (ompl::base::PlannerSpecs)
-                specs_.approximateSolutions = true;
-                // specs_.recognizedGoal = ...;
-            }
+            // MPN(std::string si_info) : base::Planner(si_info, "MPN")
+            // {
+            //     // the specifications of this planner (ompl::base::PlannerSpecs)
+            //     specs_.approximateSolutions = true;
+            //     // specs_.recognizedGoal = ...;
+            // }
             // MPN(const MPN&) = default;
             // MPN &operator=(const MPN&) = default;
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- encoding:utf-8 -*-
 import os
+import time
 try:
     from ompl import base as ob
     from ompl import geometric as og
@@ -37,8 +38,8 @@ class Plan_OMPL:
             self.space = ob.SE2StateSpace()
             # set bounds
             bounds = ob.RealVectorBounds(2)
-            bounds.setLow(-15)
-            bounds.setHigh(15)
+            bounds.setLow(-20)
+            bounds.setHigh(20)
             self.space.setBounds(bounds)
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
@@ -102,6 +103,7 @@ class Plan_OMPL:
         self.StateValidityChecker = StateValidityChecker
         self.ss.setStateValidityChecker(
             ob.StateValidityCheckerFn(self.StateValidityChecker))
+        
 
     def set_planner(self, planner="MPMDN"):
         if planner == "MPN":
@@ -111,9 +113,18 @@ class Plan_OMPL:
         elif planner == "RRTstar":
             self.planner = og.RRTstar(self.si)
         elif planner == "RRT":
+            # self.planner = og.InformedRRTstar(self.si)
             self.planner = og.RRT(self.si)
-            
+            # self.planner.setRange(3)
+            # self.planner.setGoalBias(0.01)
         self.ss.setPlanner(self.planner)
+    
+    def set_path_cost_threshold(self, cost=999):
+        self.termination = ob.MultiOptimizationObjective(self.si)
+        self.termination.addObjective(ob.PathLengthOptimizationObjective(self.si), 1)
+        self.termination.setCostThreshold(cost)
+        self.ss.setOptimizationObjective(self.termination)
+        
 
     def generate_valid_start_goal(self):
         start = ob.State(self.space)
@@ -168,13 +179,17 @@ class Plan_OMPL:
             return state_ompl
 
     def solve_planning_2D(self, start, goal, time_lim=10, simple=False):
+        self.ss.clear()
         self.ss.setStartAndGoalStates(start, goal)
         solved = self.ss.solve(time_lim)
         path = []
         if solved:
             # try to shorten the path
             if simple:
+                sp_st = time.time()
                 self.ss.simplifySolution()
+                sp_et = time.time()
+                self.sp_ct = sp_et-sp_st
             # print the simplified path
             # print(self.ss.getSolutionPath())
 

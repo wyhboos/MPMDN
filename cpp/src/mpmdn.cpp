@@ -100,6 +100,7 @@ ompl::base::PlannerStatus ompl::geometric::MPMDN::solve(const base::PlannerTermi
     time_o = 0;
     time_nnrp = 0;
     time_classical = 0;
+    time_simplify = 0;
     time_all = 0;
     forward_ori = 0;
     forward_nnrep = 0;
@@ -118,7 +119,7 @@ ompl::base::PlannerStatus ompl::geometric::MPMDN::solve(const base::PlannerTermi
     std::chrono::duration<double> elapsed_o = end_o - start_o;
     time_o = elapsed_o.count();
 
-    path_b = simplify_path(path_b);
+    if(ori_simplify) path_b = simplify_path(path_b);
     if (is_feasible(path_b))
     {
         std::cout<<"Origin plan is feasible!"<<std::endl;
@@ -145,6 +146,18 @@ ompl::base::PlannerStatus ompl::geometric::MPMDN::solve(const base::PlannerTermi
         bool orcle = false;
         while (!is_feasible(path_b))
         {
+            if(nn_rep_cnt_cnt>=nn_rep_cnt_lim)
+            {
+                if (use_orcle)
+                {
+                    orcle = true;
+                }
+                else
+                {
+                    failed = true;
+                    break;
+                }
+            }
             auto start_rp = std::chrono::high_resolution_clock::now();
             std::cout<<"Replan cnt:"<<nn_rep_cnt_cnt<<std::endl;
             std::cout<<"Use orcle:"<<orcle<<std::endl;
@@ -160,20 +173,12 @@ ompl::base::PlannerStatus ompl::geometric::MPMDN::solve(const base::PlannerTermi
             {
                 time_nnrp+= elapsed_rp.count();
             }
+            auto start_sp = std::chrono::high_resolution_clock::now();
             path_b = simplify_path(path_b);
+            auto end_sp = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed_sp = end_sp - start_sp;
+            time_simplify += elapsed_sp.count();
             nn_rep_cnt_cnt += 1;
-            if(nn_rep_cnt_cnt>=nn_rep_cnt_lim)
-            {
-                if (use_orcle)
-                {
-                    orcle = true;
-                }
-                else
-                {
-                    failed = true;
-                    break;
-                }
-            }
         }
         int l2 = path_b.size();
         for (int i = 0; i < l2; i++)
@@ -206,8 +211,14 @@ ompl::base::PlannerStatus ompl::geometric::MPMDN::solve(const base::PlannerTermi
     std::chrono::duration<double> elapsed_all = end_all - start_o;
     time_all = elapsed_all.count();
 
+    // int l3 = path_b.size();
+    // for (int i = 0; i < l3; i++)
+    // {
+    //     path->append(path_b[i]->get());
+    // }  
 
-    if (failed) return base::PlannerStatus::TIMEOUT;
+
+    if (failed) return base::PlannerStatus::APPROXIMATE_SOLUTION;
     return base::PlannerStatus::EXACT_SOLUTION;
 }
 
@@ -233,8 +244,8 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal_now = path2.back();
             std::vector<torch::jit::IValue> inputs;
             at::Tensor env_encoding = Env_encoding;
-            at::Tensor start_t = get_state_tensor_from_state(start_now);
-            at::Tensor goal_t = get_state_tensor_from_state(goal_now);
+            at::Tensor start_t = get_state_tensor_from_state(start_now).to(at::kCUDA);
+            at::Tensor goal_t = get_state_tensor_from_state(goal_now).to(at::kCUDA);
             inputs.push_back(env_encoding);
             inputs.push_back(start_t);
             inputs.push_back(goal_t);
@@ -249,7 +260,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
             for (int i = 0; i < 10; i++)
             {
-                next_state = generate_state_from_mvn(alpha, mean, sigma);
+                next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
             }
             
@@ -265,13 +276,13 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             {
                 forward_nnrep += 1;
                 if (!isvalid) invalid_nnrep += 1;
-                if (!is_colli) colli_nnrep += 1;
+                if (is_colli) colli_nnrep += 1;
             }
             else
             {
                 forward_ori += 1;
                 if (!isvalid) invalid_o += 1;
-                if (!is_colli) colli_o += 1;
+                if (is_colli) colli_o += 1;
             }
         }
         else
@@ -280,8 +291,8 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* goal_now = path1.back();
             std::vector<torch::jit::IValue> inputs;
             at::Tensor env_encoding = Env_encoding;
-            at::Tensor start_t = get_state_tensor_from_state(start_now);
-            at::Tensor goal_t = get_state_tensor_from_state(goal_now);
+            at::Tensor start_t = get_state_tensor_from_state(start_now).to(at::kCUDA);
+            at::Tensor goal_t = get_state_tensor_from_state(goal_now).to(at::kCUDA);
             inputs.push_back(env_encoding);
             inputs.push_back(start_t);
             inputs.push_back(goal_t);
@@ -298,7 +309,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
             for (int i = 0; i < 10; i++)
             {
-                next_state = generate_state_from_mvn(alpha, mean, sigma);
+                next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
             }
             
@@ -312,13 +323,13 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             {
                 forward_nnrep += 1;
                 if (!isvalid) invalid_nnrep += 1;
-                if (!is_colli) colli_nnrep += 1;
+                if (is_colli) colli_nnrep += 1;
             }
             else
             {
                 forward_ori += 1;
                 if (!isvalid) invalid_o += 1;
-                if (!is_colli) colli_o += 1;
+                if (is_colli) colli_o += 1;
             }
         }
 
@@ -623,7 +634,9 @@ void ompl::geometric::MPMDN::load_Enet_Pnet(std::string Enet_file, std::string P
     try {
     // Deserialize the ScriptModule from a file using torch::jit::load().
         Pnet = torch::jit::load(Pnet_file);
+        Pnet.to(at::kCUDA);
         Enet = torch::jit::load(Enet_file);
+        Enet.to(at::kCUDA);
     }
     catch (const c10::Error& e) {
         std::cerr << "error loading the model\n";
@@ -644,7 +657,7 @@ at::Tensor ompl::geometric::MPMDN::get_env_encoding(int index)
 {
     float *cloud_start = obs_clouds.data<float>();
     cloud_start += index*2800;
-    at::Tensor obs_cloud = torch::from_blob(cloud_start, {1,2800});
+    at::Tensor obs_cloud = torch::from_blob(cloud_start, {1,2800}).to(at::kCUDA);
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();
