@@ -1,6 +1,6 @@
 branch:
-base->dell_ubuntu
-base->desktop_ubuntu
+base->dell_server
+base->desktop
 
 common file:
 cpp/
