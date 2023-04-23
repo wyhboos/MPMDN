@@ -108,8 +108,10 @@ def get_statistics():
         pl.pl_ompl.planner.env_index = i
         pl.pl_ompl.planner.use_orcle = True
         pl.pl_ompl.planner.ori_simplify = True
-        pl.pl_ompl.planner.nn_rep_cnt_lim = 20
-        pl.pl_ompl.planner.iter_cnt_lim = 0
+        pl.pl_ompl.planner.nn_rep_cnt_lim = 0
+        pl.pl_ompl.planner.iter_cnt_lim = 20
+        if planner == "MPMDN":
+            pl.pl_ompl.planner.valid_ck_cnt = 3
         for j in range(10):
             # pl.reboot()
             start = env_pts[i][j][0]
@@ -208,10 +210,10 @@ def get_statistics():
 def get_statistics_classical():
     type = "Rigidbody_2D"
     planner = "RRTstar"
-    mode = "nnrp_10"
+    mode = ""
     model_name = "S2D_RB_" + planner + mode
     
-    see = "unseen"
+    see = "seen"
     if see == "seen":
         pl_env_s = 0
         pl_env_e = 90
@@ -259,9 +261,9 @@ def get_statistics_classical():
         print("Load start goal suc!")
     
     #read MPN length
-    file = "./Data/S2D/Sta/" + model_name + "_" + see + "_detail_data.csv"
+    file = "./Data/S2D/Sta/" + "S2D_RB_MPMDN_hyrp_0_unseen_detail_data.csv"
     dict_list = read_csv(file)
-    print(dict_list)
+    print(len(dict_list))
     # statistacs
     time_all_all = []
     len_all = []
@@ -274,7 +276,7 @@ def get_statistics_classical():
     # datas.append(time_classical_all)
     datas.append(time_all_all)
     datas.append(len_all)
-    datas.append(node_cnt)
+    datas.append(node_cnt_all)
     # datas.append(forward_ori_all)
     # datas.append(forward_nnrep_all)
     # datas.append(invalid_o_all)
@@ -305,9 +307,15 @@ def get_statistics_classical():
             pl.pl_ompl.setStateValidityChecker(pl.env_rob.is_state_valid_2D)
             
             #set termination condition 
-            mpn_suc = dict_list[int(10*i+j)]['suc']
+            if see == "seen":
+                mpn_suc = dict_list[int(10*(i-0)+j)]['suc']
+            else:
+                mpn_suc = dict_list[int(10*(i-90)+j)]['suc']
             if mpn_suc:
-                mpn_length = float(dict_list[int(10*i+j)]['length'])*1.05
+                if see == "seen": 
+                    mpn_length = float(dict_list[int(10*(i-0)+j)]['length'])*1.05
+                else:
+                    mpn_length = float(dict_list[int(10*(i-90)+j)]['length'])*1.05
             else:
                 mpn_length = 999
             print("mpn_length", mpn_length)
@@ -325,7 +333,7 @@ def get_statistics_classical():
             # time_o = pl.pl_ompl.planner.time_o
             # time_nnrp = pl.pl_ompl.planner.time_nnrp
             # time_classical = pl.pl_ompl.planner.time_classical
-            time_all = pl.pl_ompl.ss.getLastPlanComputationTime() + pl.pl_ompl.sp_ct
+            time_all = pl.pl_ompl.ss.getLastPlanComputationTime()
             length = pl.pl_ompl.ss.getSolutionPath().length()
             node_cnt = pl.pl_ompl.ss.getSolutionPath().getStateCount()
             # forward_ori = pl.pl_ompl.planner.forward_ori
@@ -348,8 +356,8 @@ def get_statistics_classical():
             vis_i_j_ += "_sc_" + str(suc)
 
 
-            # pl.vis(rec_env=pl.env_rob.obstacles_vis, start=pl.start_vis, goal=pl.goal_vis,
-            #                              path=pl.path_rob_vis, size=50, pixel_per_meter=20, save_fig_dir=vis_i_j_)
+            pl.vis(rec_env=pl.env_rob.obstacles_vis, start=pl.start_vis, goal=pl.goal_vis,
+                                         path=pl.path_rob_vis, size=50, pixel_per_meter=20, save_fig_dir=vis_i_j_)
             
 
             data.clear()
@@ -374,7 +382,7 @@ def get_statistics_classical():
         avr = np.array(d).mean(axis=0)
         average.append(avr)
     
-    csv_file = "./Data/S2D/Sta/" + model_name + "_"  + "_avg_data.csv"
+    csv_file = "./Data/S2D/Sta/" + model_name + "_" + see + "_avg_data.csv"
     header = ["time_all", "length", "node_cnt", "suc"]
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
         writer = csv.writer(f)
@@ -382,7 +390,7 @@ def get_statistics_classical():
         writer.writerow(average)
         f.close()
 
-    csv_file = "./Data/S2D/Sta/" + model_name + "_"  + "_detail_data.csv"
+    csv_file = "./Data/S2D/Sta/" + model_name + "_"  + see+ "_detail_data.csv"
     header = ["time_all_avg", "length_avg", "node_cnt", "suc_avg"]
     w_data = []
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
@@ -411,5 +419,5 @@ def create_dir(dir):
     
 
 if __name__ == '__main__':
-    get_statistics()
-    # get_statistics_classical()
+    # get_statistics()
+    get_statistics_classical()
