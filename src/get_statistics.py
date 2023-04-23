@@ -209,7 +209,7 @@ def get_statistics():
         
 def get_statistics_classical():
     type = "Rigidbody_2D"
-    planner = "RRTstar"
+    planner = "IRRTstar"
     mode = ""
     model_name = "S2D_RB_" + planner + mode
     
