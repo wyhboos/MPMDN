@@ -83,6 +83,10 @@ class Plan_OMPL:
         elif planner == "RRT":
             # self.planner = og.InformedRRTstar(self.si)
             self.planner = og.RRT(self.si)
+        elif planner == "BITstar":
+            self.planner = og.BITstar(self.si)
+        elif planner == "IRRTstar":
+            self.planner = og.InformedRRTstar(self.si)
             # self.planner.setRange(3)
             # self.planner.setGoalBias(0.01)
         self.ss.setPlanner(self.planner)
