@@ -27,7 +27,7 @@ def get_statistics():
 
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
-    pl = Plan(type, planner)
+    pl = Plan(type, planner, set_bounds=(-20,20))
     g_s_g = 0
 
     # generate start and goal
@@ -384,4 +384,5 @@ def read_csv(csv_file):
     return info
 
 if __name__ == '__main__':
-    get_statistics_classical()
+    get_statistics()
+    # get_statistics_classical()
