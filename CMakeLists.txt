@@ -5,7 +5,7 @@ set(CMAKE_BUILD_TYPE Debug)
 # set(CMAKE_CXX_COMPILER "g++")
 # set(CMAKE_CXX_FLAGS "-O2 -std=c++11")
 
-find_package(PythonInterp REQUIRED)
+
 find_package(Torch REQUIRED)
 find_package(ompl REQUIRED)
 find_package(PythonLibs REQUIRED)
@@ -14,10 +14,10 @@ find_package(Boost COMPONENTS python REQUIRED)
 # find_package(Boost REQUIRED COMPONENTS system random)
 
 
-include_directories(${OMPL_INCLUDE_DIRS} ${TORCH_INCLUDE_DIRS} /home/wyhboos/Project/MPMDN/cpp/include /home/wyhboos/pkg/cnpy-master)
-link_directories(/home/wyhboos/Project/MPMDN/build /home/wyhboos/pkg/cnpy-master/build)
+include_directories(${OMPL_INCLUDE_DIRS} ${TORCH_INCLUDE_DIRS} /home/wyh/Code/MPMDN/cpp/include)
+link_directories(/home/wyh/Code/MPMDN/build)
 add_library(mylib SHARED cpp/src/mpn.cpp cpp/src/mpmdn.cpp)
-target_link_libraries(mylib PUBLIC ${OMPL_LIBRARIES} ${TORCH_LIBRARIES} PRIVATE cnpy)
+target_link_libraries(mylib PUBLIC ${OMPL_LIBRARIES} ${TORCH_LIBRARIES} cnpy)
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 add_executable(main cpp/src/main.cpp)
