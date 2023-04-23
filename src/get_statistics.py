@@ -1,27 +1,39 @@
 #!/usr/bin/env python3
 # -*- encoding:utf-8 -*-
 from planning import *
+import os
 def get_statistics():
-    # argument
-    # part = args.part
-    # type = args.type
-    part = 0
     type = "Rigidbody_2D"
     planner = "MPN"
-    model_name = "S2D_RB_" + planner + "np100"
+    # mode = "_nnrp_0_use_orcle"
+    # mode = "_no_replan"
+    mode = "_nnrp_20"
+    mode = "_hyrp_20"
+    mode = "_hyrp_0"
+
+
+    model_name = "S2D_RB_" + planner + mode
+    
     see = "unseen"
+    if see == "seen":
+        pl_env_s = 0
+        pl_env_e = 90
+    elif see == "unseen":
+        pl_env_s = 90
+        pl_env_e = 100
+        
     if type == 0:
         type = "Rigidbody_2D"
     elif type == 1:
         type = "Two_Link_2D"
-    print("Part:", part)
-    print("type:", type)
-    env_file = "./Data/S2D/S2D_env_100_rec.npy"
+        
     if type == "Rigidbody_2D":
-        vis = "./fig/S2D/RB/" + planner +"/" + see + "/"
+        vis = "./fig/S2D/RB/" + planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
         s_g_file = "./Data/S2D/S2D_RB_sg_ev.npy"
     if type == "Two_Link_2D":
-        vis = "./fig/S2D/TL/_"
+        vis = "./fig/S2D/TL/"+ planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
         s_g_file = "./Data/S2D/S2D_TL_sg_ev.npy"
     env_file = "./Data/S2D/S2D_env_100_rec.npy"
 
@@ -61,6 +73,7 @@ def get_statistics():
     time_simplify_all = []
     time_all_all = []
     length_all = []
+    node_cnt_all = []
     forward_ori_all = []
     forward_nnrep_all = []
     invalid_o_all = []
@@ -76,6 +89,7 @@ def get_statistics():
     datas.append(time_simplify_all)
     datas.append(time_all_all)
     datas.append(length_all)
+    datas.append(node_cnt_all)
     datas.append(forward_ori_all)
     datas.append(forward_nnrep_all)
     datas.append(invalid_o_all)
@@ -87,15 +101,15 @@ def get_statistics():
     data = []
         
     # planning
-    for i in range(90,100):
+    for i in range(pl_env_s, pl_env_e):
         print("Planning Env:", i)
         rec_env = rec_envs[i, :, :]
         pl.env_rob.load_rec_obs_2D(rec_env)
         pl.pl_ompl.planner.env_index = i
-        pl.pl_ompl.planner.use_orcle = False
-        pl.pl_ompl.planner.ori_simplify = False
-        pl.pl_ompl.planner.nn_rep_cnt_lim = 0
-        pl.pl_ompl.planner.iter_cnt_lim = 50
+        pl.pl_ompl.planner.use_orcle = True
+        pl.pl_ompl.planner.ori_simplify = True
+        pl.pl_ompl.planner.nn_rep_cnt_lim = 20
+        pl.pl_ompl.planner.iter_cnt_lim = 0
         for j in range(10):
             # pl.reboot()
             start = env_pts[i][j][0]
@@ -118,6 +132,7 @@ def get_statistics():
             time_simplify = pl.pl_ompl.planner.time_simplify
             time_all = pl.pl_ompl.planner.time_all
             length = pl.pl_ompl.ss.getSolutionPath().length()
+            node_cnt = pl.pl_ompl.ss.getSolutionPath().getStateCount()
             forward_ori = pl.pl_ompl.planner.forward_ori
             forward_nnrep = pl.pl_ompl.planner.forward_nnrep
             invalid_o = pl.pl_ompl.planner.invalid_o
@@ -128,6 +143,7 @@ def get_statistics():
             vis_i_j_ = vis_i_j
             vis_i_j_ += "_alt_" + str(int(time_all*100)/100)
             vis_i_j_ += "_len_" + str(int(length*100)/100)
+            vis_i_j_ += "_node_" + str(node_cnt)
             vis_i_j_ += "_ot_" + str(int(time_o*100)/100)
             vis_i_j_ += "_nrpt_" + str(int(time_nnrp*100)/100)
             vis_i_j_ += "_crpt_" + str(int(time_classical*100)/100)
@@ -148,6 +164,7 @@ def get_statistics():
             data.append(time_simplify)
             data.append(time_all)
             data.append(length)
+            data.append(node_cnt)
             data.append(forward_ori)
             data.append(forward_nnrep)
             data.append(invalid_o)
@@ -164,7 +181,7 @@ def get_statistics():
         average.append(avr)
     
     csv_file = "./Data/S2D/Sta/" + model_name + "_" + see + "_avg_data.csv"
-    header = ["time_o", "time_nnrp", "time_classical","time_simplify", "time_all", "length", "forward_ori",
+    header = ["time_o", "time_nnrp", "time_classical","time_simplify", "time_all", "length","node_cnt","forward_ori",
               "forward_nnrep", "invalid_o", "invalid_nnrep", "colli_o", "colli_nnrep", "suc"]
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
         writer = csv.writer(f)
@@ -173,7 +190,7 @@ def get_statistics():
         f.close()
 
     csv_file = "./Data/S2D/Sta/" + model_name + "_" + see + "_detail_data.csv"
-    header = ["time_o", "time_nnrp", "time_classical", "time_simplify","time_all" ,"length", "forward_ori",
+    header = ["time_o", "time_nnrp", "time_classical", "time_simplify","time_all" ,"length", "node_cnt","forward_ori",
               "forward_nnrep", "invalid_o", "invalid_nnrep", "colli_o", "colli_nnrep", "suc"]
     w_data = []
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
@@ -189,26 +206,26 @@ def get_statistics():
     print("Finish")
         
 def get_statistics_classical():
-    # argument
-    # part = args.part
-    # type = args.type
-    part = 0
     type = "Rigidbody_2D"
     planner = "RRTstar"
-    model_name = "S2D_RB_" + planner
-    # see = "seen"
-    if type == 0:
-        type = "Rigidbody_2D"
-    elif type == 1:
-        type = "Two_Link_2D"
-    print("Part:", part)
-    print("type:", type)
-    env_file = "./Data/S2D/S2D_env_100_rec.npy"
+    mode = "nnrp_10"
+    model_name = "S2D_RB_" + planner + mode
+    
+    see = "unseen"
+    if see == "seen":
+        pl_env_s = 0
+        pl_env_e = 90
+    elif see == "unseen":
+        pl_env_s = 90
+        pl_env_e = 100
+
     if type == "Rigidbody_2D":
-        vis = "./fig/S2D/RB/" + planner +"/"  + "/"
+        vis = "./fig/S2D/RB/" + planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
         s_g_file = "./Data/S2D/S2D_RB_sg_ev.npy"
     if type == "Two_Link_2D":
-        vis = "./fig/S2D/TL/_"
+        vis = "./fig/S2D/TL/"+ planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
         s_g_file = "./Data/S2D/S2D_TL_sg_ev.npy"
     env_file = "./Data/S2D/S2D_env_100_rec.npy"
 
@@ -242,12 +259,13 @@ def get_statistics_classical():
         print("Load start goal suc!")
     
     #read MPN length
-    file = "./Data/S2D/Sta/S2D_RB_MPMDN_seen_detail_data.csv"
+    file = "./Data/S2D/Sta/" + model_name + "_" + see + "_detail_data.csv"
     dict_list = read_csv(file)
     print(dict_list)
     # statistacs
     time_all_all = []
     len_all = []
+    node_cnt_all = []
     suc_all = []
         
     datas = []
@@ -256,6 +274,7 @@ def get_statistics_classical():
     # datas.append(time_classical_all)
     datas.append(time_all_all)
     datas.append(len_all)
+    datas.append(node_cnt)
     # datas.append(forward_ori_all)
     # datas.append(forward_nnrep_all)
     # datas.append(invalid_o_all)
@@ -267,7 +286,7 @@ def get_statistics_classical():
     data = []
         
     # planning
-    for i in range(0,90):
+    for i in range(pl_env_s,pl_env_e):
         print("Planning Env:", i)
         rec_env = rec_envs[i, :, :]
         pl.env_rob.load_rec_obs_2D(rec_env)
@@ -296,7 +315,7 @@ def get_statistics_classical():
                 
             
             
-            solved, path = pl.plan(start=start, goal=goal, vis="yes", time_lim=10, simple=True)
+            solved, path = pl.plan(start=start, goal=goal, vis="yes", time_lim=10, simple=False)
             
             if solved and solved.asString() == "Exact solution":
                 suc = 1
@@ -308,6 +327,7 @@ def get_statistics_classical():
             # time_classical = pl.pl_ompl.planner.time_classical
             time_all = pl.pl_ompl.ss.getLastPlanComputationTime() + pl.pl_ompl.sp_ct
             length = pl.pl_ompl.ss.getSolutionPath().length()
+            node_cnt = pl.pl_ompl.ss.getSolutionPath().getStateCount()
             # forward_ori = pl.pl_ompl.planner.forward_ori
             # forward_nnrep = pl.pl_ompl.planner.forward_nnrep
             # invalid_o = pl.pl_ompl.planner.invalid_o
@@ -318,6 +338,7 @@ def get_statistics_classical():
             vis_i_j_ = vis_i_j
             vis_i_j_ += "_alt_" + str(int(time_all*100)/100)
             vis_i_j_ += "_len_" + str(int(length*100)/100)
+            vis_i_j_ += "_node_" + str(node_cnt)
             # vis_i_j_ += "_ot_" + str(int(time_o*100)/100)
             # vis_i_j_ += "_nrpt_" + str(int(time_nnrp*100)/100)
             # vis_i_j_ += "_crpt_" + str(int(time_classical*100)/100)
@@ -337,6 +358,7 @@ def get_statistics_classical():
             # data.append(time_classical)
             data.append(time_all)
             data.append(length)
+            data.append(node_cnt)
             # data.append(forward_ori)
             # data.append(forward_nnrep)
             # data.append(invalid_o)
@@ -353,7 +375,7 @@ def get_statistics_classical():
         average.append(avr)
     
     csv_file = "./Data/S2D/Sta/" + model_name + "_"  + "_avg_data.csv"
-    header = ["time_all", "length", "suc"]
+    header = ["time_all", "length", "node_cnt", "suc"]
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(header)
@@ -361,7 +383,7 @@ def get_statistics_classical():
         f.close()
 
     csv_file = "./Data/S2D/Sta/" + model_name + "_"  + "_detail_data.csv"
-    header = ["time_all_avg", "length_avg", "suc_avg"]
+    header = ["time_all_avg", "length_avg", "node_cnt", "suc_avg"]
     w_data = []
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
         writer = csv.writer(f)
@@ -382,6 +404,11 @@ def read_csv(csv_file):
         for r in dictreader:
             info.append(r)
     return info
+
+def create_dir(dir):
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    
 
 if __name__ == '__main__':
     get_statistics()
