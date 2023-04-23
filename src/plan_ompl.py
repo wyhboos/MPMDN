@@ -27,21 +27,21 @@ er = Env_Robot()
 # print(dir(ob.SpaceInformation))
 # print(dir(og))
 class Plan_OMPL:
-    def __init__(self, configure_type="Rigidbody_2D", bounds=(-15, 15)):
+    def __init__(self, configure_type="Rigidbody_2D", set_bounds=(-15, 15)):
 
         self.planner = None
         self.StateValidityChecker = None
         self.configure_type = configure_type
         
-        print("Plan_OMPL", configure_type, bounds)
+        print("Plan_OMPL", configure_type, set_bounds)
 
         if configure_type == "Rigidbody_2D":
             # create an SE2 state space
             self.space = ob.SE2StateSpace()
             # set bounds
             bounds = ob.RealVectorBounds(2)
-            bounds.setLow(bounds[0])
-            bounds.setHigh(bounds[1])
+            bounds.setLow(set_bounds[0])
+            bounds.setHigh(set_bounds[1])
             self.space.setBounds(bounds)
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
@@ -53,8 +53,8 @@ class Plan_OMPL:
             angle_space1 = ob.SO2StateSpace()  # 1D angle space 1
             angle_space2 = ob.SO2StateSpace()  # 1D angle space 2
             bounds = ob.RealVectorBounds(2)  # set bounds on vector
-            bounds.setLow(bounds[0])
-            bounds.setHigh(bounds[1])
+            bounds.setLow(set_bounds[0])
+            bounds.setHigh(set_bounds[1])
             vector_space.setBounds(bounds)
             # create space
             self.space = ob.CompoundStateSpace()

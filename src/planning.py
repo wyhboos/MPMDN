@@ -15,9 +15,9 @@ import csv
 
 
 class Plan:
-    def __init__(self, type="Two_Link_2D", planner='MPN', bounds=(-15, 15)):
+    def __init__(self, type="Two_Link_2D", planner='MPN', set_bounds=(-15, 15)):
         self.type = type
-        self.pl_ompl = Plan_OMPL(configure_type=self.type, bounds=bounds)
+        self.pl_ompl = Plan_OMPL(configure_type=self.type, set_bounds=set_bounds)
         self.env_rob = Env_Robot(robot_type=self.type)
 
         self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
