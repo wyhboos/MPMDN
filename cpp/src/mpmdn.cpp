@@ -258,7 +258,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             at::Tensor sigma = output[1].toTensor();
             at::Tensor mean = output[2].toTensor();
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < valid_ck_cnt; i++)
             {
                 next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
@@ -307,7 +307,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             // ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = generate_state_from_mvn(alpha, mean, sigma);
 
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < valid_ck_cnt; i++)
             {
                 next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
