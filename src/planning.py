@@ -15,21 +15,17 @@ import csv
 
 
 class Plan:
-    def __init__(self, type="Two_Link_2D", planner='MPN'):
+    def __init__(self, type="Two_Link_2D", planner='MPN', set_bounds=(-15, 15)):
         self.type = type
-        self.pl_ompl = Plan_OMPL(configure_type=self.type)
+        self.pl_ompl = Plan_OMPL(configure_type=self.type, set_bounds=set_bounds)
         self.env_rob = Env_Robot(robot_type=self.type)
 
         self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
         self.pl_ompl.set_planner(planner)
 
     # This function aims to solve problems when multiple plan with python using C++ ompl lib
-    
     def reboot(self):
         self.pl_ompl.ss.clear()
-        # self.pl_ompl.reboot()
-        # self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
-        # self.pl_ompl.set_planner()
 
     def plan(self, start=None, goal=None, vis=None, time_lim=0.5, simple=False):
         if start is None:
@@ -49,13 +45,11 @@ class Plan:
         return solved, path
 
     def vis(self, rec_env, start, goal, path, size, pixel_per_meter, save_fig_dir):
-        print(self.type)
         if self.type == "Two_Link_2D":
             vis_for_2D_planning_two_link(rec_env=rec_env, start=start, goal=goal,
                                          path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
 
         if self.type == "Rigidbody_2D":
-            print(6666)
             vis_for_2D_planning_rigidbody(rec_env=rec_env, start=start, goal=goal,
                                           path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
 
