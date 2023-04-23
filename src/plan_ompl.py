@@ -92,8 +92,7 @@ class Plan_OMPL:
         self.ss.setPlanner(self.planner)
     
     def set_path_cost_threshold(self, cost=999):
-        self.termination = ob.MultiOptimizationObjective(self.si)
-        self.termination.addObjective(ob.PathLengthOptimizationObjective(self.si), 1)
+        self.termination = ob.PathLengthOptimizationObjective(self.si)
         self.termination.setCostThreshold(cost)
         self.ss.setOptimizationObjective(self.termination)
         
