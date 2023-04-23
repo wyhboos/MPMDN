@@ -27,19 +27,21 @@ er = Env_Robot()
 # print(dir(ob.SpaceInformation))
 # print(dir(og))
 class Plan_OMPL:
-    def __init__(self, configure_type="Rigidbody_2D"):
+    def __init__(self, configure_type="Rigidbody_2D", bounds=(-15, 15)):
 
         self.planner = None
         self.StateValidityChecker = None
         self.configure_type = configure_type
+        
+        print("Plan_OMPL", configure_type, bounds)
 
         if configure_type == "Rigidbody_2D":
             # create an SE2 state space
             self.space = ob.SE2StateSpace()
             # set bounds
             bounds = ob.RealVectorBounds(2)
-            bounds.setLow(-20)
-            bounds.setHigh(20)
+            bounds.setLow(bounds[0])
+            bounds.setHigh(bounds[1])
             self.space.setBounds(bounds)
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
@@ -51,42 +53,8 @@ class Plan_OMPL:
             angle_space1 = ob.SO2StateSpace()  # 1D angle space 1
             angle_space2 = ob.SO2StateSpace()  # 1D angle space 2
             bounds = ob.RealVectorBounds(2)  # set bounds on vector
-            bounds.setLow(-15)
-            bounds.setHigh(15)
-            vector_space.setBounds(bounds)
-            # create space
-            self.space = ob.CompoundStateSpace()
-            # weight 1.0 as default, set for computing distance
-            self.space.addSubspace(vector_space, 1.0)
-            self.space.addSubspace(angle_space1, 0.5)
-            self.space.addSubspace(angle_space2, 0.5)
-
-            # create a simple setup object, note that si is needed when setting planner
-            self.si = ob.SpaceInformation(self.space)
-            self.ss = og.SimpleSetup(self.si)
-
-    # This function aims to solve problems when multiple plan with python using C++ ompl lib
-    def reboot(self):
-        if self.configure_type == "Rigidbody_2D":
-            # create an SE2 state space
-            self.space = ob.SE2StateSpace()
-            # set bounds
-            bounds = ob.RealVectorBounds(2)
-            bounds.setLow(-15)
-            bounds.setHigh(15)
-            self.space.setBounds(bounds)
-            # # create a simple setup object, note that si is needed when setting planner
-            self.si = ob.SpaceInformation(self.space)
-            self.ss = og.SimpleSetup(self.si)
-
-        if self.configure_type == "Two_Link_2D":
-            # state space components
-            vector_space = ob.RealVectorStateSpace(2)  # 2D vector space
-            angle_space1 = ob.SO2StateSpace()  # 1D angle space 1
-            angle_space2 = ob.SO2StateSpace()  # 1D angle space 2
-            bounds = ob.RealVectorBounds(2)  # set bounds on vector
-            bounds.setLow(-15)
-            bounds.setHigh(15)
+            bounds.setLow(bounds[0])
+            bounds.setHigh(bounds[1])
             vector_space.setBounds(bounds)
             # create space
             self.space = ob.CompoundStateSpace()
