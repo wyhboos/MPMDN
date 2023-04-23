@@ -261,7 +261,7 @@ def get_statistics_classical():
         print("Load start goal suc!")
     
     #read MPN length
-    file = "./Data/S2D/Sta/" + "S2D_RB_MPMDN_hyrp_0_unseen_detail_data.csv"
+    file = "./Data/S2D/Sta/" + "S2D_RB_MPMDN_hyrp_0_seen_detail_data.csv"
     dict_list = read_csv(file)
     print(len(dict_list))
     # statistacs
@@ -308,12 +308,12 @@ def get_statistics_classical():
             
             #set termination condition 
             if see == "seen":
-                mpn_suc = dict_list[int(10*(i-0)+j)]['suc']
+                mpn_suc = dict_list[int(10*(i)+j)]['suc']
             else:
                 mpn_suc = dict_list[int(10*(i-90)+j)]['suc']
             if mpn_suc:
                 if see == "seen": 
-                    mpn_length = float(dict_list[int(10*(i-0)+j)]['length'])*1.05
+                    mpn_length = float(dict_list[int(10*(i)+j)]['length'])*1.05
                 else:
                     mpn_length = float(dict_list[int(10*(i-90)+j)]['length'])*1.05
             else:
@@ -321,9 +321,7 @@ def get_statistics_classical():
             print("mpn_length", mpn_length)
             pl.pl_ompl.set_path_cost_threshold(mpn_length)
                 
-            
-            
-            solved, path = pl.plan(start=start, goal=goal, vis="yes", time_lim=10, simple=False)
+            solved, path = pl.plan(start=start, goal=goal, vis="yes", time_lim=15, simple=False)
             
             if solved and solved.asString() == "Exact solution":
                 suc = 1
@@ -417,7 +415,83 @@ def create_dir(dir):
     if not os.path.exists(dir):
         os.makedirs(dir)
     
+def compare_by_node_cnt():
+    node_file = "./Data/S2D/Sta/" + "S2D_RB_IRRTstar_seen_detail_data.csv"
+    # mpn_file = "./Data/S2D/Sta/" + "S2D_RB_MPN_hyrp_0_seen_detail_data.csv"
+    # mdn_file = "./Data/S2D/Sta/" + "S2D_RB_MPMDN_hyrp_0_seen_detail_data.csv"
+    mpn_file = "./Data/S2D/Sta/" + "S2D_RB_MPN_no_replan_seen_detail_data.csv"
+    mdn_file = "./Data/S2D/Sta/" + "S2D_RB_MPMDN_no_replan_seen_detail_data.csv"
+    node_list = read_csv(node_file)
+    mpn_list = read_csv(mpn_file)
+    mdn_list = read_csv(mdn_file)
+    print(len(node_list), len(mpn_list), len(mdn_list))
+    keys = list(mpn_list[0].keys())
+    print(keys)
+    all_node_cnt = []
+    for d in node_list:
+        if int(d["node_cnt"]) not in all_node_cnt:
+            all_node_cnt.append(int(d["node_cnt"]))
+    all_node_cnt = sorted(all_node_cnt)
+    
+    mpn_node_list = []
+    mdn_node_list = []
+    each_node_cnt = [0 for i in range(len(all_node_cnt))]
+    for i in range(len(all_node_cnt)):
+        dict1 = {}
+        dict2 = {}
+        dict1["irrt_node"] = all_node_cnt[i]
+        dict2["irrt_node"] = all_node_cnt[i]
+        for key in keys:
+            dict1[key] = 0
+            dict2[key] = 0
+        mpn_node_list.append(dict1)
+        mdn_node_list.append(dict2)
+    
+    for i in range(len(node_list)):
+        print(i)
+        node_cnt_i = int(node_list[i]["node_cnt"])
+        index_i = all_node_cnt.index(node_cnt_i)
+        each_node_cnt[index_i] += 1
+        mpn_i = mpn_list[i]
+        mdn_i = mdn_list[i]
+        for key in keys:
+            mpn_node_list[index_i][key] += float(mpn_i[key])
+            mdn_node_list[index_i][key] += float(mdn_i[key])
+            
+    for i in range(len(all_node_cnt)):
+        for key in keys:
+            mpn_node_list[i][key] /= each_node_cnt[i]
+            mdn_node_list[i][key] /= each_node_cnt[i]
+
+        
+    csv_file = "./Data/S2D/Sta/" + "S2D_RB_MPN_no_replan_seen_detail_data_node_compare.csv"
+    header = ["irrt_node"]  + keys
+    w_data = []
+    with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        for i in range(len(mpn_node_list)):
+            w_data.clear()
+            for key in header:
+                w_data.append(mpn_node_list[i][key])
+            writer.writerow(w_data)
+        f.close()
+        
+    csv_file = "./Data/S2D/Sta/" + "S2D_RB_MPMDN_no_replan_seen_detail_data_node_compare.csv"
+    header = ["irrt_node"] + keys
+    w_data = []
+    with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        for i in range(len(mdn_node_list)):
+            w_data.clear()
+            for key in header:
+                w_data.append(mdn_node_list[i][key])
+            writer.writerow(w_data)
+        f.close()
+
 
 if __name__ == '__main__':
     # get_statistics()
-    get_statistics_classical()
+    # get_statistics_classical()
+    compare_by_node_cnt()
