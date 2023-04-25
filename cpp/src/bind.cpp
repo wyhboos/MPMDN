@@ -15,6 +15,7 @@ BOOST_PYTHON_MODULE(MPN) {
         .def_readwrite("env_index", &ompl::geometric::MPN::env_index)
         .def_readwrite("nn_rep_cnt_lim", &ompl::geometric::MPN::nn_rep_cnt_lim)
         .def_readwrite("iter_cnt_lim", &ompl::geometric::MPN::iter_cnt_lim)
+        .def_readwrite("valid_ck_cnt", &ompl::geometric::MPN::valid_ck_cnt)
         .def_readwrite("state_type", &ompl::geometric::MPN::state_type)
         .def_readwrite("use_orcle", &ompl::geometric::MPN::use_orcle)
         .def_readwrite("orcle_time_lim", &ompl::geometric::MPN::orcle_time_lim)

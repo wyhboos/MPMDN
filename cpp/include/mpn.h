@@ -31,6 +31,7 @@ namespace ompl
             float orcle_time_lim = 1;
             int nn_rep_cnt_lim = 10;
             int iter_cnt_lim = 100;
+            int valid_ck_cnt = 1;
             int forward_ori;
             int forward_nnrep;
             int invalid_o;
