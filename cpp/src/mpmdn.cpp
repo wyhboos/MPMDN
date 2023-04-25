@@ -634,8 +634,10 @@ void ompl::geometric::MPMDN::load_Enet_Pnet(std::string Enet_file, std::string P
     try {
     // Deserialize the ScriptModule from a file using torch::jit::load().
         Pnet = torch::jit::load(Pnet_file);
+        Pnet.eval();
         Pnet.to(at::kCUDA);
         Enet = torch::jit::load(Enet_file);
+        Enet.eval();
         Enet.to(at::kCUDA);
     }
     catch (const c10::Error& e) {
