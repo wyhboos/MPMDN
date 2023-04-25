@@ -83,13 +83,16 @@ class Plan_OMPL:
         elif planner == "RRT":
             # self.planner = og.InformedRRTstar(self.si)
             self.planner = og.RRT(self.si)
+        elif planner == "BITstar":
+            self.planner = og.BITstar(self.si)
+        elif planner == "IRRTstar":
+            self.planner = og.InformedRRTstar(self.si)
             # self.planner.setRange(3)
             # self.planner.setGoalBias(0.01)
         self.ss.setPlanner(self.planner)
     
     def set_path_cost_threshold(self, cost=999):
-        self.termination = ob.MultiOptimizationObjective(self.si)
-        self.termination.addObjective(ob.PathLengthOptimizationObjective(self.si), 1)
+        self.termination = ob.PathLengthOptimizationObjective(self.si)
         self.termination.setCostThreshold(cost)
         self.ss.setOptimizationObjective(self.termination)
         
