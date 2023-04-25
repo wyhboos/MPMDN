@@ -246,7 +246,12 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             // std::cout<<"start_t"<<start_t<<std::endl;
             // std::cout<<"goal_t"<<goal_t<<std::endl;
             at::Tensor output = Pnet.forward(inputs).toTensor();
-            ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
+            ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
+            for (int i = 0; i < valid_ck_cnt; i++)
+            {
+                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
+                if(si_->isValid(next_state->get())) break;
+            }
             isvalid = si_->isValid(next_state->get());
             is_colli = !si_->checkMotion(start_now->get(), next_state->get());
             path1.push_back(next_state);
@@ -277,7 +282,12 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             inputs.push_back(goal_t);
             at::Tensor output = Pnet.forward(inputs).toTensor();
             // std::cout<<output<<std::endl;
-            ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
+            ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
+            for (int i = 0; i < valid_ck_cnt; i++)
+            {
+                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
+                if(si_->isValid(next_state->get())) break;
+            }
             isvalid = si_->isValid(next_state->get());
             is_colli = !si_->checkMotion(start_now->get(), next_state->get());
             path2.push_back(next_state);
