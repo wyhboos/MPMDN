@@ -258,10 +258,16 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             at::Tensor sigma = output[1].toTensor();
             at::Tensor mean = output[2].toTensor();
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
+            next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             for (int i = 0; i < valid_ck_cnt; i++)
             {
-                next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
+                next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
+            }
+            for (int i = 0; i < colli_ck_cnt; i++)
+            {
+                if(si_->checkMotion(start_now->get(), next_state->get())) break;
+                next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             }
             
             isvalid = si_->isValid(next_state->get());
@@ -307,10 +313,16 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             // ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state = generate_state_from_mvn(alpha, mean, sigma);
 
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
+            next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             for (int i = 0; i < valid_ck_cnt; i++)
             {
-                next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
+                next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
+            }
+            for (int i = 0; i < colli_ck_cnt; i++)
+            {
+                if(si_->checkMotion(start_now->get(), next_state->get())) break;
+                next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             }
             
             
@@ -634,11 +646,14 @@ void ompl::geometric::MPMDN::load_Enet_Pnet(std::string Enet_file, std::string P
     try {
     // Deserialize the ScriptModule from a file using torch::jit::load().
         Pnet = torch::jit::load(Pnet_file);
-        Pnet.eval();
-        Pnet.to(at::kCUDA);
-        Enet = torch::jit::load(Enet_file);
-        Enet.eval();
-        Enet.to(at::kCUDA);
+        if (Pnet_train)
+        {
+            Pnet.train();
+        }
+        else
+        {
+            Pnet.eval();
+        }
     }
     catch (const c10::Error& e) {
         std::cerr << "error loading the model\n";

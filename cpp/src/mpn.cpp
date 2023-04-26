@@ -245,12 +245,22 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             // std::cout<<"env"<<env_encoding<<std::endl;
             // std::cout<<"start_t"<<start_t<<std::endl;
             // std::cout<<"goal_t"<<goal_t<<std::endl;
-            at::Tensor output = Pnet.forward(inputs).toTensor();
+
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
+            at::Tensor output = Pnet.forward(inputs).toTensor();
+            // valid check 
             for (int i = 0; i < valid_ck_cnt; i++)
             {
                 next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
+                at::Tensor output = Pnet.forward(inputs).toTensor();
+            }
+            // colli check
+            for (int i = 0; i < colli_ck_cnt; i++)
+            {
+                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
+                if(si_->checkMotion(start_now->get(), next_state->get())) break;
+                at::Tensor output = Pnet.forward(inputs).toTensor();
             }
             isvalid = si_->isValid(next_state->get());
             is_colli = !si_->checkMotion(start_now->get(), next_state->get());
@@ -280,13 +290,21 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             inputs.push_back(env_encoding);
             inputs.push_back(start_t);
             inputs.push_back(goal_t);
-            at::Tensor output = Pnet.forward(inputs).toTensor();
-            // std::cout<<output<<std::endl;
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
+            at::Tensor output = Pnet.forward(inputs).toTensor();
+            // valid check 
             for (int i = 0; i < valid_ck_cnt; i++)
             {
                 next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
+                at::Tensor output = Pnet.forward(inputs).toTensor();
+            }
+            // colli check
+            for (int i = 0; i < colli_ck_cnt; i++)
+            {
+                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
+                if(si_->checkMotion(start_now->get(), next_state->get())) break;
+                at::Tensor output = Pnet.forward(inputs).toTensor();
             }
             isvalid = si_->isValid(next_state->get());
             is_colli = !si_->checkMotion(start_now->get(), next_state->get());
@@ -528,7 +546,14 @@ void ompl::geometric::MPN::load_Enet_Pnet(std::string Enet_file, std::string Pne
     try {
     // Deserialize the ScriptModule from a file using torch::jit::load().
         Pnet = torch::jit::load(Pnet_file);
-        Pnet.eval();
+        if (Pnet_train)
+        {
+            Pnet.train();
+        }
+        else
+        {
+            Pnet.eval();
+        }
         Pnet.to(at::kCUDA);
         Enet = torch::jit::load(Enet_file);
         Enet.eval();
