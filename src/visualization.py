@@ -233,6 +233,47 @@ def plot_rotat_rec_start_goal_2D_two_link(fig, start, goal, pixel_per_meter):
 
     return fig
 
+def plot_rotat_rec_start_goal_2D_three_link(fig, start, goal, pixel_per_meter):
+    # plot start
+    start_link1 = start[0]
+    rec_size = [start_link1[1] * pixel_per_meter, start_link1[0] * pixel_per_meter]
+    center_axis1, center_axis2 = org_to_img(start_link1[2], start_link1[3], fig.shape, pixel_per_meter)
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start_link1[4]], r=4,
+                               color="blue")
+
+    start_link2 = start[1]
+    rec_size = [start_link2[1] * pixel_per_meter, start_link2[0] * pixel_per_meter]
+    center_axis1, center_axis2 = org_to_img(start_link2[2], start_link2[3], fig.shape, pixel_per_meter)
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start_link2[4]], r=4,
+                               color="blue")
+    
+    start_link3 = start[2]
+    rec_size = [start_link3[1] * pixel_per_meter, start_link3[0] * pixel_per_meter]
+    center_axis1, center_axis2 = org_to_img(start_link3[2], start_link3[3], fig.shape, pixel_per_meter)
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start_link3[4]], r=4,
+                               color="blue")
+
+    # plot goal
+    goal_link1 = goal[0]
+    rec_size = [goal_link1[1] * pixel_per_meter, goal_link1[0] * pixel_per_meter]
+    center_axis1, center_axis2 = org_to_img(goal_link1[2], goal_link1[3], fig.shape, pixel_per_meter)
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal_link1[4]], r=4,
+                               color="red")
+
+    goal_link2 = goal[1]
+    rec_size = [goal_link2[1] * pixel_per_meter, goal_link2[0] * pixel_per_meter]
+    center_axis1, center_axis2 = org_to_img(goal_link2[2], goal_link2[3], fig.shape, pixel_per_meter)
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal_link2[4]], r=4,
+                               color="red")
+    
+    goal_link3 = goal[2]
+    rec_size = [goal_link3[1] * pixel_per_meter, goal_link3[0] * pixel_per_meter]
+    center_axis1, center_axis2 = org_to_img(goal_link3[2], goal_link3[3], fig.shape, pixel_per_meter)
+    fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal_link3[4]], r=4,
+                               color="red")
+
+
+    return fig
 
 def plot_rotat_rec_path_2D(fig, path, pixel_per_meter):
     # plot rectangles
@@ -279,6 +320,29 @@ def plot_rotat_rec_path_2D_two_link(fig, path, pixel_per_meter):
                 fig = plot_line_in_fig_2D(fig, start=p1, end=p2, r=1, color='red')
     return fig
 
+def plot_rotat_rec_path_2D_three_link(fig, path, pixel_per_meter):
+    # plot rectangles
+    centers_all = [[],[],[]]
+    for recs in path:
+        for i in range(3):
+            rec = recs[i]
+            rec_size = [rec[1] * pixel_per_meter, rec[0] * pixel_per_meter]
+            center_axis1, center_axis2 = org_to_img(rec[2], rec[3], fig.shape, pixel_per_meter)
+            centers_all[i].append([center_axis1, center_axis2])
+            fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, rec[4]], r=1,
+                                       color="shallow_green")
+
+    # plot line connecting configurations
+    for centers in centers_all:
+        l = len(centers)
+        if l >= 2:
+            for i in range(l - 1):
+                p1 = centers[i]
+                p2 = centers[i + 1]
+                fig = plot_nearby(fig, p1[0], p1[1], r=3, color='red')
+                fig = plot_line_in_fig_2D(fig, start=p1, end=p2, r=1, color='red')
+    return fig
+
 
 def vis_for_2D_planning_rigidbody(rec_env, start, goal, path, size, pixel_per_meter, save_fig_dir):
     # create the fig and plot obstacles
@@ -300,6 +364,16 @@ def vis_for_2D_planning_two_link(rec_env, start, goal, path, size, pixel_per_met
     fig = plot_rotat_rec_start_goal_2D_two_link(fig, start, goal, pixel_per_meter)
     # plot the path
     fig = plot_rotat_rec_path_2D_two_link(fig, path, pixel_per_meter)
+    cv2.imwrite(save_fig_dir + '.png', fig)
+    return fig
+
+def vis_for_2D_planning_three_link(rec_env, start, goal, path, size, pixel_per_meter, save_fig_dir):
+    # create the fig and plot obstacles
+    fig = plot_rotat_rec_env_2D(rec_env, size, pixel_per_meter)
+    # plot start and goal state
+    fig = plot_rotat_rec_start_goal_2D_three_link(fig, start, goal, pixel_per_meter)
+    # plot the path
+    fig = plot_rotat_rec_path_2D_three_link(fig, path, pixel_per_meter)
     cv2.imwrite(save_fig_dir + '.png', fig)
     return fig
 
