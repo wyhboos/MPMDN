@@ -146,7 +146,7 @@ class Plan_OMPL:
             Angle2 = state_ompl[3]
             return [Vec_X, Vec_Y, Angle1, Angle2]
         
-        if self.configure_type == "Two_Link_2D":
+        if self.configure_type == "Three_Link_2D":
             Vec_X = state_ompl[0]
             Vec_Y = state_ompl[1]
             Angle1 = state_ompl[2]

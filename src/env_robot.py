@@ -287,7 +287,7 @@ class Env_Robot:
             y = state[1]
             yaw1 = state[2]
             yaw2 = state[3]
-            yaw2 = state[4]
+            yaw3 = state[4]
             link_states = self.get_link_config_2D([x, y, yaw1, yaw2, yaw3], self.robot_size)
             recs = []
             for i, rec in enumerate(link_states):
