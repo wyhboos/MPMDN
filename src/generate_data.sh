@@ -9,8 +9,8 @@
 
 for i in {0..9}
 do
-if [ "$i" == "1" ] || [ "$i" == "4" ] || [ "$i" == "7" ] || [ "$i" == "9" ] || [ "$i" == "9" ] || [ "$i" == "9" ]; then
-  gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/generate_data.py --part $i --type 0; $SHELL'"
-fi
+# if [ "$i" == "1" ] || [ "$i" == "4" ] || [ "$i" == "7" ] || [ "$i" == "9" ] || [ "$i" == "9" ] || [ "$i" == "9" ]; then
+  gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/generate_data.py --part $i --type 2; $SHELL'"
+# fi
 done
 
