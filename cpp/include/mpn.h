@@ -28,9 +28,12 @@ namespace ompl
             double time_simplify;
             double time_all;
             bool use_orcle = true;
+            bool Pnet_train = true;
             float orcle_time_lim = 1;
             int nn_rep_cnt_lim = 10;
             int iter_cnt_lim = 100;
+            int valid_ck_cnt = 1;
+            int colli_ck_cnt = 1;
             int forward_ori;
             int forward_nnrep;
             int invalid_o;
@@ -58,6 +61,11 @@ namespace ompl
                 load_Enet_Pnet(Enet_file, Pnet_file);
                 load_obs_cloud(env_file);
                 replan_ss = setup_orcle_planner();
+            }
+            void reload_env_net()
+            {
+                load_Enet_Pnet(Enet_file, Pnet_file);
+                load_obs_cloud(env_file);
             }
 
             // MPN(std::string si_info) : base::Planner(si_info, "MPN")
