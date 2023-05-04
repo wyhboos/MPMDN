@@ -20,3 +20,8 @@
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 3; $SHELL'"
 
 gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 100; $SHELL'"
+gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 101; $SHELL'"
+gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 102; $SHELL'"
+gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 110; $SHELL'"
+gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 111; $SHELL'"
+gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 112; $SHELL'"
