@@ -769,9 +769,20 @@ bool ompl::geometric::MPMDN::is_in_bounds(ompl::base::ScopedState<ompl::base::Co
         low = bounds.low[i];
         if(value>high || value<low) return false;
     }
-    double angle = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
-    if(angle>3.14 || angle<-3.14) return false;
-    return true;
+    if (state_type == "Rigidbody_2D")
+    {
+        double angle = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
+        if(angle>3.14 || angle<-3.14) return false;
+        return true;
+    }
+    if (state_type == "Two_Link_2D")
+    {
+        double angle1 = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
+        double angle2 = state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value;
+        if(angle1>3.14 || angle1<-3.14) return false;
+        if(angle2>3.14 || angle2<-3.14) return false;
+        return true;
+    }
     
 }
 
