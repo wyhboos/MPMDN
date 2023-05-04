@@ -654,6 +654,10 @@ void ompl::geometric::MPMDN::load_Enet_Pnet(std::string Enet_file, std::string P
         {
             Pnet.eval();
         }
+        Pnet.to(at::kCUDA);
+        Enet = torch::jit::load(Enet_file);
+        Enet.eval();
+        Enet.to(at::kCUDA);
     }
     catch (const c10::Error& e) {
         std::cerr << "error loading the model\n";
