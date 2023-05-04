@@ -43,6 +43,31 @@ class Env_Robot:
             link2_model = fcl.Box(link2_l, link2_w, 0)
             self.link2 = fcl.CollisionObject(link2_model, link2_tf)
 
+        if robot_type == "Three_Link_2D":
+            # [link1_length, link1_width, link2_length, link2_width]
+            self.robot_size = [2.5, 0.1, 2.5, 0.1, 2.5, 0.1]
+            link1_l = self.robot_size[0]
+            link1_w = self.robot_size[1]
+            link2_l = self.robot_size[2]
+            link2_w = self.robot_size[3]
+            link3_l = self.robot_size[4]
+            link3_w = self.robot_size[5]
+
+            link1_t = np.array([0, 0, 0])
+            link1_tf = fcl.Transform(link1_t)
+            link1_model = fcl.Box(link1_l, link1_w, 0)
+            self.link1 = fcl.CollisionObject(link1_model, link1_tf)
+
+            link2_t = np.array([0, 0, 0])
+            link2_tf = fcl.Transform(link2_t)
+            link2_model = fcl.Box(link2_l, link2_w, 0)
+            self.link2 = fcl.CollisionObject(link2_model, link2_tf)
+
+            link3_t = np.array([0, 0, 0])
+            link3_tf = fcl.Transform(link3_t)
+            link3_model = fcl.Box(link3_l, link3_w, 0)
+            self.link3 = fcl.CollisionObject(link3_model, link3_tf)
+
         # init obstacles
         if obs is None:
             self.obstacles = []
@@ -60,32 +85,65 @@ class Env_Robot:
         else:
             self.load_rec_obs_2D(obs)
 
-    def get_link_config_two_link_2D(self, link_state, link_size):
+    def get_link_config_2D(self, link_state, link_size):
         """
-
         :param link_state: [x,y,yaw1,yaw2],note that yaw2 is relative to yaw1
         :param link_size: [link1_length, link1_width, link2_length, link2_width]
         :return:
         """
-        x = link_state[0]
-        y = link_state[1]
-        yaw1 = link_state[2]
-        yaw2 = link_state[3]
+        if self.robot_type == "Two_Link_2D":
+            x = link_state[0]
+            y = link_state[1]
+            yaw1 = link_state[2]
+            yaw2 = link_state[3]
 
-        link1_l = link_size[0]
-        link1_w = link_size[1]
-        link2_l = link_size[2]
-        link2_w = link_size[3]
+            link1_l = link_size[0]
+            link1_w = link_size[1]
+            link2_l = link_size[2]
+            link2_w = link_size[3]
 
-        link1_state = [x, y, yaw1]
-        link2_x = x + 0.5 * link1_l * \
-                  math.cos(yaw1) + 0.5 * link2_l * math.cos(yaw1 + yaw2)
-        link2_y = y + 0.5 * link1_l * \
-                  math.sin(yaw1) + 0.5 * link2_l * math.sin(yaw1 + yaw2)
-        link2_yaw = yaw1 + yaw2
+            link1_state = [x, y, yaw1]
+            link2_x = x + 0.5 * link1_l * \
+                    math.cos(yaw1) + 0.5 * link2_l * math.cos(yaw1 + yaw2)
+            link2_y = y + 0.5 * link1_l * \
+                    math.sin(yaw1) + 0.5 * link2_l * math.sin(yaw1 + yaw2)
+            link2_yaw = yaw1 + yaw2
 
-        link2_state = [link2_x, link2_y, link2_yaw]
-        return [link1_state, link2_state]
+            link2_state = [link2_x, link2_y, link2_yaw]
+            return [link1_state, link2_state]
+        
+        if self.robot_type == "Three_Link_2D":
+            x = link_state[0]
+            y = link_state[1]
+            yaw1 = link_state[2]
+            yaw2 = link_state[3]
+            yaw3 = link_state[4]
+
+            link1_l = link_size[0]
+            link1_w = link_size[1]
+            link2_l = link_size[2]
+            link2_w = link_size[3]
+            link3_l = link_size[4]
+            link3_w = link_size[5]
+            link1_state = [x, y, yaw1]
+
+            link2_x = x + 0.5 * link1_l * \
+                    math.cos(yaw1) + 0.5 * link2_l * math.cos(yaw1 + yaw2)
+            link2_y = y + 0.5 * link1_l * \
+                    math.sin(yaw1) + 0.5 * link2_l * math.sin(yaw1 + yaw2)
+            link2_yaw = yaw1 + yaw2
+            link2_state = [link2_x, link2_y, link2_yaw]
+
+            link3_x = link2_x + 0.5 * link2_l * \
+                    math.cos(yaw1+yaw2) + 0.5 * link3_l * math.cos(yaw1 + yaw2+ yaw3)
+            link3_y = link2_y + 0.5 * link2_l * \
+                    math.sin(yaw1+yaw2) + 0.5 * link3_l * math.sin(yaw1 + yaw2+ yaw3)
+            link3_yaw = yaw1 + yaw2 + yaw3
+            link3_state = [link3_x, link3_y, link3_yaw]
+
+            return [link1_state, link2_state, link3_state]
+
+            
 
     def is_state_valid_2D(self, state):
 
@@ -137,6 +195,45 @@ class Env_Robot:
                     valid_flag = False
                     break
             return valid_flag
+        
+        if self.robot_type == "Three_Link_2D":
+            Vec = state[0]
+            Angle1 = state[1]
+            Angle2 = state[2]
+            Angle3 = state[3]
+            Vec_X = Vec[0]
+            Vec_Y = Vec[1]
+            Angle1_Yaw = Angle1.value
+            Angle2_Yaw = Angle2.value
+            Angle3_Yaw = Angle3.value
+            link_states = self.get_link_config_2D(
+                [Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw, Angle3_Yaw], self.robot_size)
+
+            t_1 = np.array([link_states[0][0], link_states[0][1], 0])
+            matrix_1 = get_rotation_matrix_from_angle_z(link_states[0][2])
+            self.link1.setTranslation(t_1)
+            self.link1.setRotation(matrix_1)
+
+            t_2 = np.array([link_states[1][0], link_states[1][1], 0])
+            matrix_2 = get_rotation_matrix_from_angle_z(link_states[1][2])
+            self.link2.setTranslation(t_2)
+            self.link2.setRotation(matrix_2)
+
+            t_3 = np.array([link_states[2][0], link_states[2][1], 0])
+            matrix_3 = get_rotation_matrix_from_angle_z(link_states[2][2])
+            self.link3.setTranslation(t_3)
+            self.link3.setRotation(matrix_3)
+
+            valid_flag = True
+            for obs in self.obstacles:
+                # dis = fcl.distance(self.robot, obs)
+                ret1 = fcl.collide(self.link1, obs)
+                ret2 = fcl.collide(self.link2, obs)
+                ret3 = fcl.collide(self.link3, obs)
+                if ret1 > 0 or ret2 > 0 or ret3>0:
+                    valid_flag = False
+                    break
+            return valid_flag
 
     def get_config_path_with_robot_info_2D(self, path):
         """
@@ -151,7 +248,16 @@ class Env_Robot:
             return path_with_robot
         if self.robot_type == "Two_Link_2D":
             for cfg in path:
-                state = self.get_link_config_two_link_2D(cfg, self.robot_size)
+                state = self.get_link_config_2D(cfg, self.robot_size)
+                recs = []
+                for i, rec in enumerate(state):
+                    recs.append(self.robot_size[2 * i:2 * i + 2] + state[i])
+                path_with_robot.append(recs)
+            return path_with_robot
+        
+        if self.robot_type == "Three_Link_2D":
+            for cfg in path:
+                state = self.get_link_config_2D(cfg, self.robot_size)
                 recs = []
                 for i, rec in enumerate(state):
                     recs.append(self.robot_size[2 * i:2 * i + 2] + state[i])
@@ -170,7 +276,19 @@ class Env_Robot:
             y = state[1]
             yaw1 = state[2]
             yaw2 = state[3]
-            link_states = self.get_link_config_two_link_2D([x, y, yaw1, yaw2], self.robot_size)
+            link_states = self.get_link_config_2D([x, y, yaw1, yaw2], self.robot_size)
+            recs = []
+            for i, rec in enumerate(link_states):
+                recs.append(self.robot_size[2 * i:2 * i + 2] + link_states[i])
+            return recs
+        
+        if self.robot_type == "Three_Link_2D":
+            x = state[0]
+            y = state[1]
+            yaw1 = state[2]
+            yaw2 = state[3]
+            yaw3 = state[4]
+            link_states = self.get_link_config_2D([x, y, yaw1, yaw2, yaw3], self.robot_size)
             recs = []
             for i, rec in enumerate(link_states):
                 recs.append(self.robot_size[2 * i:2 * i + 2] + link_states[i])

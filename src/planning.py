@@ -3,7 +3,7 @@
 
 from plan_ompl import Plan_OMPL
 from env_robot import Env_Robot
-from visualization import vis_for_2D_planning_rigidbody, vis_for_2D_planning_two_link
+from visualization import vis_for_2D_planning_rigidbody, vis_for_2D_planning_two_link, vis_for_2D_planning_three_link
 
 from ompl import base, geometric
 import numpy as np
@@ -52,5 +52,9 @@ class Plan:
         if self.type == "Rigidbody_2D":
             vis_for_2D_planning_rigidbody(rec_env=rec_env, start=start, goal=goal,
                                           path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
+            
+        if self.type == "Three_Link_2D":
+            vis_for_2D_planning_three_link(rec_env=rec_env, start=start, goal=goal,
+                                         path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
 
 
