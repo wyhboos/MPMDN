@@ -81,7 +81,7 @@ def generate_path_main(args):
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Two_Link_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Two_Link_Path.npy"
     if type == "Three_Link_2D":
-        vis = "./fig/S2D/S2D_Three_Link/S2D_Three_Link"
+        vis = "./fig/S2D/S2D_Three_Link/S2D_3L"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Three_Link_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Three_Link_Path.npy"
     # load env
@@ -127,7 +127,7 @@ def generate_path_main(args):
             goal = pl.pl_ompl.conver_list_config_to_ompl_config(goal)
             rec_env = rec_envs[i, :, :]
             pl.env_rob.load_rec_obs_2D(rec_env)
-            solved, path = pl.plan(start=start, goal=goal, vis=vis_i_j, time_lim=0.5, simple=False)
+            solved, path = pl.plan(start=start, goal=goal, vis=vis_i_j, time_lim=1, simple=False)
             if solved and solved.asString() == "Exact solution":
                 suc_cnt += 1
                 paths_env.append(path)
