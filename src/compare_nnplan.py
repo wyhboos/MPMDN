@@ -1,36 +1,8 @@
 #!/usr/bin/env python3
 # -*- encoding:utf-8 -*-
 from planning import *
+from utility import *
 import os
-def get_invalid_pair(env_index, list_path, ompl_path, valid_fun):
-    l = len(list_path)
-    if l<=2:
-        return []
-    colli_pair = []
-    list_goal = list_path[l-1]
-    for i in range(1,l-1):
-        ompl_state = ompl_path[i]
-        if not valid_fun(ompl_state) and valid_fun(ompl_path[i-1]):
-            list_start = list_path[i-1]
-            colli_pair.append([env_index, list_start, list_goal])
-    return colli_pair
-
-def get_colli_pair(env_index, list_path, ompl_path, valid_fun, colli_fun):
-    l = len(list_path)
-    if l<=2:
-        return []
-    colli_pair = []
-    list_goal = list_path[l-1]
-    for i in range(1,l-1):
-        if valid_fun(ompl_path[i-1]) and valid_fun(ompl_path[l-1]):
-            if not colli_fun(ompl_path[i-1], ompl_path[i]):
-                list_start = list_path[i-1]
-                colli_pair.append([env_index, list_start, list_goal])
-    return colli_pair
-
-def create_dir(dir):
-    if not os.path.exists(dir):
-        os.makedirs(dir)
 
 def get_statistics(para_dict):
         # dict_1 = {"type":"Rigidbody_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
@@ -51,19 +23,13 @@ def get_statistics(para_dict):
     ori_simplify = para_dict["ori_simplify"]
     nn_rep_cnt_lim = para_dict["nn_rep_cnt_lim"]
     iter_cnt_lim = para_dict["iter_cnt_lim"]
-    
-    
-    
     mode = "para_"+str(para_index)+"_ocl_" + str(int(use_orcle)) + "_vck_" + str(valid_ck_cnt) + "_cck_" +str(colli_ck_cnt)
-
-
     if see == "seen":
         pl_env_s = 0
-        pl_env_e = 90
+        pl_env_e = 900
     elif see == "unseen":
-        pl_env_s = 90
-        pl_env_e = 100
-        
+        pl_env_s = 900
+        pl_env_e = 1000
         
     if type == "Rigidbody_2D":
         model_name = "S2D_RB_" + planner + mode
@@ -75,7 +41,7 @@ def get_statistics(para_dict):
         vis = "./fig/S2D/TL/"+ planner +"/" + see + "/" + mode + "/"
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_TL_sg_ev.npy"
-    env_file = "./Data/S2D/S2D_env_100_rec.npy"
+    env_file = "./Data/S2D/S2D_env_30000_rec.npy"
 
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
@@ -87,7 +53,7 @@ def get_statistics(para_dict):
     # generate start and goal
     if gen_s_g:
         env_pts = []
-        for i in range(100):
+        for i in range(1000):
             print("Generating start goal, Env:", i)
             rec_env = rec_envs[i, :, :]
             pl.env_rob.load_rec_obs_2D(rec_env)
@@ -281,129 +247,217 @@ def get_statistics(para_dict):
     
 if __name__ == '__main__':
     all_dict = {}
-    # MPN SEEN 
+    # S2D RB
+        # MPN SEEN
     dict_0 = {"para_index":0,"type":"Rigidbody_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":1, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_RB_2_ckp_460_libtorch.pt"}
     
     dict_1 = {"para_index":1,"type":"Rigidbody_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":10, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
-    
-    dict_2 = {"para_index":2,"type":"Rigidbody_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":20, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
-              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
-    
-    dict_3 = {"para_index":3,"type":"Rigidbody_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_RB_2_ckp_460_libtorch.pt"}
+        # MPN UNSEEN
+    dict_2 = {"para_index":2,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
               "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_RB_2_ckp_460_libtorch.pt"}
     
-    dict_4 = {"para_index":4,"type":"Rigidbody_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":60, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+    dict_3 = {"para_index":3,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_RB_2_ckp_460_libtorch.pt"}
+        # MPMDN SEEN
+    dict_4 = {"para_index":4,"type":"Rigidbody_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_RB_2_ckp_1000_libtorch.pt"}
     
     dict_5 = {"para_index":5,"type":"Rigidbody_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":80, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
-    
-    dict_6 = {"para_index":6,"type":"Rigidbody_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":100, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_RB_2_ckp_1000_libtorch.pt"}
+        # MPMDN UNSEEN
+    dict_6 = {"para_index":6,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_RB_2_ckp_1000_libtorch.pt"}
     
-    # MPN UNSEEN 
-    dict_10 = {"para_index":10,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":1, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+    dict_7 = {"para_index":7,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_RB_2_ckp_1000_libtorch.pt"}
     
-    dict_11 = {"para_index":11,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":10, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
-              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
     
-    dict_12 = {"para_index":12,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":20, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
-              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
-    
-    dict_13 = {"para_index":13,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    # S2D TL
+        # MPN SEEN
+    dict_10 = {"para_index":10,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
               "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
-              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
-    
-    dict_14 = {"para_index":14,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":60, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
-              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
-    
-    dict_15 = {"para_index":15,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":80, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
-              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
-    
-    dict_16 = {"para_index":16,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":100, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
-              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
-              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
-    
-    
-    dict_100 = {"para_index":100,"type":"Two_Link_2D", "see":"seen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":1, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
     
-    dict_101 = {"para_index":101,"type":"Two_Link_2D", "see":"seen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
+    dict_11 = {"para_index":11,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
+        # MPN UNSEEN
+    dict_12 = {"para_index":12,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
+    
+    dict_13 = {"para_index":13,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
+        # MPMDN SEEN
+    dict_14 = {"para_index":14,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
+    
+    dict_15 = {"para_index":15,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
+        # MPMDN UNSEEN
+    dict_16 = {"para_index":16,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
+    
+    dict_17 = {"para_index":17,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
+    
+    
+    
+    
+    # dict_11 = {"para_index":11,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    #           "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":10, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+    #           "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+    #           "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+    #           "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+    
+    # dict_12 = {"para_index":12,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    #           "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":20, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+    #           "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+    #           "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+    #           "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+    
+    # dict_13 = {"para_index":13,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    #           "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+    #           "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+    #           "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+    #           "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+    
+    # dict_14 = {"para_index":14,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    #           "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":60, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+    #           "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+    #           "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+    #           "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+    
+    # dict_15 = {"para_index":15,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    #           "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":80, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+    #           "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+    #           "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+    #           "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+    
+    # dict_16 = {"para_index":16,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    #           "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":100, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+    #           "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+    #           "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+    #           "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_Pnet_S2D_RB.pt"}
+    
+    
+    dict_100 = {"para_index":100,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":1, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
+    
+    dict_101 = {"para_index":101,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
             "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-            "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+            "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
             "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
             "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
     
-    dict_102 = {"para_index":102,"type":"Two_Link_2D", "see":"seen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
+    dict_102 = {"para_index":102,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
         "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-        "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+        "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+        "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+        "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
+    
+    dict_103 = {"para_index":103,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+        "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":80, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+        "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
         "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
         "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
     
     
-    dict_110 = {"para_index":100,"type":"Two_Link_2D", "see":"seen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
+    dict_110 = {"para_index":110,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
               "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":1, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
     
-    dict_111 = {"para_index":101,"type":"Two_Link_2D", "see":"seen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
+    dict_111 = {"para_index":111,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
             "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-            "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+            "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
             "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
             "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
     
-    dict_112 = {"para_index":102,"type":"Two_Link_2D", "see":"seen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
-        "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
-        "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy",
+    dict_112 = {"para_index":112,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+        "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":20, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+        "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
         "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
         "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
+    
+    dict_113 = {"para_index":113,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+        "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+        "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+        "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+        "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
+    
+    
+    dict_114 = {"para_index":114,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+        "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":60, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+        "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+        "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+        "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
+    
+    dict_115 = {"para_index":115,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+        "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":80, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+        "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+        "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+        "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
+    
+    dict_116 = {"para_index":116,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+        "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":100, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+        "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+        "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+        "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
+    
+    
+    
     
 
     
@@ -415,22 +469,30 @@ if __name__ == '__main__':
     all_dict["4"] = dict_4
     all_dict["5"] = dict_5
     all_dict["6"] = dict_6
+    all_dict["7"] = dict_7
+    
+    all_dict["10"] = dict_10
+    all_dict["11"] = dict_11
+    all_dict["12"] = dict_12
+    all_dict["13"] = dict_13
+    all_dict["14"] = dict_14
+    all_dict["15"] = dict_15
+    all_dict["16"] = dict_16
+    all_dict["17"] = dict_17
     
     
-    all_dict["0"] = dict_0
-    all_dict["1"] = dict_1
-    all_dict["2"] = dict_2
-    all_dict["3"] = dict_3
-    all_dict["4"] = dict_4
-    all_dict["5"] = dict_5
-    all_dict["6"] = dict_6
     
     all_dict["100"] = dict_100
     all_dict["101"] = dict_101
     all_dict["102"] = dict_102
+    all_dict["103"] = dict_103
     all_dict["110"] = dict_110
     all_dict["111"] = dict_111
     all_dict["112"] = dict_112
+    all_dict["113"] = dict_113
+    all_dict["114"] = dict_114
+    all_dict["115"] = dict_115
+    all_dict["116"] = dict_116
 
 
 
@@ -441,4 +503,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     para_index = args.para_index
     para_dict = all_dict[str(para_index)]
+    param_file = "./Data/S2D/Sta/param_" + str(para_index) + ".csv"
+    write_key(param_file, para_dict)
     get_statistics(para_dict)
