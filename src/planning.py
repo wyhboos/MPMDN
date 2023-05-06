@@ -49,7 +49,7 @@ class Plan:
             vis_for_2D_planning_two_link(rec_env=rec_env, start=start, goal=goal,
                                          path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
 
-        if self.type == "Rigidbody_2D":
+        if self.type == "Rigidbody_2D" or self.type == "Point_2D":
             vis_for_2D_planning_rigidbody(rec_env=rec_env, start=start, goal=goal,
                                           path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
             
