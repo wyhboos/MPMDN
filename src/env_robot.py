@@ -173,7 +173,7 @@ class Env_Robot:
             Vec_Y = Vec[1]
             Angle1_Yaw = Angle1.value
             Angle2_Yaw = Angle2.value
-            link_states = self.get_link_config_two_link_2D(
+            link_states = self.get_link_config_2D(
                 [Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw], self.robot_size)
 
             t_1 = np.array([link_states[0][0], link_states[0][1], 0])

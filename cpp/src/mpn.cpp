@@ -248,19 +248,20 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
 
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
             at::Tensor output = Pnet.forward(inputs).toTensor();
+            next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             // valid check 
             for (int i = 0; i < valid_ck_cnt; i++)
             {
-                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
                 at::Tensor output = Pnet.forward(inputs).toTensor();
+                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             }
             // colli check
             for (int i = 0; i < colli_ck_cnt; i++)
             {
-                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
                 if(si_->checkMotion(start_now->get(), next_state->get())) break;
                 at::Tensor output = Pnet.forward(inputs).toTensor();
+                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             }
             isvalid = si_->isValid(next_state->get());
             is_colli = !si_->checkMotion(start_now->get(), next_state->get());
@@ -292,19 +293,20 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             inputs.push_back(goal_t);
             ompl::base::ScopedState<ompl::base::CompoundStateSpace>* next_state;
             at::Tensor output = Pnet.forward(inputs).toTensor();
+            next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             // valid check 
             for (int i = 0; i < valid_ck_cnt; i++)
             {
-                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
                 if(si_->isValid(next_state->get())) break;
                 at::Tensor output = Pnet.forward(inputs).toTensor();
+                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             }
             // colli check
             for (int i = 0; i < colli_ck_cnt; i++)
             {
-                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
                 if(si_->checkMotion(start_now->get(), next_state->get())) break;
                 at::Tensor output = Pnet.forward(inputs).toTensor();
+                next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             }
             isvalid = si_->isValid(next_state->get());
             is_colli = !si_->checkMotion(start_now->get(), next_state->get());
@@ -653,10 +655,20 @@ bool ompl::geometric::MPN::is_in_bounds(ompl::base::ScopedState<ompl::base::Comp
         low = bounds.low[i];
         if(value>high || value<low) return false;
     }
-    double angle = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
-    if(angle>3.14 || angle<-3.14) return false;
-    return true;
-    
+    if (state_type == "Rigidbody_2D")
+    {
+        double angle = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
+        if(angle>3.14 || angle<-3.14) return false;
+        return true;
+    }
+    if (state_type == "Two_Link_2D")
+    {
+        double angle1 = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
+        double angle2 = state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value;
+        if(angle1>3.14 || angle1<-3.14) return false;
+        if(angle2>3.14 || angle2<-3.14) return false;
+        return true;
+    }
 }
 
 bool ompl::geometric::MPN::is_feasible(std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_ori)
