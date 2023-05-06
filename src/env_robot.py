@@ -292,12 +292,13 @@ class Env_Robot:
         if self.robot_type == "Point_2D":
             for cfg in path:
                 path_with_robot.append(self.robot_size + cfg + [0])
+            return path_with_robot
                 
         if self.robot_type == "Rigidbody_2D":
             for cfg in path:
                 path_with_robot.append(self.robot_size + cfg)
-
             return path_with_robot
+        
         if self.robot_type == "Two_Link_2D":
             for cfg in path:
                 state = self.get_link_config_2D(cfg, self.robot_size)
