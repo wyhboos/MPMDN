@@ -34,6 +34,18 @@ class Plan_OMPL:
         self.configure_type = configure_type
         
         print("Plan_OMPL", configure_type, set_bounds)
+        
+        if configure_type == "Point_2D":
+            # create an SE2 state space
+            self.space = ob.RealVectorStateSpace(2)
+            # set bounds
+            bounds = ob.RealVectorBounds(2)
+            bounds.setLow(set_bounds[0])
+            bounds.setHigh(set_bounds[1])
+            self.space.setBounds(bounds)
+            # # create a simple setup object, note that si is needed when setting planner
+            self.si = ob.SpaceInformation(self.space)
+            self.ss = og.SimpleSetup(self.si)
 
         if configure_type == "Rigidbody_2D":
             # create an SE2 state space
@@ -88,6 +100,18 @@ class Plan_OMPL:
             # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
+            
+        if configure_type == "Point_3D":
+            # create an SE2 state space
+            self.space = ob.RealVectorStateSpace(3)
+            # set bounds
+            bounds = ob.RealVectorBounds(3)
+            bounds.setLow(set_bounds[0])
+            bounds.setHigh(set_bounds[1])
+            self.space.setBounds(bounds)
+            # # create a simple setup object, note that si is needed when setting planner
+            self.si = ob.SpaceInformation(self.space)
+            self.ss = og.SimpleSetup(self.si)
 
     def setStateValidityChecker(self, StateValidityChecker):
         self.StateValidityChecker = StateValidityChecker
@@ -133,6 +157,11 @@ class Plan_OMPL:
         return start, goal
 
     def convert_ompl_config_to_list_config(self, state_ompl):
+        if self.configure_type == "Point_2D":
+            X = state_ompl[0]
+            Y = state_ompl[1]
+            return [X, Y, 0]
+        
         if self.configure_type == "Rigidbody_2D":
             X = state_ompl().getX()
             Y = state_ompl().getY()
@@ -153,8 +182,23 @@ class Plan_OMPL:
             Angle2 = state_ompl[3]
             Angle3 = state_ompl[4]
             return [Vec_X, Vec_Y, Angle1, Angle2, Angle3]
+        
+        if self.configure_type == "Point_3D":
+            X = state_ompl[0]
+            Y = state_ompl[1]
+            Z = state_ompl[2]
+            return [X, Y, Z]
 
     def conver_list_config_to_ompl_config(self, state_list):
+        if self.configure_type == "Point_2D":
+            X = state_list[0]
+            Y = state_list[1]
+
+            state_ompl = ob.State(self.space)
+            state_ompl()[0] = X
+            state_ompl()[1] = Y
+            return state_ompl
+        
         if self.configure_type == "Rigidbody_2D":
             X = state_list[0]
             Y = state_list[1]
@@ -193,6 +237,17 @@ class Plan_OMPL:
             state_ompl()[2].value = Angle2
             state_ompl()[3].value = Angle3
             return state_ompl
+        
+        if self.configure_type == "Point_3D":
+            X = state_list[0]
+            Y = state_list[1]
+            Z = state_list[2]
+
+            state_ompl = ob.State(self.space)
+            state_ompl()[0] = X
+            state_ompl()[1] = Y
+            state_ompl()[2] = Z
+            return state_ompl
 
     def solve_planning_2D(self, start, goal, time_lim=10, simple=False):
         self.ss.clear()
@@ -214,6 +269,12 @@ class Plan_OMPL:
             states = self.ss.getSolutionPath().getStates()
             path_len = len(states)
             path = []
+            if self.configure_type == "Point_2D":
+                for i in range(path_len):
+                    X = states[i][0]
+                    Y = states[i][1]
+                    path.append([X, Y])
+
             if self.configure_type == "Rigidbody_2D":
                 for i in range(path_len):
                     X = states[i].getX()
@@ -246,4 +307,12 @@ class Plan_OMPL:
                     Angle2_Yaw = Angle2.value
                     Angle3_Yaw = Angle3.value
                     path.append([Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw, Angle3_Yaw])
+                    
+            if self.configure_type == "Point_3D":
+                for i in range(path_len):
+                    X = states[i][0]
+                    Y = states[i][1]
+                    Z = states[i][2]
+                    path.append([X, Y, Z])
+
         return solved, path
