@@ -20,7 +20,7 @@ class Plan:
         self.pl_ompl = Plan_OMPL(configure_type=self.type, set_bounds=set_bounds)
         self.env_rob = Env_Robot(robot_type=self.type)
 
-        self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
+        self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid)
         self.pl_ompl.set_planner(planner)
 
     # This function aims to solve problems when multiple plan with python using C++ ompl lib
