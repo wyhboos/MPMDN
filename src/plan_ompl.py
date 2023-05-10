@@ -112,6 +112,16 @@ class Plan_OMPL:
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
+            
+        if configure_type == "panda_arm":
+            self.space = ob.RealVectorStateSpace(7)
+            arm_bounds_low = [-2.9671, -1.8326, -2.9671, -3.1416, -2.9671, -0.0873, -2.9671]
+            arm_bounds_high = [2.9671, 1.8326, 2.9671, 0.0873, 2.9671, 3.8223, 2.9671]
+            bounds = ob.RealVectorBounds(7)
+            for i in range(7):
+                bounds.setLow(i, arm_bounds_low[i])    
+                bounds.setHigh(i, arm_bounds_high[i])    
+            self.space.setBounds(bounds)
 
     def setStateValidityChecker(self, StateValidityChecker):
         self.StateValidityChecker = StateValidityChecker
@@ -188,6 +198,9 @@ class Plan_OMPL:
             Y = state_ompl[1]
             Z = state_ompl[2]
             return [X, Y, Z]
+        
+        if self.configure_type == "panda_arm":
+            return [state_ompl[i] for i in range(7)]
 
     def conver_list_config_to_ompl_config(self, state_list):
         if self.configure_type == "Point_2D":
@@ -247,6 +260,16 @@ class Plan_OMPL:
             state_ompl()[0] = X
             state_ompl()[1] = Y
             state_ompl()[2] = Z
+            return state_ompl
+        
+        if self.configure_type == "panda_arm":
+            X = state_list[0]
+            Y = state_list[1]
+            Z = state_list[2]
+
+            state_ompl = ob.State(self.space)
+            for i in range(7):
+                state_ompl()[i] = state_list[i]
             return state_ompl
 
     def solve_planning_2D(self, start, goal, time_lim=10, simple=False):
@@ -314,5 +337,9 @@ class Plan_OMPL:
                     Y = states[i][1]
                     Z = states[i][2]
                     path.append([X, Y, Z])
+                    
+            if self.configure_type == "panda_arm":
+                for i in range(path_len):
+                    path.append([states[i][0] for i in range(7)])
 
         return solved, path

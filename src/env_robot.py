@@ -87,6 +87,8 @@ class Env_Robot:
             matrix = get_rotation_matrix_from_angle_z(0)
             self.robot.setRotation(matrix)
             
+        if robot_type == "panda_arm":
+            pass
           
         # init obstacles
         if obs is None:
@@ -163,7 +165,7 @@ class Env_Robot:
 
             return [link1_state, link2_state, link3_state]
 
-    def is_state_valid_2D(self, state):
+    def is_state_valid(self, state):
         if self.robot_type == "Point_2D":
             x = state[0]
             y = state[1]
@@ -369,6 +371,31 @@ class Env_Robot:
             self.obstacles_vis.append([l, w, c_x, c_y, 0])
             obs_i_model = fcl.Box(l, w, 0)
             obs_i_t = np.array((c_x, c_y, 0))
+            obs_i_tf = fcl.Transform(obs_i_t)
+            obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
+            self.obstacles.append(obs_i)
+    
+    def load_rec_obs_3D(self, rec_obs):
+        if self.obstacles is not None:
+            self.obstacles.clear()
+            self.obstacles_vis.clear()
+        obs_cnt, pt_c = rec_obs.shape
+        for i in range(obs_cnt):
+            l_b_x = rec_obs[i, 0]
+            l_b_y = rec_obs[i, 1]
+            l_b_z = rec_obs[i, 2]
+            r_t_x = rec_obs[i, 3]
+            r_t_y = rec_obs[i, 4]
+            r_t_z = rec_obs[i, 5]
+            l = r_t_x - l_b_x
+            w = r_t_y - l_b_y
+            h = r_t_z - l_b_z
+            c_x = 0.5 * (l_b_x + r_t_x)
+            c_y = 0.5 * (l_b_y + r_t_y)
+            c_z = 0.5 * (l_b_z + r_t_z)
+            # self.obstacles_vis.append([l, w, h,c_x, c_y, 0])
+            obs_i_model = fcl.Box(l, w, h)
+            obs_i_t = np.array((c_x, c_y, c_z))
             obs_i_tf = fcl.Transform(obs_i_t)
             obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
             self.obstacles.append(obs_i)
