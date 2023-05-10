@@ -379,14 +379,14 @@ class Env_Robot:
         if self.obstacles is not None:
             self.obstacles.clear()
             self.obstacles_vis.clear()
-        obs_cnt, pt_c = rec_obs.shape
+        obs_cnt = rec_obs.shape[0]
         for i in range(obs_cnt):
-            l_b_x = rec_obs[i, 0]
-            l_b_y = rec_obs[i, 1]
-            l_b_z = rec_obs[i, 2]
-            r_t_x = rec_obs[i, 3]
-            r_t_y = rec_obs[i, 4]
-            r_t_z = rec_obs[i, 5]
+            l_b_x = rec_obs[i, 0, 0]
+            l_b_y = rec_obs[i, 0, 1]
+            l_b_z = rec_obs[i, 0, 2]
+            r_t_x = rec_obs[i, 1, 0]
+            r_t_y = rec_obs[i, 1, 1]
+            r_t_z = rec_obs[i, 1, 2]
             l = r_t_x - l_b_x
             w = r_t_y - l_b_y
             h = r_t_z - l_b_z
