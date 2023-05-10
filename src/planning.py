@@ -20,7 +20,7 @@ class Plan:
         self.pl_ompl = Plan_OMPL(configure_type=self.type, set_bounds=set_bounds)
         self.env_rob = Env_Robot(robot_type=self.type)
 
-        self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid_2D)
+        self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid)
         self.pl_ompl.set_planner(planner)
 
     # This function aims to solve problems when multiple plan with python using C++ ompl lib
@@ -49,7 +49,7 @@ class Plan:
             vis_for_2D_planning_two_link(rec_env=rec_env, start=start, goal=goal,
                                          path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
 
-        if self.type == "Rigidbody_2D":
+        if self.type == "Rigidbody_2D" or self.type == "Point_2D":
             vis_for_2D_planning_rigidbody(rec_env=rec_env, start=start, goal=goal,
                                           path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
             

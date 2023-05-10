@@ -17,6 +17,16 @@ class Env_Robot:
         self.config_path = None
         self.obstacles_vis = None
 
+        #use small rectangle when type is point!
+        if robot_type == "Point_2D":
+            self.robot_size = [0.01, 0.01]
+            robot_t = np.array([0, 0, 0])
+            robot_tf = fcl.Transform(robot_t)
+            robot_model = fcl.Box(self.robot_size[0], self.robot_size[1], 0)
+            self.robot = fcl.CollisionObject(robot_model, robot_tf)
+            matrix = get_rotation_matrix_from_angle_z(0)
+            self.robot.setRotation(matrix)
+            
         # init rectangle robot
         if robot_type == "Rigidbody_2D":
             self.robot_size = [2, 4]
@@ -67,7 +77,17 @@ class Env_Robot:
             link3_tf = fcl.Transform(link3_t)
             link3_model = fcl.Box(link3_l, link3_w, 0)
             self.link3 = fcl.CollisionObject(link3_model, link3_tf)
-
+        
+        if robot_type == "Point_3D":
+            self.robot_size = [0.01, 0.01, 0.01]
+            robot_t = np.array([0, 0, 0])
+            robot_tf = fcl.Transform(robot_t)
+            robot_model = fcl.Box(self.robot_size[0], self.robot_size[1], self.robot_size[2])
+            self.robot = fcl.CollisionObject(robot_model, robot_tf)
+            matrix = get_rotation_matrix_from_angle_z(0)
+            self.robot.setRotation(matrix)
+            
+          
         # init obstacles
         if obs is None:
             self.obstacles = []
@@ -143,9 +163,21 @@ class Env_Robot:
 
             return [link1_state, link2_state, link3_state]
 
-            
+    def is_state_valid(self, state):
+        if self.robot_type == "Point_2D":
+            x = state[0]
+            y = state[1]
+            t = np.array([x, y, 0])
+            self.robot.setTranslation(t)
 
-    def is_state_valid_2D(self, state):
+            valid_flag = True
+            for obs in self.obstacles:
+                dis = fcl.distance(self.robot, obs)
+                ret = fcl.collide(self.robot, obs)
+                if ret > 0:
+                    valid_flag = False
+                    break
+            return valid_flag
 
         if self.robot_type == "Rigidbody_2D":
             x = state.getX()
@@ -234,6 +266,22 @@ class Env_Robot:
                     valid_flag = False
                     break
             return valid_flag
+        
+        if self.robot_type == "Point_3D":
+            x = state[0]
+            y = state[1]
+            z = state[2]
+            t = np.array([x, y, z])
+            self.robot.setTranslation(t)
+
+            valid_flag = True
+            for obs in self.obstacles:
+                dis = fcl.distance(self.robot, obs)
+                ret = fcl.collide(self.robot, obs)
+                if ret > 0:
+                    valid_flag = False
+                    break
+            return valid_flag
 
     def get_config_path_with_robot_info_2D(self, path):
         """
@@ -241,11 +289,16 @@ class Env_Robot:
         :return:[[x_length, y_length, X, Y, Yaw]]
         """
         path_with_robot = []
+        if self.robot_type == "Point_2D":
+            for cfg in path:
+                path_with_robot.append(self.robot_size + cfg + [0])
+            return path_with_robot
+                
         if self.robot_type == "Rigidbody_2D":
             for cfg in path:
                 path_with_robot.append(self.robot_size + cfg)
-
             return path_with_robot
+        
         if self.robot_type == "Two_Link_2D":
             for cfg in path:
                 state = self.get_link_config_2D(cfg, self.robot_size)
@@ -265,6 +318,11 @@ class Env_Robot:
             return path_with_robot
 
     def get_list_rec_config_with_robot_from_ompl_state(self, state):
+        if self.robot_type == "Point_2D":
+            x = state[0]
+            y = state[1]
+            return self.robot_size + [x, y, 0]
+        
         if self.robot_type == "Rigidbody_2D":
             x = state().getX()
             y = state().getY()
@@ -311,6 +369,31 @@ class Env_Robot:
             self.obstacles_vis.append([l, w, c_x, c_y, 0])
             obs_i_model = fcl.Box(l, w, 0)
             obs_i_t = np.array((c_x, c_y, 0))
+            obs_i_tf = fcl.Transform(obs_i_t)
+            obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
+            self.obstacles.append(obs_i)
+    
+    def load_rec_obs_3D(self, rec_obs):
+        if self.obstacles is not None:
+            self.obstacles.clear()
+            self.obstacles_vis.clear()
+        obs_cnt, pt_c = rec_obs.shape
+        for i in range(obs_cnt):
+            l_b_x = rec_obs[i, 0]
+            l_b_y = rec_obs[i, 1]
+            l_b_z = rec_obs[i, 2]
+            r_t_x = rec_obs[i, 3]
+            r_t_y = rec_obs[i, 4]
+            r_t_z = rec_obs[i, 5]
+            l = r_t_x - l_b_x
+            w = r_t_y - l_b_y
+            h = r_t_z - l_b_z
+            c_x = 0.5 * (l_b_x + r_t_x)
+            c_y = 0.5 * (l_b_y + r_t_y)
+            c_z = 0.5 * (l_b_z + r_t_z)
+            # self.obstacles_vis.append([l, w, h,c_x, c_y, 0])
+            obs_i_model = fcl.Box(l, w, h)
+            obs_i_t = np.array((c_x, c_y, c_z))
             obs_i_tf = fcl.Transform(obs_i_t)
             obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
             self.obstacles.append(obs_i)
