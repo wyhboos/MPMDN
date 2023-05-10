@@ -122,6 +122,8 @@ class Plan_OMPL:
                 bounds.setLow(i, arm_bounds_low[i])    
                 bounds.setHigh(i, arm_bounds_high[i])    
             self.space.setBounds(bounds)
+            self.si = ob.SpaceInformation(self.space)
+            self.ss = og.SimpleSetup(self.si)
 
     def setStateValidityChecker(self, StateValidityChecker):
         self.StateValidityChecker = StateValidityChecker
@@ -145,6 +147,8 @@ class Plan_OMPL:
             self.planner = og.InformedRRTstar(self.si)
             # self.planner.setRange(3)
             # self.planner.setGoalBias(0.01)
+        elif planner == "RRTConnect":
+            self.planner = og.RRTConnect(self.si)
         self.ss.setPlanner(self.planner)
     
     def set_path_cost_threshold(self, cost=999):
@@ -340,6 +344,6 @@ class Plan_OMPL:
                     
             if self.configure_type == "panda_arm":
                 for i in range(path_len):
-                    path.append([states[i][0] for i in range(7)])
+                    path.append([states[i][j] for j in range(7)])
 
         return solved, path
