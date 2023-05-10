@@ -342,6 +342,6 @@ class Plan_OMPL:
                     
             if self.configure_type == "panda_arm":
                 for i in range(path_len):
-                    path.append([states[i][0] for i in range(7)])
+                    path.append([states[i] for i in range(7)])
 
         return solved, path
