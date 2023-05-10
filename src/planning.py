@@ -15,34 +15,45 @@ import csv
 
 
 class Plan:
-    def __init__(self, type="Two_Link_2D", planner='MPN', set_bounds=(-15, 15)):
+    def __init__(self, type="Two_Link_2D", planner='MPN', set_bounds=(-15, 15), state_valid_func=None):
         self.type = type
-        self.pl_ompl = Plan_OMPL(configure_type=self.type, set_bounds=set_bounds)
-        self.env_rob = Env_Robot(robot_type=self.type)
+        if type == "panda_arm":
+            self.state_valid_func = state_valid_func
+            self.pl_ompl = Plan_OMPL(configure_type=self.type, set_bounds=set_bounds)
+            self.env_rob = Env_Robot(robot_type=self.type)
+            self.pl_ompl.setStateValidityChecker(self.state_valid_func)
+            self.pl_ompl.set_planner(planner)
+        else:
+            self.pl_ompl = Plan_OMPL(configure_type=self.type, set_bounds=set_bounds)
+            self.env_rob = Env_Robot(robot_type=self.type)
 
-        self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid)
-        self.pl_ompl.set_planner(planner)
+            self.pl_ompl.setStateValidityChecker(self.env_rob.is_state_valid)
+            self.pl_ompl.set_planner(planner)
 
     # This function aims to solve problems when multiple plan with python using C++ ompl lib
     def reboot(self):
         self.pl_ompl.ss.clear()
 
     def plan(self, start=None, goal=None, vis=None, time_lim=0.5, simple=False):
-        if start is None:
-            start, goal = self.pl_ompl.generate_valid_start_goal()
-        print("start", start)
-        print("goal", goal)
-        print("vis", vis)
-        solved, path = self.pl_ompl.solve_planning_2D(
-            start=start, goal=goal, time_lim=time_lim, simple=simple)
-        if vis is not None:
-            self.start_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(start)
-            self.goal_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(goal)
-            self.path_rob_vis = self.env_rob.get_config_path_with_robot_info_2D(path)
-            # self.vis(rec_env=self.env_rob.obstacles_vis, start=self.start_vis, goal=self.goal_vis,
-            #                              path=self.path_rob_vis, size=50, pixel_per_meter=20, save_fig_dir=vis)
-            # print("Fig Saved!")
-        return solved, path
+        if self.type == "panda_arm":
+            solved, path = self.pl_ompl.solve_planning_2D(
+                start=start, goal=goal, time_lim=time_lim, simple=simple)
+        else:
+            if start is None:
+                start, goal = self.pl_ompl.generate_valid_start_goal()
+            print("start", start)
+            print("goal", goal)
+            print("vis", vis)
+            solved, path = self.pl_ompl.solve_planning_2D(
+                start=start, goal=goal, time_lim=time_lim, simple=simple)
+            if vis is not None:
+                self.start_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(start)
+                self.goal_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(goal)
+                self.path_rob_vis = self.env_rob.get_config_path_with_robot_info_2D(path)
+                # self.vis(rec_env=self.env_rob.obstacles_vis, start=self.start_vis, goal=self.goal_vis,
+                #                              path=self.path_rob_vis, size=50, pixel_per_meter=20, save_fig_dir=vis)
+                # print("Fig Saved!")
+            return solved, path
 
     def vis(self, rec_env, start, goal, path, size, pixel_per_meter, save_fig_dir):
         if self.type == "Two_Link_2D":

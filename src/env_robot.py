@@ -87,6 +87,8 @@ class Env_Robot:
             matrix = get_rotation_matrix_from_angle_z(0)
             self.robot.setRotation(matrix)
             
+        if robot_type == "panda_arm":
+            pass
           
         # init obstacles
         if obs is None:
