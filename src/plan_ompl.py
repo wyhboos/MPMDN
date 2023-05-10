@@ -122,6 +122,8 @@ class Plan_OMPL:
                 bounds.setLow(i, arm_bounds_low[i])    
                 bounds.setHigh(i, arm_bounds_high[i])    
             self.space.setBounds(bounds)
+            self.si = ob.SpaceInformation(self.space)
+            self.ss = og.SimpleSetup(self.si)
 
     def setStateValidityChecker(self, StateValidityChecker):
         self.StateValidityChecker = StateValidityChecker
@@ -340,6 +342,6 @@ class Plan_OMPL:
                     
             if self.configure_type == "panda_arm":
                 for i in range(path_len):
-                    path.append([states[i][0] for i in range(7)])
+                    path.append([states[i] for i in range(7)])
 
         return solved, path
