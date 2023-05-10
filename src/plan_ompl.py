@@ -122,6 +122,8 @@ class Plan_OMPL:
                 bounds.setLow(i, arm_bounds_low[i])    
                 bounds.setHigh(i, arm_bounds_high[i])    
             self.space.setBounds(bounds)
+            self.si = ob.SpaceInformation(self.space)
+            self.ss = og.SimpleSetup(self.si)
 
     def setStateValidityChecker(self, StateValidityChecker):
         self.StateValidityChecker = StateValidityChecker
