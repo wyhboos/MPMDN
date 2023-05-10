@@ -6,7 +6,7 @@ def generate_start_goal_points():
     # part = args.part
     # type = args.type
     part = 0
-    type = 2
+    type = 3
     # part = 0
     # type = "Two_Link_2D"
     if type == 0:
@@ -15,6 +15,8 @@ def generate_start_goal_points():
         type = "Two_Link_2D"
     elif type == 2:
         type = "Three_Link_2D"
+    elif type == 3:
+        type = "Point_3D"
     # print("Part:", part)
     print("type:", type)
     env_file = "./Data/S2D/S2D_env_30000_rec.npy"
@@ -30,6 +32,10 @@ def generate_start_goal_points():
         vis = "./fig/S2D/S2D_Three_Link/S2D_Three_Link"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Three_Link_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Three_Link_Path.npy"
+    if type == "Point_3D":
+        vis = "./fig/C3D/C3D_Point/C3D_Point"
+        path_save_file = "./Data/C3D/1000env_400pt/C3D_Point_Path_"+str(part)
+        s_g_file = "./Data/C3D/1000env_400pt/C3D_env_100_pts_4000_Point_Path.npy"
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
     pl = Plan(type,"RRTstar")
@@ -69,6 +75,8 @@ def generate_path_main(args):
         type = "Two_Link_2D"
     elif type == 2:
         type = "Three_Link_2D"
+    elif type == 3:
+        type = "Point_3D"
     print("Part:", part)
     print("type:", type)
     env_file = "./Data/S2D/S2D_env_30000_rec.npy"
@@ -84,6 +92,10 @@ def generate_path_main(args):
         vis = "./fig/S2D/S2D_Three_Link/S2D_3L"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Three_Link_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Three_Link_Path.npy"
+    if type == "Point_3D":
+        vis = "./fig/C3D/C3D_Point/C3D_Point"
+        path_save_file = "./Data/C3D/1000env_400pt/C3D_Point_Path_"+str(part)
+        s_g_file = "./Data/C3D/1000env_400pt/C3D_env_100_pts_4000_Point_Path.npy"
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
     pl = Plan(type,"RRTstar", set_bounds=(-20, 20))
