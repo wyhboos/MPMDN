@@ -36,8 +36,10 @@ def generate_start_goal_points():
         vis = "./fig/C3D/C3D_Point/C3D_Point"
         path_save_file = "./Data/C3D/1000env_400pt/C3D_Point_Path_"+str(part)
         s_g_file = "./Data/C3D/1000env_400pt/C3D_env_100_pts_4000_Point_Path.npy"
+        env_file = "./Data/C3D/c3d_obs_rec_50000.npy"
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
+    print(rec_envs.shape)
     pl = Plan(type,"RRTstar")
     g_s_g = 1
 
@@ -47,7 +49,7 @@ def generate_start_goal_points():
         for i in range(1000):
             print("Generating start goal, Env:", i)
             rec_env = rec_envs[i, :, :]
-            pl.env_rob.load_rec_obs_2D(rec_env)
+            pl.env_rob.load_rec_obs_3D(rec_env)
             pts = []
             for j in range(500):
                 start, goal = pl.pl_ompl.generate_valid_start_goal()
@@ -149,9 +151,9 @@ def generate_path_main(args):
 
     
 if __name__ == '__main__':
-    # generate_start_goal_points()
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--part', type=int, default=0)
-    parser.add_argument('--type', type=int, default="2")
-    args = parser.parse_args()
-    generate_path_main(args)
+    generate_start_goal_points()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--part', type=int, default=0)
+    # parser.add_argument('--type', type=int, default="2")
+    # args = parser.parse_args()
+    # generate_path_main(args)
