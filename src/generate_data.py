@@ -49,7 +49,10 @@ def generate_start_goal_points():
         for i in range(1000):
             print("Generating start goal, Env:", i)
             rec_env = rec_envs[i, :, :]
-            pl.env_rob.load_rec_obs_3D(rec_env)
+            if type == "Point_3D":
+                pl.env_rob.load_rec_obs_3D(rec_env)
+            else:
+                pl.env_rob.load_rec_obs_2D(rec_env)
             pts = []
             for j in range(500):
                 start, goal = pl.pl_ompl.generate_valid_start_goal()
@@ -98,9 +101,10 @@ def generate_path_main(args):
         vis = "./fig/C3D/C3D_Point/C3D_Point"
         path_save_file = "./Data/C3D/1000env_400pt/C3D_Point_Path_"+str(part)
         s_g_file = "./Data/C3D/1000env_400pt/C3D_env_100_pts_4000_Point_Path.npy"
+        env_file = "./Data/C3D/c3d_obs_rec_50000.npy"
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
-    pl = Plan(type,"RRTstar", set_bounds=(-20, 20))
+    pl = Plan(type,"IRRTstar", set_bounds=(-20, 20))
     g_s_g = 0
 
     # generate start and goal
@@ -109,7 +113,10 @@ def generate_path_main(args):
         for i in range(1000):
             print("Generating start goal, Env:", i)
             rec_env = rec_envs[i, :, :]
-            pl.env_rob.load_rec_obs_2D(rec_env)
+            if type == "Point_3D":
+                pl.env_rob.load_rec_obs_3D(rec_env)
+            else:
+                pl.env_rob.load_rec_obs_2D(rec_env)
             pts = []
             for j in range(400):
                 print(i, j)
@@ -124,12 +131,11 @@ def generate_path_main(args):
         # load start goal
     else:
         env_pts = np.load(s_g_file, allow_pickle=True)
-        print(env_pts)
         print("Load start goal suc!")
     # planning
     paths_all = []
     suc_cnt = 0
-    for i in range(100 * part, 100 * (part + 1)):
+    for i in range(1 * part, 50 * (part + 1)):
         print("Planning Env:", i)
         paths_env = []
         for j in range(400):
@@ -140,8 +146,11 @@ def generate_path_main(args):
             start = pl.pl_ompl.conver_list_config_to_ompl_config(start)
             goal = pl.pl_ompl.conver_list_config_to_ompl_config(goal)
             rec_env = rec_envs[i, :, :]
-            pl.env_rob.load_rec_obs_2D(rec_env)
-            solved, path = pl.plan(start=start, goal=goal, vis=vis_i_j, time_lim=1, simple=False)
+            if type == "Point_3D":
+                pl.env_rob.load_rec_obs_3D(rec_env)
+            else:
+                pl.env_rob.load_rec_obs_2D(rec_env)
+            solved, path = pl.plan(start=start, goal=goal, vis=None, time_lim=1, simple=False)
             if solved and solved.asString() == "Exact solution":
                 suc_cnt += 1
                 paths_env.append(path)
@@ -151,9 +160,9 @@ def generate_path_main(args):
 
     
 if __name__ == '__main__':
-    generate_start_goal_points()
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--part', type=int, default=0)
-    # parser.add_argument('--type', type=int, default="2")
-    # args = parser.parse_args()
-    # generate_path_main(args)
+    # generate_start_goal_points()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--part', type=int, default=0)
+    parser.add_argument('--type', type=int, default="2")
+    args = parser.parse_args()
+    generate_path_main(args)
