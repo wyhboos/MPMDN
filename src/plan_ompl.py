@@ -37,12 +37,15 @@ class Plan_OMPL:
         
         if configure_type == "Point_2D":
             # create an SE2 state space
-            self.space = ob.RealVectorStateSpace(2)
+            vector_space = ob.RealVectorStateSpace(2)
             # set bounds
             bounds = ob.RealVectorBounds(2)
             bounds.setLow(set_bounds[0])
             bounds.setHigh(set_bounds[1])
-            self.space.setBounds(bounds)
+            vector_space.setBounds(bounds)
+            self.space = ob.CompoundStateSpace()
+            self.space.addSubspace(vector_space, 1.0)
+            
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
@@ -103,12 +106,15 @@ class Plan_OMPL:
             
         if configure_type == "Point_3D":
             # create an SE2 state space
-            self.space = ob.RealVectorStateSpace(3)
+            vector_space = ob.RealVectorStateSpace(3)
             # set bounds
             bounds = ob.RealVectorBounds(3)
             bounds.setLow(set_bounds[0])
             bounds.setHigh(set_bounds[1])
-            self.space.setBounds(bounds)
+            vector_space.setBounds(bounds)
+            self.space = ob.CompoundStateSpace()
+            self.space.addSubspace(vector_space, 1.0)
+            
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
