@@ -245,13 +245,13 @@ def get_statistics_classical_arm(para_dict, state_valid_func, project_path):
     data = []
         
     # planning
-    for i in range(1000):
+    for i in range(30):
         print("Planning path:", i)
         start = env_pts[i][0]
         goal = env_pts[i][1]
             
             #set termination condition 
-        mpn_suc = dict_list[int(10*(i)+j)]['suc']
+        mpn_suc = dict_list[int(1*(i))]['suc']
 
         if mpn_suc:
             mpn_length = float(dict_list[int(i)]['length'])*1.05
@@ -263,7 +263,7 @@ def get_statistics_classical_arm(para_dict, state_valid_func, project_path):
         print("mpn_length", mpn_length)
         pl.pl_ompl.set_path_cost_threshold(mpn_length)
             
-        solved, path = pl.plan(start=start, goal=goal, vis="yes", time_lim=5, simple=simplelify)
+        solved, path = pl.plan(start=start, goal=goal, vis="yes", time_lim=15, simple=simplelify)
         
         if solved and solved.asString() == "Exact solution":
             suc = 1
