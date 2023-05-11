@@ -111,6 +111,7 @@ def get_statistics_classical(para_dict):
         pl.env_rob.load_rec_obs_2D(rec_env)
         for j in range(10):
             # pl.reboot()
+            print("Planning Env, path:", i, j)
             start = env_pts[i][j][0]
             goal = env_pts[i][j][1]
             start = pl.pl_ompl.conver_list_config_to_ompl_config(start)
