@@ -554,6 +554,25 @@ at::Tensor ompl::geometric::MPN::get_state_tensor_from_state(ompl::base::ScopedS
         state_t[0][4] = yaw3;
         return state_t;
     }
+    if (state_type=="panda_arm")
+    {
+        at::Tensor state_t = torch::ones({1, 2});
+        float j1 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
+        float j2 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
+        float j3 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[2];
+        float j4 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[3];
+        float j5 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[4];
+        float j6 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[5];
+        float j7 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[6];
+        state_t[0][0] = j1;
+        state_t[0][1] = j2;
+        state_t[0][2] = j3;
+        state_t[0][3] = j4;
+        state_t[0][4] = j5;
+        state_t[0][5] = j6;
+        state_t[0][6] = j7;
+        return state_t;
+    }
 }
 
 ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPN::get_state_ompl_from_tensor(at::Tensor state_t)
@@ -592,6 +611,16 @@ ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPN::g
         state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value = float_ptr[2];
         state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value = float_ptr[3];
         state->get()->as<ompl::base::SO2StateSpace::StateType>(3)->value = float_ptr[4];
+    }
+    if (state_type=="panda_arm")
+    {
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]=float_ptr[0];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=float_ptr[1];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[2]=float_ptr[2];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[3]=float_ptr[3];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[4]=float_ptr[4];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[5]=float_ptr[5];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[6]=float_ptr[6];
     }
     return state;
  }
@@ -745,7 +774,22 @@ ompl::geometric::SimpleSetup* ompl::geometric::MPN::setup_orcle_planner()
         ss->setPlanner(std::make_shared<ompl::geometric::RRT>(ss->getSpaceInformation()));
         return ss;
     }
+    if (state_type == "panda_arm")
+    {   
+        base::StateSpacePtr space_ = si_->getStateSpace();
+        // ompl::base::RealVectorBounds bounds = space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        ompl::base::RealVectorStateSpace* vector_space =new ompl::base::RealVectorStateSpace(7);
+        ompl::base::RealVectorBounds bounds = space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        vector_space->setBounds(bounds);
+        ompl::base::StateSpacePtr vector_space_ptr(vector_space);
+        auto cs(std::make_shared<ompl::base::CompoundStateSpace>());
+        cs->addSubspace(vector_space_ptr, 1.0);
 
+        ompl::geometric::SimpleSetup* ss=new ompl::geometric::SimpleSetup(space_);
+        ss->setStateValidityChecker(si_->getStateValidityChecker());
+        ss->setPlanner(std::make_shared<ompl::geometric::RRT>(ss->getSpaceInformation()));//RRTstar seems to fail to terminate when finding initial solution, so chose RRT
+        return ss;
+    }
 
 
 
@@ -772,6 +816,10 @@ bool ompl::geometric::MPN::is_in_bounds(ompl::base::ScopedState<ompl::base::Comp
         return true;
     }
     if (state_type == "Point_3D")
+    {
+        return true;
+    }
+    if (state_type == "panda_arm")
     {
         return true;
     }
