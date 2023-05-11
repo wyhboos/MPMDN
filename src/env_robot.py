@@ -167,8 +167,8 @@ class Env_Robot:
 
     def is_state_valid(self, state):
         if self.robot_type == "Point_2D":
-            x = state[0]
-            y = state[1]
+            x = state[0][0]
+            y = state[0][1]
             t = np.array([x, y, 0])
             self.robot.setTranslation(t)
 
@@ -270,9 +270,9 @@ class Env_Robot:
             return valid_flag
         
         if self.robot_type == "Point_3D":
-            x = state[0]
-            y = state[1]
-            z = state[2]
+            x = state[0][0]
+            y = state[0][1]
+            z = state[0][2]
             t = np.array([x, y, z])
             self.robot.setTranslation(t)
 
