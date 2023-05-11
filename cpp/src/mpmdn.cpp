@@ -560,22 +560,24 @@ at::Tensor ompl::geometric::MPMDN::get_state_tensor_from_state(ompl::base::Scope
         state_t[0][3] = yaw2;
         return state_t;
     }
-    if (state_type=="Three_Link_2D")
+        if (state_type=="Three_Link_2D")
     {
-        at::Tensor state_t = torch::ones({1, 4});
+        at::Tensor state_t = torch::ones({1, 5});
         float x = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
         float y = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
         float yaw1 = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
         float yaw2 = state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value;
+        float yaw3 = state->get()->as<ompl::base::SO2StateSpace::StateType>(3)->value;
         state_t[0][0] = x;
         state_t[0][1] = y;
         state_t[0][2] = yaw1;
         state_t[0][3] = yaw2;
+        state_t[0][4] = yaw3;
         return state_t;
     }
     if (state_type=="panda_arm")
     {
-        at::Tensor state_t = torch::ones({1, 2});
+        at::Tensor state_t = torch::ones({1, 7});
         float j1 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
         float j2 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
         float j3 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[2];
