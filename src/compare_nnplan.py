@@ -337,6 +337,7 @@ def get_statistics_arm(para_dict, state_valid_func, project_path):
     # set planner parameters
     pl.pl_ompl.planner.state_type = type
     pl.pl_ompl.planner.use_orcle = use_orcle
+    pl.pl_ompl.planner.orcle_time_lim = 5
     pl.pl_ompl.planner.ori_simplify = ori_simplify
     pl.pl_ompl.planner.nn_rep_cnt_lim = nn_rep_cnt_lim
     pl.pl_ompl.planner.iter_cnt_lim = iter_cnt_lim
@@ -349,7 +350,7 @@ def get_statistics_arm(para_dict, state_valid_func, project_path):
     pl.pl_ompl.planner.reload_env_net()
     # planning
     path_all = []
-    for i in range(1000):
+    for i in range(30):
         print("Planning pt:", i)
         start = env_pts[i][0]
         goal = env_pts[i][1]
