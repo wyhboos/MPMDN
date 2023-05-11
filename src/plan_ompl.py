@@ -37,12 +37,15 @@ class Plan_OMPL:
         
         if configure_type == "Point_2D":
             # create an SE2 state space
-            self.space = ob.RealVectorStateSpace(2)
+            vector_space = ob.RealVectorStateSpace(2)
             # set bounds
             bounds = ob.RealVectorBounds(2)
             bounds.setLow(set_bounds[0])
             bounds.setHigh(set_bounds[1])
-            self.space.setBounds(bounds)
+            vector_space.setBounds(bounds)
+            self.space = ob.CompoundStateSpace()
+            self.space.addSubspace(vector_space, 1.0)
+            
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
@@ -103,18 +106,21 @@ class Plan_OMPL:
             
         if configure_type == "Point_3D":
             # create an SE2 state space
-            self.space = ob.RealVectorStateSpace(3)
+            vector_space = ob.RealVectorStateSpace(3)
             # set bounds
             bounds = ob.RealVectorBounds(3)
             bounds.setLow(set_bounds[0])
             bounds.setHigh(set_bounds[1])
-            self.space.setBounds(bounds)
+            vector_space.setBounds(bounds)
+            self.space = ob.CompoundStateSpace()
+            self.space.addSubspace(vector_space, 1.0)
+            
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
             
         if configure_type == "panda_arm":
-            self.space = ob.RealVectorStateSpace(7)
+            vector_space = ob.RealVectorStateSpace(7)
             arm_bounds_low = [-2.9671, -1.8326, -2.9671, -3.1416, -2.9671, -0.0873, -2.9671]
             arm_bounds_high = [2.9671, 1.8326, 2.9671, 0.0873, 2.9671, 3.8223, 2.9671]
             bounds = ob.RealVectorBounds(7)
@@ -122,6 +128,8 @@ class Plan_OMPL:
                 bounds.setLow(i, arm_bounds_low[i])    
                 bounds.setHigh(i, arm_bounds_high[i])    
             self.space.setBounds(bounds)
+            self.space = ob.CompoundStateSpace()
+            self.space.addSubspace(vector_space, 1.0)
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
 
@@ -212,8 +220,8 @@ class Plan_OMPL:
             Y = state_list[1]
 
             state_ompl = ob.State(self.space)
-            state_ompl()[0] = X
-            state_ompl()[1] = Y
+            state_ompl()[0][0] = X
+            state_ompl()[0][1] = Y
             return state_ompl
         
         if self.configure_type == "Rigidbody_2D":
@@ -261,9 +269,9 @@ class Plan_OMPL:
             Z = state_list[2]
 
             state_ompl = ob.State(self.space)
-            state_ompl()[0] = X
-            state_ompl()[1] = Y
-            state_ompl()[2] = Z
+            state_ompl()[0][0] = X
+            state_ompl()[0][1] = Y
+            state_ompl()[0][2] = Z
             return state_ompl
         
         if self.configure_type == "panda_arm":
@@ -273,7 +281,7 @@ class Plan_OMPL:
 
             state_ompl = ob.State(self.space)
             for i in range(7):
-                state_ompl()[i] = state_list[i]
+                state_ompl()[0][i] = state_list[i]
             return state_ompl
 
     def solve_planning_2D(self, start, goal, time_lim=10, simple=False):
@@ -298,8 +306,8 @@ class Plan_OMPL:
             path = []
             if self.configure_type == "Point_2D":
                 for i in range(path_len):
-                    X = states[i][0]
-                    Y = states[i][1]
+                    X = states[i][0][0]
+                    Y = states[i][0][1]
                     path.append([X, Y])
 
             if self.configure_type == "Rigidbody_2D":
@@ -337,13 +345,13 @@ class Plan_OMPL:
                     
             if self.configure_type == "Point_3D":
                 for i in range(path_len):
-                    X = states[i][0]
-                    Y = states[i][1]
-                    Z = states[i][2]
+                    X = states[i][0][0]
+                    Y = states[i][0][1]
+                    Z = states[i][0][2]
                     path.append([X, Y, Z])
                     
             if self.configure_type == "panda_arm":
                 for i in range(path_len):
-                    path.append([states[i][j] for j in range(7)])
+                    path.append([states[i][0][j] for j in range(7)])
 
         return solved, path
