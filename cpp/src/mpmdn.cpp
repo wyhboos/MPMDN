@@ -698,11 +698,11 @@ ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPMDN:
     {   
         state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]=sp(2, 0);
         state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=sp(2, 1);
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=sp(2, 2);
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=sp(2, 3);
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=sp(2, 4);
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=sp(2, 5);
-        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=sp(2, 6);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[2]=sp(2, 2);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[3]=sp(2, 3);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[4]=sp(2, 4);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[5]=sp(2, 5);
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[6]=sp(2, 6);
     }
     return state;
 }
