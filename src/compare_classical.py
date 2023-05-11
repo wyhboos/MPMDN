@@ -204,7 +204,7 @@ def get_statistics_classical(para_dict):
 
     print("Finish")
     
-def get_statistics_classical_arm(para_dict, state_valid_func):
+def get_statistics_classical_arm(para_dict, state_valid_func, project_path):
     para_index = para_dict["para_index"]
     type = para_dict["type"]
     see = para_dict["see"]
@@ -217,7 +217,7 @@ def get_statistics_classical_arm(para_dict, state_valid_func):
 
     if type == "panda_arm":
         model_name = "panda_arm_" + planner + mode
-        s_g_file = "./Data/panda_arm/panda_arm_s_g_env.npy"
+        s_g_file = project_path + "/Data/panda_arm/panda_arm_s_g_env.npy"
 
     # load env
     # load env
@@ -292,7 +292,7 @@ def get_statistics_classical_arm(para_dict, state_valid_func):
         
         
 
-    csv_file = "./Data/panda_arm/Sta/" + model_name + "_" + see + "_avg_data.csv"
+    csv_file = project_path + "/Data/panda_arm/Sta/" + model_name + "_" + see + "_avg_data.csv"
     header = ["time_all", "length", "node_cnt", "suc"]
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
         writer = csv.writer(f)
@@ -300,7 +300,7 @@ def get_statistics_classical_arm(para_dict, state_valid_func):
         writer.writerow(average)
         f.close()
         
-    csv_file = "./Data/panda_arm/Sta/" + model_name + "_" + see + "_detail_data.csv"
+    csv_file = project_path + "/Data/panda_arm/Sta/" + model_name + "_" + see + "_detail_data.csv"
     header = ["time_all_avg", "length_avg", "node_cnt", "suc_avg"]
     w_data = []
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:

@@ -270,7 +270,7 @@ def get_statistics(para_dict):
 
     print("Finish")
     
-def get_statistics_arm(para_dict, state_valid_func):
+def get_statistics_arm(para_dict, state_valid_func, project_path):
     para_index = para_dict["para_index"]
     type = para_dict["type"]
     see = para_dict["see"]
@@ -291,7 +291,7 @@ def get_statistics_arm(para_dict, state_valid_func):
 
     if type == "panda_arm":
         model_name = "panda_arm_" + planner + mode
-        s_g_file = "./Data/panda_arm/panda_arm_s_g_env.npy"
+        s_g_file = project_path + "/Data/panda_arm/panda_arm_s_g_env.npy"
 
 
     # load env
@@ -400,7 +400,7 @@ def get_statistics_arm(para_dict, state_valid_func):
         avr = np.array(d).mean(axis=0)
         average.append(avr)
     
-    csv_file = "./Data/panda_arm/Sta/" + model_name + "_" + see + "_avg_data.csv"
+    csv_file = project_path + "/Data/panda_arm/Sta/" + model_name + "_" + see + "_avg_data.csv"
     header = ["time_o", "time_nnrp", "time_classical","time_simplify", "time_all", "length","node_cnt","forward_ori",
               "forward_nnrep", "invalid_o", "invalid_nnrep", "colli_o", "colli_nnrep", "suc"]
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
@@ -410,7 +410,7 @@ def get_statistics_arm(para_dict, state_valid_func):
         f.close()
 
 
-    csv_file = "./Data/panda_arm/Sta/" + model_name + "_" + see + "_detail_data.csv"
+    csv_file = project_path + "/Data/panda_arm/Sta/" + model_name + "_" + see + "_detail_data.csv"
     header = ["time_o", "time_nnrp", "time_classical", "time_simplify","time_all" ,"length", "node_cnt","forward_ori",
               "forward_nnrep", "invalid_o", "invalid_nnrep", "colli_o", "colli_nnrep", "suc"]
     w_data = []
@@ -423,7 +423,7 @@ def get_statistics_arm(para_dict, state_valid_func):
                 w_data.append(datas[j][i])
             writer.writerow(w_data)
         f.close()
-    np.save("./Data/panda_arm/Sta/path_all.npy", np.array(path_all, dtype='object'))
+    np.save(project_path + "/Data/panda_arm/Sta/path_all.npy", np.array(path_all, dtype='object'))
     print("Finish")
 if __name__ == '__main__':
     all_dict = {}
