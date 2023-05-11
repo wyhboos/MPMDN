@@ -60,12 +60,13 @@ namespace ompl
                 // specs_.recognizedGoal = ...;
                 load_Enet_Pnet(Enet_file, Pnet_file);
                 load_obs_cloud(env_file);
-                replan_ss = setup_orcle_planner();
+                // replan_ss = setup_orcle_planner();
             }
             void reload_env_net()
             {
                 load_Enet_Pnet(Enet_file, Pnet_file);
                 load_obs_cloud(env_file);
+                replan_ss = setup_orcle_planner();
             }
 
             // MPN(std::string si_info) : base::Planner(si_info, "MPN")
