@@ -41,11 +41,11 @@
 
 
 # S2D ThreeL
-gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 30; $SHELL'"
+# gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 30; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 31; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 32; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 33; $SHELL'"
-gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 34; $SHELL'"
+# gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 34; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 35; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 36; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 37; $SHELL'"

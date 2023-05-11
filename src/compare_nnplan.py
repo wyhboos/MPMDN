@@ -36,22 +36,33 @@ def get_statistics(para_dict):
         vis = "./fig/S2D/Pt/" + planner +"/" + see + "/" + mode + "/"
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_Pt_sg_ev.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Rigidbody_2D":
         model_name = "S2D_RB_" + planner + mode
         vis = "./fig/S2D/RB/" + planner +"/" + see + "/" + mode + "/"
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_RB_sg_ev.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Two_Link_2D":
         model_name = "S2D_TL_" + planner + mode
         vis = "./fig/S2D/TL/"+ planner +"/" + see + "/" + mode + "/"
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_TL_sg_ev.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Three_Link_2D":
         model_name = "S2D_TL_" + planner + mode
         vis = "./fig/S2D/ThreeL/"+ planner +"/" + see + "/" + mode + "/"
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_ThreeL_sg_ev.npy"
-    env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+    
+    if type == "Point_3D":
+        model_name = "C3D_Pt_" + planner + mode
+        vis = "./fig/C3D/Pt/" + planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
+        s_g_file = "./Data/C3D/C3D_Pt_sg_ev.npy"
+        env_file = "./Data/C3D/c3d_obs_rec_50000.npy"
+    
 
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
@@ -65,7 +76,10 @@ def get_statistics(para_dict):
         for i in range(1000):
             print("Generating start goal, Env:", i)
             rec_env = rec_envs[i, :, :]
-            pl.env_rob.load_rec_obs_2D(rec_env)
+            if type == "Point_3D":
+                pl.env_rob.load_rec_obs_3D(rec_env)
+            else:
+                pl.env_rob.load_rec_obs_2D(rec_env)
             pts = []
             for j in range(10):
                 print(i, j)
@@ -225,8 +239,10 @@ def get_statistics(para_dict):
         avr = np.array(d).mean(axis=0)
         average.append(avr)
     
-    if type == "Rigidbody_2D" or type == "Two_Link_2D":
+    if type == "Rigidbody_2D" or type == "Two_Link_2D" or type == "Three_Link_2D":
         csv_file = "./Data/S2D/Sta/" + model_name + "_" + see + "_avg_data.csv"
+    elif type == "Point_3D":
+        csv_file = "./Data/C3D/Sta/" + model_name + "_" + see + "_avg_data.csv"
     header = ["time_o", "time_nnrp", "time_classical","time_simplify", "time_all", "length","node_cnt","forward_ori",
               "forward_nnrep", "invalid_o", "invalid_nnrep", "colli_o", "colli_nnrep", "suc"]
     with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
@@ -235,8 +251,10 @@ def get_statistics(para_dict):
         writer.writerow(average)
         f.close()
 
-    if type == "Rigidbody_2D" or type == "Two_Link_2D":
+    if type == "Rigidbody_2D" or type == "Two_Link_2D" or type == "Three_Link_2D":
         csv_file = "./Data/S2D/Sta/" + model_name + "_" + see + "_detail_data.csv"
+    elif type == "Point_3D":
+        csv_file = "./Data/C3D/Sta/" + model_name + "_" + see + "_detail_data.csv"
     header = ["time_o", "time_nnrp", "time_classical", "time_simplify","time_all" ,"length", "node_cnt","forward_ori",
               "forward_nnrep", "invalid_o", "invalid_nnrep", "colli_o", "colli_nnrep", "suc"]
     w_data = []
@@ -252,8 +270,161 @@ def get_statistics(para_dict):
 
     print("Finish")
     
+def get_statistics_arm(para_dict, state_valid_func):
+    para_index = para_dict["para_index"]
+    type = para_dict["type"]
+    see = para_dict["see"]
+    save_inva_colli_pair = para_dict["save_inva_colli_pair"]
+    gen_s_g = para_dict["gen_s_g"]
+    planner = para_dict["planner"]
+    ompl_env_file = para_dict["ompl_env_file"]
+    Pnet_file = para_dict["ompl_Pnet_file"]
+    Enet_file = para_dict["ompl_Enet_file"]
+    vis_flag = para_dict["vis_flag"]
+    valid_ck_cnt = para_dict["valid_ck_cnt"]
+    colli_ck_cnt = para_dict["colli_ck_cnt"]
+    use_orcle = para_dict["use_orcle"]
+    ori_simplify = para_dict["ori_simplify"]
+    nn_rep_cnt_lim = para_dict["nn_rep_cnt_lim"]
+    iter_cnt_lim = para_dict["iter_cnt_lim"]
+    mode = "para_"+str(para_index)+"_ocl_" + str(int(use_orcle)) + "_vck_" + str(valid_ck_cnt) + "_cck_" +str(colli_ck_cnt)
+
+    if type == "panda_arm":
+        model_name = "panda_arm_" + planner + mode
+        s_g_file = "./Data/panda_arm/panda_arm_s_g_env.npy"
+
+
+    # load env
+    pl = Plan(type, planner, set_bounds=None, state_valid_func=state_valid_func)
+    env_pts = np.load(s_g_file, allow_pickle=True)
+    print("Load start goal suc!")
     
+    # statistacs
+    time_o_all = []
+    time_nnrp_all = []
+    time_classical_all = []
+    time_simplify_all = []
+    time_all_all = []
+    length_all = []
+    node_cnt_all = []
+    forward_ori_all = []
+    forward_nnrep_all = []
+    invalid_o_all = []
+    invalid_nnrep_all = []
+    colli_o_all = []
+    colli_nnrep_all = []
+    suc_all = []
+        
+    datas = []
+    datas.append(time_o_all)
+    datas.append(time_nnrp_all)
+    datas.append(time_classical_all)
+    datas.append(time_simplify_all)
+    datas.append(time_all_all)
+    datas.append(length_all)
+    datas.append(node_cnt_all)
+    datas.append(forward_ori_all)
+    datas.append(forward_nnrep_all)
+    datas.append(invalid_o_all)
+    datas.append(invalid_nnrep_all)
+    datas.append(colli_o_all)
+    datas.append(colli_nnrep_all)
+    datas.append(suc_all)
     
+    data = []
+
+
+    # set planner parameters
+    pl.pl_ompl.planner.state_type = type
+    pl.pl_ompl.planner.use_orcle = use_orcle
+    pl.pl_ompl.planner.ori_simplify = ori_simplify
+    pl.pl_ompl.planner.nn_rep_cnt_lim = nn_rep_cnt_lim
+    pl.pl_ompl.planner.iter_cnt_lim = iter_cnt_lim
+    pl.pl_ompl.planner.valid_ck_cnt = valid_ck_cnt
+    pl.pl_ompl.planner.colli_ck_cnt = colli_ck_cnt
+    pl.pl_ompl.planner.env_file = ompl_env_file
+    pl.pl_ompl.planner.Enet_file = Enet_file
+    pl.pl_ompl.planner.Pnet_file = Pnet_file
+    pl.pl_ompl.planner.Pnet_train = True
+    pl.pl_ompl.planner.reload_env_net()
+    # planning
+    path_all = []
+    for i in range(1000):
+        print("Planning pt:", i)
+        start = env_pts[i][0]
+        goal = env_pts[i][1]
+        solved, path = pl.plan(start=start, goal=goal, vis=None, time_lim=0.5, simple=False)
+
+
+        if solved and solved.asString() == "Exact solution":
+            suc = 1
+            path_all.append(path)
+        else:
+            suc = 0
+        time_o = pl.pl_ompl.planner.time_o
+        time_nnrp = pl.pl_ompl.planner.time_nnrp
+        time_classical = pl.pl_ompl.planner.time_classical
+        time_simplify = pl.pl_ompl.planner.time_simplify
+        time_all = pl.pl_ompl.planner.time_all
+        length = pl.pl_ompl.ss.getSolutionPath().length()
+        node_cnt = pl.pl_ompl.ss.getSolutionPath().getStateCount()
+        forward_ori = pl.pl_ompl.planner.forward_ori
+        forward_nnrep = pl.pl_ompl.planner.forward_nnrep
+        invalid_o = pl.pl_ompl.planner.invalid_o
+        invalid_nnrep = pl.pl_ompl.planner.invalid_nnrep
+        colli_o = pl.pl_ompl.planner.colli_o
+        colli_nnrep = pl.pl_ompl.planner.colli_nnrep
+
+
+        data.clear()
+        data.append(time_o)
+        data.append(time_nnrp)
+        data.append(time_classical)
+        data.append(time_simplify)
+        data.append(time_all)
+        data.append(length)
+        data.append(node_cnt)
+        data.append(forward_ori)
+        data.append(forward_nnrep)
+        data.append(invalid_o)
+        data.append(invalid_nnrep)
+        data.append(colli_o)
+        data.append(colli_nnrep)
+        data.append(suc)
+        for ii in range(len(datas)):
+            datas[ii].append(data[ii])
+
+    
+    average = []
+    for d in datas:
+        avr = np.array(d).mean(axis=0)
+        average.append(avr)
+    
+    csv_file = "./Data/panda_arm/Sta/" + model_name + "_" + see + "_avg_data.csv"
+    header = ["time_o", "time_nnrp", "time_classical","time_simplify", "time_all", "length","node_cnt","forward_ori",
+              "forward_nnrep", "invalid_o", "invalid_nnrep", "colli_o", "colli_nnrep", "suc"]
+    with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        writer.writerow(average)
+        f.close()
+
+
+    csv_file = "./Data/panda_arm/Sta/" + model_name + "_" + see + "_detail_data.csv"
+    header = ["time_o", "time_nnrp", "time_classical", "time_simplify","time_all" ,"length", "node_cnt","forward_ori",
+              "forward_nnrep", "invalid_o", "invalid_nnrep", "colli_o", "colli_nnrep", "suc"]
+    w_data = []
+    with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        for i in range(len(suc_all)):
+            w_data.clear()
+            for j in range(len(header)):
+                w_data.append(datas[j][i])
+            writer.writerow(w_data)
+        f.close()
+    np.save("./Data/panda_arm/Sta/path_all.npy", np.array(path_all, dtype='object'))
+    print("Finish")
 if __name__ == '__main__':
     all_dict = {}
     # S2D RB
@@ -406,6 +577,56 @@ if __name__ == '__main__':
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_ThreeL_1_ckp_3200_libtorch.pt"}
+    
+    # C3D Point
+        # MPN SEEN
+    dict_40 = {"para_index":40,"type":"Point_3D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/C3D/c3d_obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/MPN_S2D_ThreeL_1_ckp_380_libtorch.pt"}
+    
+    dict_41 = {"para_index":41,"type":"Point_3D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/C3D/c3d_obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/MPN_S2D_ThreeL_1_ckp_380_libtorch.pt"}
+        # MPN UNSEEN
+    dict_42 = {"para_index":42,"type":"Point_3D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/C3D/c3d_obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/MPN_S2D_ThreeL_1_ckp_380_libtorch.pt"}
+    
+    dict_43 = {"para_index":43,"type":"Point_3D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/C3D/c3d_obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/MPN_S2D_ThreeL_1_ckp_380_libtorch.pt"}
+        # MPMDN SEEN
+    dict_44 = {"para_index":44,"type":"Point_3D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/C3D/c3d_obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/MDN_S2D_ThreeL_1_ckp_3200_libtorch.pt"}
+    
+    dict_45 = {"para_index":45,"type":"Point_3D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/C3D/c3d_obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/MDN_S2D_ThreeL_1_ckp_3200_libtorch.pt"}
+        # MPMDN UNSEEN
+    dict_46 = {"para_index":46,"type":"Point_3D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/C3D/c3d_obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/MDN_S2D_ThreeL_1_ckp_3200_libtorch.pt"}
+    
+    dict_47 = {"para_index":47,"type":"Point_3D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/C3D/c3d_obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S3D/Model_structure/MDN_S2D_ThreeL_1_ckp_3200_libtorch.pt"}
     
     # # S2D Pt
     #     # MPN SEEN
