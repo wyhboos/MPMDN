@@ -77,7 +77,7 @@ sys.path.append("/home/wyh/Code/MPMDN/src")
 sys.path.append("/home/wyh/Code/MPMDN/build")
 
 from planning import *
-from compare_classical import *
+# from compare_classical import *
 ## END_SUB_TUTORIAL
 
 
@@ -248,17 +248,20 @@ class MoveGroupPythonInterfaceTutorial(object):
     
         while True:
             # print(s)
+            joint_start = move_group.get_random_joint_values()
             joint_goal = move_group.get_random_joint_values()
-            js = joint_goal + [0.035, 0.035]
+            js1 = joint_start + [0.035, 0.035]
+            js2 = joint_goal + [0.035, 0.035]
             # print(joint_goal)
             # s = move_group.get_current_state()
             # print(s)
-            state.joint_state.position = js
-            # print(s)
-            flag = self.getStateValidity(state)
-            print(flag)
-            if flag:
-                move_group.set_joint_value_target(joint_goal)
+            state.joint_state.position = js1
+            flag1 = self.getStateValidity(state)
+            state.joint_state.position = js2
+            flag2 = self.getStateValidity(state)
+            print(flag1, flag2)
+            if flag1 and flag2:
+                # move_group.set_joint_value_target(joint_goal)
                 rospy.loginfo("Valid goal! Plan!")
                 break
             else:
@@ -268,13 +271,14 @@ class MoveGroupPythonInterfaceTutorial(object):
 
         # 开始规划运动路径
         start_t = time.time()
-        plan = move_group.plan()
+        s,p_j = self.plan_start_goal_user(joint_start, joint_goal)
+        # plan = move_group.plan()
         c_t = time.time()-start_t
-        print("Time:", c_t)
-        print(plan)
-        print("Length:", len(plan[1].joint_trajectory.points))
-
-        # self.display_trajectory(plan)
+        # print("Time:", c_t)
+        # print(plan)
+        # print("Length:", len(plan[1].joint_trajectory.points))
+        self.show_joint_value_path(p_j)
+        # self.display_trajectory(plan[1])
 
         # # 执行规划的运动路径
         # move_group.execute(plan)
@@ -371,7 +375,13 @@ class MoveGroupPythonInterfaceTutorial(object):
               "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_35_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
         get_statistics_classical_arm(para_dict, state_valid_func)
         
-
+    def show_joint_value_path(self, joint_value_path):
+        plans = []
+        l = len(joint_value_path)
+        for i in range(l-1):
+            plan = self.plan_start_goal(joint_value_path[i], joint_value_path[i+1])
+            plans.append(plan)
+        self.display_trajectory(plans, joint_value_path[0])
 
     def go_to_joint_state(self):
         # Copy class variables to local variables to make the web tutorials more clear.
@@ -487,7 +497,7 @@ class MoveGroupPythonInterfaceTutorial(object):
 
         ## END_SUB_TUTORIAL
 
-    def display_trajectory(self, plan):
+    def display_trajectory(self, plan, start_joint):
         # Copy class variables to local variables to make the web tutorials more clear.
         # In practice, you should use the class variables directly unless you have a good
         # reason not to.
@@ -506,8 +516,11 @@ class MoveGroupPythonInterfaceTutorial(object):
         ## We populate the trajectory_start with our current robot state to copy over
         ## any AttachedCollisionObjects and add our plan to the trajectory.
         display_trajectory = moveit_msgs.msg.DisplayTrajectory()
-        display_trajectory.trajectory_start = robot.get_current_state()
-        display_trajectory.trajectory.append(plan)
+        state = self.state
+        state.joint_state.position = start_joint + [0.035, 0.035]
+        display_trajectory.trajectory_start = state
+        for p in plan:
+            display_trajectory.trajectory.append(p[1])
         # Publish
         display_trajectory_publisher.publish(display_trajectory)
 
@@ -754,9 +767,10 @@ def main():
         tutorial.add_box(location=[0.15,0.15,0.9], name='boX10')
 
         tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
+        tutorial.plan_random()
         # tutorial.move_group.set_planner_id("BITstar")
         # tutorial.generate_valid_start_goal_save(cnt=1000, save_file="/home/wyh/start_goal_compare.npy")
-        tutorial.compare_classical()
+        # tutorial.compare_classical()
         # tutorial.generate_paths_user_plan("/home/wyh/start_goal_3_usr.npy", "/home/wyh/robot_path/path_usr_")
         # for i in range(10):
         #     input("============ Press `Enter` to plan random ...")
