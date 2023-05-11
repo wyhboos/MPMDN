@@ -556,7 +556,7 @@ at::Tensor ompl::geometric::MPN::get_state_tensor_from_state(ompl::base::ScopedS
     }
     if (state_type=="panda_arm")
     {
-        at::Tensor state_t = torch::ones({1, 2});
+        at::Tensor state_t = torch::ones({1, 7});
         float j1 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
         float j2 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
         float j3 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[2];
