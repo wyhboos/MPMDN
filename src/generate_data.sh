@@ -7,7 +7,7 @@
 # fi
 # done
 
-for i in {0..20}
+for i in {0..14}
 do
 # if [ "$i" == "1" ] || [ "$i" == "4" ] || [ "$i" == "7" ] || [ "$i" == "9" ] || [ "$i" == "9" ] || [ "$i" == "9" ]; then
   gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/generate_data.py --part $i --type 3; $SHELL'"

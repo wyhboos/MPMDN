@@ -135,10 +135,11 @@ def generate_path_main(args):
     # planning
     paths_all = []
     suc_cnt = 0
-    for i in range(1 * part, 50 * (part + 1)):
+    for i in range(66 * part, 66 * (part + 1)):
         print("Planning Env:", i)
         paths_env = []
         for j in range(400):
+            print("Planning Env Path:", i, j)
             pl.reboot()
             vis_i_j = vis + "_env_" + str(i) + "_pts_" + str(j)
             start = env_pts[i][j][0]
@@ -150,7 +151,7 @@ def generate_path_main(args):
                 pl.env_rob.load_rec_obs_3D(rec_env)
             else:
                 pl.env_rob.load_rec_obs_2D(rec_env)
-            solved, path = pl.plan(start=start, goal=goal, vis=None, time_lim=1, simple=False)
+            solved, path = pl.plan(start=start, goal=goal, vis=None, time_lim=0.5, simple=False)
             if solved and solved.asString() == "Exact solution":
                 suc_cnt += 1
                 paths_env.append(path)
