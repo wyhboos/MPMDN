@@ -127,7 +127,7 @@ class Plan_OMPL:
             for i in range(7):
                 bounds.setLow(i, arm_bounds_low[i])    
                 bounds.setHigh(i, arm_bounds_high[i])    
-            self.space.setBounds(bounds)
+            vector_space.setBounds(bounds)
             self.space = ob.CompoundStateSpace()
             self.space.addSubspace(vector_space, 1.0)
             self.si = ob.SpaceInformation(self.space)
