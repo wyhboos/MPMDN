@@ -31,6 +31,11 @@ def get_statistics(para_dict):
         pl_env_s = 900
         pl_env_e = 1000
         
+    if type == "Point_2D":
+        model_name = "S2D_RB_" + planner + mode
+        vis = "./fig/S2D/Pt/" + planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
+        s_g_file = "./Data/S2D/S2D_Pt_sg_ev.npy"
     if type == "Rigidbody_2D":
         model_name = "S2D_RB_" + planner + mode
         vis = "./fig/S2D/RB/" + planner +"/" + see + "/" + mode + "/"
@@ -41,6 +46,11 @@ def get_statistics(para_dict):
         vis = "./fig/S2D/TL/"+ planner +"/" + see + "/" + mode + "/"
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_TL_sg_ev.npy"
+    if type == "Three_Link_2D":
+        model_name = "S2D_TL_" + planner + mode
+        vis = "./fig/S2D/ThreeL/"+ planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
+        s_g_file = "./Data/S2D/S2D_ThreeL_sg_ev.npy"
     env_file = "./Data/S2D/S2D_env_30000_rec.npy"
 
     # load env
@@ -49,7 +59,7 @@ def get_statistics(para_dict):
         pl = Plan(type, planner, set_bounds=(-15,15))
     else:
         pl = Plan(type, planner, set_bounds=(-20,20))
-
+    print(6666)
     # generate start and goal
     if gen_s_g:
         env_pts = []
@@ -138,7 +148,7 @@ def get_statistics(para_dict):
             goal = pl.pl_ompl.conver_list_config_to_ompl_config(goal)
             rec_env = rec_envs[i, :, :]
             # pl.env_rob.load_rec_obs_2D(rec_env)
-            pl.pl_ompl.setStateValidityChecker(pl.env_rob.is_state_valid_2D)
+            pl.pl_ompl.setStateValidityChecker(pl.env_rob.is_state_valid)
             solved, path = pl.plan(start=start, goal=goal, vis="yes", time_lim=0.5, simple=False)
             
             # add invalid start and goal
@@ -348,7 +358,13 @@ if __name__ == '__main__':
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
     
-    
+    # S2D Pt
+        # MPN SEEN
+    dict_20 = {"para_index":20,"type":"Point_2D", "see":"seen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_Pt_libtorch.pt"}
     
     
     # dict_11 = {"para_index":11,"type":"Rigidbody_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
@@ -479,6 +495,8 @@ if __name__ == '__main__':
     all_dict["15"] = dict_15
     all_dict["16"] = dict_16
     all_dict["17"] = dict_17
+    
+    all_dict["20"] = dict_20
     
     
     

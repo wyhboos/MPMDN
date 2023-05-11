@@ -31,10 +31,13 @@
 
 # # S2D TL
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 10; $SHELL'"
-gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 11; $SHELL'"
+# gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 11; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 12; $SHELL'"
-gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 13; $SHELL'"
+# gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 13; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 14; $SHELL'"
-gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 15; $SHELL'"
+# gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 15; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 16; $SHELL'"
-gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 17; $SHELL'"
+# gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 17; $SHELL'"
+
+# S2D Pt
+gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_nnplan.py --para_index 20; $SHELL'"
