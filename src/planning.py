@@ -39,7 +39,7 @@ class Plan:
             start = self.pl_ompl.conver_list_config_to_ompl_config(start)
             goal = self.pl_ompl.conver_list_config_to_ompl_config(goal)
             solved, path = self.pl_ompl.solve_planning_2D(
-                start=start, goal=goal, time_lim=time_lim, simple=simple)
+                start=start, goal=goal, time_lim=time_lim, simple=simple, interpolate=interpolate)
             return solved, path
         else:
             if start is None:
