@@ -34,7 +34,7 @@ class Plan:
     def reboot(self):
         self.pl_ompl.ss.clear()
 
-    def plan(self, start=None, goal=None, vis=None, time_lim=0.5, simple=False):
+    def plan(self, start=None, goal=None, vis=None, time_lim=0.5, simple=False, interpolate=None):
         if self.type == "panda_arm":
             start = self.pl_ompl.conver_list_config_to_ompl_config(start)
             goal = self.pl_ompl.conver_list_config_to_ompl_config(goal)
