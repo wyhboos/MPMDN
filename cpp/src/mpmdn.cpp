@@ -786,8 +786,10 @@ void ompl::geometric::MPMDN::load_Enet_Pnet(std::string Enet_file, std::string P
 void ompl::geometric::MPMDN::load_obs_cloud(std::string cloud_file)
 {
     obs_clouds = cnpy::npy_load(cloud_file);
-    std::cout<<"Size0"<<obs_clouds.shape[0]<<std::endl;
-    std::cout<<"Size1"<<obs_clouds.shape[1]<<std::endl;
+    std::cout<<"Size0:"<<obs_clouds.shape[0]<<std::endl;
+    std::cout<<"Size1:"<<obs_clouds.shape[1]<<std::endl;
+    if (cloud_type == "PointNet")
+        std::cout<<"Size2:"<<obs_clouds.shape[2]<<std::endl;
     std::cout<<"Load obs clouds Suc!"<<std::endl;
 
 }
@@ -796,7 +798,11 @@ at::Tensor ompl::geometric::MPMDN::get_env_encoding(int index)
 {
     float *cloud_start = obs_clouds.data<float>();
     cloud_start += index*2800;
-    at::Tensor obs_cloud = torch::from_blob(cloud_start, {1,2800}).to(at::kCUDA);
+    at::Tensor obs_cloud;
+    if (cloud_type == "CAE")
+        obs_cloud = torch::from_blob(cloud_start, {1,2800}).to(at::kCUDA);
+    else if(cloud_type == "PointNet")
+        obs_cloud = torch::from_blob(cloud_start, {1,2,1400}).to(at::kCUDA);
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();

@@ -47,6 +47,7 @@ namespace ompl
             bool rep_flg = false; //help count the rep forward
             bool ori_simplify = true;//simplify the original path or not,for debug
             std::string env_file = "/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_110.npy";
+            std::string cloud_type = "CAE";
             std::string state_type = "Rigidbody_2D";
             std::string Enet_file = "/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt";
             std::string Pnet_file = "/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPMDN_Pnet_S2D_RB.pt";
