@@ -499,7 +499,7 @@ if __name__ == '__main__':
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
     
-    dict_13 = {"para_index":13,"type":"Two_Link_2D", "see":"unseen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
+    dict_13 = {"para_index":13,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
               "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
@@ -523,7 +523,7 @@ if __name__ == '__main__':
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
     
-    dict_17 = {"para_index":17,"type":"Two_Link_2D", "see":"unseen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
+    dict_17 = {"para_index":17,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
               "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
@@ -554,6 +554,13 @@ if __name__ == '__main__':
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_ThreeL_1_ckp_380_libtorch.pt"}
+    
+    dict_330 = {"para_index":330,"type":"Three_Link_2D", "see":"unseen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_ThreeL_Joint_1_ckp_60_Enet_libtorch.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_ThreeL_Joint_1_ckp_60_Pnet_libtorch.pt"}
+    
         # MPMDN SEEN
     dict_34 = {"para_index":34,"type":"Three_Link_2D", "see":"seen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
               "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
@@ -578,6 +585,12 @@ if __name__ == '__main__':
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_ThreeL_1_ckp_3200_libtorch.pt"}
+    
+    dict_370 = {"para_index":370,"type":"Three_Link_2D", "see":"unseen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_ThreeL_Joint_1_ckp_210_Enet_libtorch.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_ThreeL_Joint_1_ckp_210_Pnet_libtorch.pt"}
     
     # C3D Point
         # MPN SEEN
@@ -781,6 +794,9 @@ if __name__ == '__main__':
     all_dict["35"] = dict_35
     all_dict["36"] = dict_36
     all_dict["37"] = dict_37
+    
+    all_dict["330"] = dict_330
+    all_dict["370"] = dict_370
     
     # all_dict["20"] = dict_20
     

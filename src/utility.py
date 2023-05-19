@@ -1,6 +1,8 @@
 import os
 import csv
 
+import numpy as np
+
 def get_invalid_pair(env_index, list_path, ompl_path, valid_fun):
     l = len(list_path)
     if l<=2:
@@ -46,3 +48,20 @@ def write_key(file, dict):
         dictWriter = csv.DictWriter(fp, keys)
         dictWriter.writeheader()
         dictWriter.writerow(dict)
+    
+def change_S2D_cloud_to_PointNet_format():
+    cloud_data = np.load("/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy")
+    print(cloud_data.shape)
+    print(cloud_data[0, :14])
+    cloud_data_1 = cloud_data.reshape(2000, 1400, 2)
+    cloud_data_2 = np.transpose(cloud_data_1, (0, 2, 1))
+    print(cloud_data_2.shape)
+    print(cloud_data_2[0, 0, :7])
+    print(cloud_data_2[0, 1, :7])
+    np.save("/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy", cloud_data_2)
+
+    
+    
+    
+if __name__ == '__main__':
+    change_S2D_cloud_to_PointNet_format()
