@@ -34,12 +34,12 @@ class Plan:
     def reboot(self):
         self.pl_ompl.ss.clear()
 
-    def plan(self, start=None, goal=None, vis=None, time_lim=0.5, simple=False):
+    def plan(self, start=None, goal=None, vis=None, time_lim=0.5, simple=False, interpolate=None):
         if self.type == "panda_arm":
             start = self.pl_ompl.conver_list_config_to_ompl_config(start)
             goal = self.pl_ompl.conver_list_config_to_ompl_config(goal)
             solved, path = self.pl_ompl.solve_planning_2D(
-                start=start, goal=goal, time_lim=time_lim, simple=simple)
+                start=start, goal=goal, time_lim=time_lim, simple=simple, interpolate=interpolate)
             return solved, path
         else:
             if start is None:

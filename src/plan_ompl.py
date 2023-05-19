@@ -284,7 +284,7 @@ class Plan_OMPL:
                 state_ompl()[0][i] = state_list[i]
             return state_ompl
 
-    def solve_planning_2D(self, start, goal, time_lim=10, simple=False):
+    def solve_planning_2D(self, start, goal, time_lim=10, simple=False, interpolate=None):
         self.ss.clear()
         self.ss.setStartAndGoalStates(start, goal)
         solved = self.ss.solve(time_lim)
@@ -296,6 +296,8 @@ class Plan_OMPL:
                 self.ss.simplifySolution()
                 sp_et = time.time()
                 self.sp_ct = sp_et-sp_st
+            if interpolate is not None:
+                self.ss.getSolutionPath().interpolate(int(interpolate))
             # print the simplified path
             # print(self.ss.getSolutionPath())
 
