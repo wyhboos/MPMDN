@@ -99,7 +99,7 @@ def generate_path_main(args):
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Three_Link_Path.npy"
     if type == "Point_3D":
         vis = "./fig/C3D/C3D_Point/C3D_Point"
-        path_save_file = "./Data/C3D/1000env_400pt/C3D_Point_Path_"+str(part)
+        path_save_file = "./Data/C3D/1000env_400pt/C3D_Point_Path_new"+str(part)
         s_g_file = "./Data/C3D/1000env_400pt/C3D_env_100_pts_4000_Point_Path.npy"
         env_file = "./Data/C3D/c3d_obs_rec_50000.npy"
     # load env
