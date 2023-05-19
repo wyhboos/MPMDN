@@ -162,7 +162,7 @@ def get_statistics(para_dict):
             rec_env = rec_envs[i, :, :]
             # pl.env_rob.load_rec_obs_2D(rec_env)
             pl.pl_ompl.setStateValidityChecker(pl.env_rob.is_state_valid)
-            solved, path = pl.plan(start=start, goal=goal, vis="yes", time_lim=0.5, simple=False)
+            solved, path = pl.plan(start=start, goal=goal, vis="yes", time_lim=0.5, simple=False, interpolate=50)
             
             # add invalid start and goal
             if save_inva_colli_pair:
@@ -499,7 +499,7 @@ if __name__ == '__main__':
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TL_2_ckp_380_libtorch.pt"}
     
-    dict_13 = {"para_index":13,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    dict_13 = {"para_index":13,"type":"Two_Link_2D", "see":"unseen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
               "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
@@ -523,7 +523,7 @@ if __name__ == '__main__':
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_TL_2_ckp_1000_libtorch.pt"}
     
-    dict_17 = {"para_index":17,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    dict_17 = {"para_index":17,"type":"Two_Link_2D", "see":"unseen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
               "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
