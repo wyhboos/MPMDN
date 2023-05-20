@@ -23,6 +23,10 @@ def get_statistics(para_dict):
     ori_simplify = para_dict["ori_simplify"]
     nn_rep_cnt_lim = para_dict["nn_rep_cnt_lim"]
     iter_cnt_lim = para_dict["iter_cnt_lim"]
+    if "cloud_type" in list(para_dict.keys()):
+        cloud_type = para_dict["cloud_type"]
+    else:
+        cloud_type = "CAE"
     mode = "para_"+str(para_index)+"_ocl_" + str(int(use_orcle)) + "_vck_" + str(valid_ck_cnt) + "_cck_" +str(colli_ck_cnt)
     if see == "seen":
         pl_env_s = 0
@@ -136,6 +140,7 @@ def get_statistics(para_dict):
 
     # set planner parameters
     pl.pl_ompl.planner.state_type = type
+    pl.pl_ompl.planner.cloud_type = cloud_type
     pl.pl_ompl.planner.use_orcle = use_orcle
     pl.pl_ompl.planner.ori_simplify = ori_simplify
     pl.pl_ompl.planner.nn_rep_cnt_lim = nn_rep_cnt_lim
@@ -555,8 +560,8 @@ if __name__ == '__main__':
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_ThreeL_1_ckp_380_libtorch.pt"}
     
-    dict_330 = {"para_index":330,"type":"Three_Link_2D", "see":"unseen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+    dict_330 = {"para_index":330,"type":"Three_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,"cloud_type":"PointNet",
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_ThreeL_Joint_1_ckp_60_Enet_libtorch.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_ThreeL_Joint_1_ckp_60_Pnet_libtorch.pt"}
@@ -586,8 +591,8 @@ if __name__ == '__main__':
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_S2D_ThreeL_1_ckp_3200_libtorch.pt"}
     
-    dict_370 = {"para_index":370,"type":"Three_Link_2D", "see":"unseen", "vis_flag":True, "save_inva_colli_pair":False, "gen_s_g":False,
-              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
+    dict_370 = {"para_index":370,"type":"Three_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,"cloud_type":"PointNet",
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_ThreeL_Joint_1_ckp_210_Enet_libtorch.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_ThreeL_Joint_1_ckp_210_Pnet_libtorch.pt"}
