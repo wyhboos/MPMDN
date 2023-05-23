@@ -57,7 +57,7 @@ def get_statistics(para_dict):
         model_name = "S2D_ThreeL_" + planner + mode
         vis = "./fig/S2D/ThreeL/"+ planner +"/" + see + "/" + mode + "/"
         create_dir(vis)
-        s_g_file = "./Data/S2D/S2D_ThreeL_sg_ev.npy"
+        s_g_file = "./Data/S2D/S2D_ThreeL_sg_ev_not_trivial.npy"
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     
     if type == "Point_3D":
@@ -87,7 +87,7 @@ def get_statistics(para_dict):
             pts = []
             for j in range(10):
                 print(i, j)
-                start, goal = pl.pl_ompl.generate_valid_start_goal()
+                start, goal = pl.pl_ompl.generate_valid_start_goal(colli_fun=pl.pl_ompl.si.checkMotion)
                 start = pl.pl_ompl.convert_ompl_config_to_list_config(start)
                 goal = pl.pl_ompl.convert_ompl_config_to_list_config(goal)
                 # print(start, goal)
@@ -548,7 +548,7 @@ if __name__ == '__main__':
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
               "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_ThreeL_1_ckp_380_libtorch.pt"}
         # MPN UNSEEN
-    dict_32 = {"para_index":32,"type":"Three_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+    dict_32 = {"para_index":32,"type":"Three_Link_2D", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":True,
               "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,
               "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy",
               "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/Encoder_S2D.pt",
