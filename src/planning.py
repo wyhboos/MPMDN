@@ -48,7 +48,7 @@ class Plan:
             print("goal", goal)
             print("vis", vis)
             solved, path = self.pl_ompl.solve_planning_2D(
-                start=start, goal=goal, time_lim=time_lim, simple=simple)
+                start=start, goal=goal, time_lim=time_lim, simple=simple, interpolate=interpolate)
             if vis is not None:
                 self.start_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(start)
                 self.goal_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(goal)
