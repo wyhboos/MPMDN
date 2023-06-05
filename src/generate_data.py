@@ -6,7 +6,7 @@ def generate_start_goal_points():
     # part = args.part
     # type = args.type
     part = 0
-    type = 3
+    type = 4
     # part = 0
     # type = "Two_Link_2D"
     if type == 0:
@@ -17,21 +17,30 @@ def generate_start_goal_points():
         type = "Three_Link_2D"
     elif type == 3:
         type = "Point_3D"
+    elif type == 4:
+        type = "Point_2D"
     # print("Part:", part)
     print("type:", type)
-    env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+    if type == "Point_2D":
+        vis = "./fig/S2D/S2D_Point/S2D_Point"
+        path_save_file = "./Data/S2D/1000env_400pt/S2D_Point_Path_" + str(part)
+        s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Point.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Rigidbody_2D":
         vis = "./fig/S2D/S2D_Rigidbody/S2D_Rigidbody"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Rigidbody_Path_" + str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Rigidbody.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Two_Link_2D":
         vis = "./fig/S2D/S2D_Two_Link/S2D_Two_Link"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Two_Link_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Two_Link_Path.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Three_Link_2D":
         vis = "./fig/S2D/S2D_Three_Link/S2D_Three_Link"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Three_Link_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Three_Link_Path.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Point_3D":
         vis = "./fig/C3D/C3D_Point/C3D_Point"
         path_save_file = "./Data/C3D/1000env_400pt/C3D_Point_Path_"+str(part)
@@ -54,7 +63,7 @@ def generate_start_goal_points():
             else:
                 pl.env_rob.load_rec_obs_2D(rec_env)
             pts = []
-            for j in range(500):
+            for j in range(400):
                 start, goal = pl.pl_ompl.generate_valid_start_goal()
                 start = pl.pl_ompl.convert_ompl_config_to_list_config(start)
                 goal = pl.pl_ompl.convert_ompl_config_to_list_config(goal)
@@ -82,21 +91,30 @@ def generate_path_main(args):
         type = "Three_Link_2D"
     elif type == 3:
         type = "Point_3D"
+    elif type == 4:
+        type = "Point_2D"
     print("Part:", part)
     print("type:", type)
-    env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+    if type == "Point_2D":
+        vis = "./fig/S2D/S2D_Point/S2D_Point"
+        path_save_file = "./Data/S2D/1000env_400pt/S2D_Point_Path_" + str(part)
+        s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Point.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Rigidbody_2D":
         vis = "./fig/S2D/S2D_Rigidbody/S2D_Rigidbody"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Rigidbody_Path_" + str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Rigidbody.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Two_Link_2D":
         vis = "./fig/S2D/S2D_Two_Link/S2D_Two_Link"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Two_Link_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Two_Link_Path.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Three_Link_2D":
         vis = "./fig/S2D/S2D_Three_Link/S2D_3L"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Three_Link_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Three_Link_Path.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Point_3D":
         vis = "./fig/C3D/C3D_Point/C3D_Point"
         path_save_file = "./Data/C3D/1000env_400pt/C3D_Point_Path_new"+str(part)
@@ -104,7 +122,7 @@ def generate_path_main(args):
         env_file = "./Data/C3D/c3d_obs_rec_50000.npy"
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
-    pl = Plan(type,"IRRTstar", set_bounds=(-20, 20))
+    pl = Plan(type,"RRTstar", set_bounds=(-20, 20))
     g_s_g = 0
 
     # generate start and goal
@@ -135,7 +153,7 @@ def generate_path_main(args):
     # planning
     paths_all = []
     suc_cnt = 0
-    for i in range(66 * part, 66 * (part + 1)):
+    for i in range(50 * part, 50 * (part + 1)):
         print("Planning Env:", i)
         paths_env = []
         for j in range(400):
@@ -151,7 +169,7 @@ def generate_path_main(args):
                 pl.env_rob.load_rec_obs_3D(rec_env)
             else:
                 pl.env_rob.load_rec_obs_2D(rec_env)
-            solved, path = pl.plan(start=start, goal=goal, vis=None, time_lim=0.5, simple=False)
+            solved, path = pl.plan(start=start, goal=goal, vis=None, time_lim=0.25, simple=False)
             if solved and solved.asString() == "Exact solution":
                 suc_cnt += 1
                 paths_env.append(path)
