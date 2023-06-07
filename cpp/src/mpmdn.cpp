@@ -797,10 +797,10 @@ void ompl::geometric::MPMDN::load_obs_cloud(std::string cloud_file)
 at::Tensor ompl::geometric::MPMDN::get_env_encoding(int index)
 {
     float *cloud_start = obs_clouds.data<float>();
-    cloud_start += index*2800;
     at::Tensor obs_cloud;
     if (state_type == "Point_3D")
     {
+        cloud_start += index*6000;
         if (cloud_type == "CAE")
             obs_cloud = torch::from_blob(cloud_start, {1,6000}).to(at::kCUDA);
         else if(cloud_type == "PointNet")
@@ -809,6 +809,7 @@ at::Tensor ompl::geometric::MPMDN::get_env_encoding(int index)
     }
     else
     {
+        cloud_start += index*2800;
         if (cloud_type == "CAE")
             obs_cloud = torch::from_blob(cloud_start, {1,2800}).to(at::kCUDA);
         else if(cloud_type == "PointNet")
