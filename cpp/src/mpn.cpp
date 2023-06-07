@@ -672,10 +672,21 @@ at::Tensor ompl::geometric::MPN::get_env_encoding(int index)
     float *cloud_start = obs_clouds.data<float>();
     cloud_start += index*2800;
     at::Tensor obs_cloud;
-    if (cloud_type == "CAE")
-        obs_cloud = torch::from_blob(cloud_start, {1,2800}).to(at::kCUDA);
-    else if(cloud_type == "PointNet")
-        obs_cloud = torch::from_blob(cloud_start, {1,2,1400}).to(at::kCUDA);
+    if (state_type == "Point_3D")
+    {
+        if (cloud_type == "CAE")
+            obs_cloud = torch::from_blob(cloud_start, {1,6000}).to(at::kCUDA);
+        else if(cloud_type == "PointNet")
+            obs_cloud = torch::from_blob(cloud_start, {1,3,2000}).to(at::kCUDA);
+
+    }
+    else
+    {
+        if (cloud_type == "CAE")
+            obs_cloud = torch::from_blob(cloud_start, {1,2800}).to(at::kCUDA);
+        else if(cloud_type == "PointNet")
+            obs_cloud = torch::from_blob(cloud_start, {1,2,1400}).to(at::kCUDA);
+    }
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();
