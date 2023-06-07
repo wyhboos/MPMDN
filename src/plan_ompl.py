@@ -104,6 +104,50 @@ class Plan_OMPL:
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
             
+        if configure_type == "Two_Link_2D_vec":
+            vector_space = ob.RealVectorStateSpace(4)
+            # set bounds
+            bounds = ob.RealVectorBounds(4)
+            bounds.setLow(0, set_bounds[0])
+            bounds.setLow(1, set_bounds[0])
+            bounds.setLow(2, -3.14)
+            bounds.setLow(3, -3.14)
+            
+            bounds.setHigh(0, set_bounds[1])
+            bounds.setHigh(1, set_bounds[1])
+            bounds.setHigh(2, 3.14)
+            bounds.setHigh(3, 3.14)
+            vector_space.setBounds(bounds)
+            self.space = ob.CompoundStateSpace()
+            self.space.addSubspace(vector_space, 1.0)
+
+            # create a simple setup object, note that si is needed when setting planner
+            self.si = ob.SpaceInformation(self.space)
+            self.ss = og.SimpleSetup(self.si)
+
+        if configure_type == "Three_Link_2D_vec":
+            vector_space = ob.RealVectorStateSpace(5)
+            # set bounds
+            bounds = ob.RealVectorBounds(5)
+            bounds.setLow(0, set_bounds[0])
+            bounds.setLow(1, set_bounds[0])
+            bounds.setLow(2, -3.14)
+            bounds.setLow(3, -3.14)
+            bounds.setLow(4, -3.14)
+            
+            bounds.setHigh(0, set_bounds[1])
+            bounds.setHigh(1, set_bounds[1])
+            bounds.setHigh(2, 3.14)
+            bounds.setHigh(3, 3.14)
+            bounds.setHigh(4, 3.14)
+            vector_space.setBounds(bounds)
+            self.space = ob.CompoundStateSpace()
+            self.space.addSubspace(vector_space, 1.0)
+            
+            # # create a simple setup object, note that si is needed when setting planner
+            self.si = ob.SpaceInformation(self.space)
+            self.ss = og.SimpleSetup(self.si)
+            
         if configure_type == "Point_3D":
             # create an SE2 state space
             vector_space = ob.RealVectorStateSpace(3)
@@ -195,14 +239,14 @@ class Plan_OMPL:
             Yaw = state_ompl().getYaw()
             return [X, Y, Yaw]
 
-        if self.configure_type == "Two_Link_2D":
+        if self.configure_type == "Two_Link_2D" or self.configure_type == "Two_Link_2D_vec":
             Vec_X = state_ompl[0]
             Vec_Y = state_ompl[1]
             Angle1 = state_ompl[2]
             Angle2 = state_ompl[3]
             return [Vec_X, Vec_Y, Angle1, Angle2]
         
-        if self.configure_type == "Three_Link_2D":
+        if self.configure_type == "Three_Link_2D" or self.configure_type == "Three_Link_2D_vec":
             Vec_X = state_ompl[0]
             Vec_Y = state_ompl[1]
             Angle1 = state_ompl[2]
@@ -266,6 +310,35 @@ class Plan_OMPL:
             state_ompl()[1].value = Angle1
             state_ompl()[2].value = Angle2
             state_ompl()[3].value = Angle3
+            return state_ompl
+        
+        
+        if self.configure_type == "Two_Link_2D_vec":
+            Vec_X = state_list[0]
+            Vec_Y = state_list[1]
+            Angle1 = state_list[2]
+            Angle2 = state_list[3]
+
+            state_ompl = ob.State(self.space)
+            state_ompl()[0][0] = Vec_X
+            state_ompl()[0][1] = Vec_Y
+            state_ompl()[0][2] = Angle1
+            state_ompl()[0][3] = Angle2
+            return state_ompl
+        
+        if self.configure_type == "Three_Link_2D_vec":
+            Vec_X = state_list[0]
+            Vec_Y = state_list[1]
+            Angle1 = state_list[2]
+            Angle2 = state_list[3]
+            Angle3 = state_list[4]
+
+            state_ompl = ob.State(self.space)
+            state_ompl()[0][0] = Vec_X
+            state_ompl()[0][1] = Vec_Y
+            state_ompl()[0][2] = Angle1
+            state_ompl()[0][3] = Angle2
+            state_ompl()[0][4] = Angle3
             return state_ompl
         
         if self.configure_type == "Point_3D":
@@ -348,6 +421,26 @@ class Plan_OMPL:
                     Angle1_Yaw = Angle1.value
                     Angle2_Yaw = Angle2.value
                     Angle3_Yaw = Angle3.value
+                    path.append([Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw, Angle3_Yaw])
+                    
+                    
+            if self.configure_type == "Two_Link_2D_vec":
+                path_len = len(states)
+                for i in range(path_len):
+                    Vec_X = states[i][0][0]
+                    Vec_Y = states[i][0][1]
+                    Angle1_Yaw = states[i][0][2]
+                    Angle2_Yaw = states[i][0][3]
+                    path.append([Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw])
+
+            if self.configure_type == "Three_Link_2D_vec":
+                path_len = len(states)
+                for i in range(path_len):
+                    Vec_X = states[i][0][0]
+                    Vec_Y = states[i][0][1]
+                    Angle1_Yaw = states[i][0][2]
+                    Angle2_Yaw = states[i][0][3]
+                    Angle3_Yaw = states[i][0][4]
                     path.append([Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw, Angle3_Yaw])
                     
             if self.configure_type == "Point_3D":

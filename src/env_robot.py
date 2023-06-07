@@ -35,7 +35,7 @@ class Env_Robot:
             robot_model = fcl.Box(self.robot_size[0], self.robot_size[1], 0)
             self.robot = fcl.CollisionObject(robot_model, robot_tf)
 
-        if robot_type == "Two_Link_2D":
+        if robot_type == "Two_Link_2D" or robot_type == "Two_Link_2D_vec":
             # [link1_length, link1_width, link2_length, link2_width]
             self.robot_size = [2.5, 0.1, 2.5, 0.1]
             link1_l = self.robot_size[0]
@@ -53,7 +53,7 @@ class Env_Robot:
             link2_model = fcl.Box(link2_l, link2_w, 0)
             self.link2 = fcl.CollisionObject(link2_model, link2_tf)
 
-        if robot_type == "Three_Link_2D":
+        if robot_type == "Three_Link_2D" or robot_type == "Three_Link_2D_vec":
             # [link1_length, link1_width, link2_length, link2_width]
             self.robot_size = [2.5, 0.1, 2.5, 0.1, 2.5, 0.1]
             link1_l = self.robot_size[0]
@@ -113,7 +113,7 @@ class Env_Robot:
         :param link_size: [link1_length, link1_width, link2_length, link2_width]
         :return:
         """
-        if self.robot_type == "Two_Link_2D":
+        if self.robot_type == "Two_Link_2D" or self.robot_type == "Two_Link_2D_vec":
             x = link_state[0]
             y = link_state[1]
             yaw1 = link_state[2]
@@ -134,7 +134,7 @@ class Env_Robot:
             link2_state = [link2_x, link2_y, link2_yaw]
             return [link1_state, link2_state]
         
-        if self.robot_type == "Three_Link_2D":
+        if self.robot_type == "Three_Link_2D" or self.robot_type == "Three_Link_2D_vec":
             x = link_state[0]
             y = link_state[1]
             yaw1 = link_state[2]
@@ -240,6 +240,69 @@ class Env_Robot:
             Angle1_Yaw = Angle1.value
             Angle2_Yaw = Angle2.value
             Angle3_Yaw = Angle3.value
+            link_states = self.get_link_config_2D(
+                [Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw, Angle3_Yaw], self.robot_size)
+
+            t_1 = np.array([link_states[0][0], link_states[0][1], 0])
+            matrix_1 = get_rotation_matrix_from_angle_z(link_states[0][2])
+            self.link1.setTranslation(t_1)
+            self.link1.setRotation(matrix_1)
+
+            t_2 = np.array([link_states[1][0], link_states[1][1], 0])
+            matrix_2 = get_rotation_matrix_from_angle_z(link_states[1][2])
+            self.link2.setTranslation(t_2)
+            self.link2.setRotation(matrix_2)
+
+            t_3 = np.array([link_states[2][0], link_states[2][1], 0])
+            matrix_3 = get_rotation_matrix_from_angle_z(link_states[2][2])
+            self.link3.setTranslation(t_3)
+            self.link3.setRotation(matrix_3)
+
+            valid_flag = True
+            for obs in self.obstacles:
+                # dis = fcl.distance(self.robot, obs)
+                ret1 = fcl.collide(self.link1, obs)
+                ret2 = fcl.collide(self.link2, obs)
+                ret3 = fcl.collide(self.link3, obs)
+                if ret1 > 0 or ret2 > 0 or ret3>0:
+                    valid_flag = False
+                    break
+            return valid_flag
+        
+        if self.robot_type == "Two_Link_2D_vec":
+            Vec_X = state[0][0]
+            Vec_Y = state[0][1]
+            Angle1_Yaw = state[0][2]
+            Angle2_Yaw = state[0][3]
+            link_states = self.get_link_config_2D(
+                [Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw], self.robot_size)
+
+            t_1 = np.array([link_states[0][0], link_states[0][1], 0])
+            matrix_1 = get_rotation_matrix_from_angle_z(link_states[0][2])
+            self.link1.setTranslation(t_1)
+            self.link1.setRotation(matrix_1)
+
+            t_2 = np.array([link_states[1][0], link_states[1][1], 0])
+            matrix_2 = get_rotation_matrix_from_angle_z(link_states[1][2])
+            self.link2.setTranslation(t_2)
+            self.link2.setRotation(matrix_2)
+
+            valid_flag = True
+            for obs in self.obstacles:
+                # dis = fcl.distance(self.robot, obs)
+                ret1 = fcl.collide(self.link1, obs)
+                ret2 = fcl.collide(self.link2, obs)
+                if ret1 > 0 or ret2 > 0:
+                    valid_flag = False
+                    break
+            return valid_flag
+        
+        if self.robot_type == "Three_Link_2D_vec":
+            Vec_X = state[0][0]
+            Vec_Y = state[0][1]
+            Angle1_Yaw = state[0][2]
+            Angle2_Yaw = state[0][3]
+            Angle3_Yaw = state[0][4]
             link_states = self.get_link_config_2D(
                 [Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw, Angle3_Yaw], self.robot_size)
 
