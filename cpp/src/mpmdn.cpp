@@ -233,6 +233,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     int iter_cnt = 0;
     // int iter_cnt_lim = 10;
     int turn = 0;
+    base::StateSpacePtr space_ = si_->getStateSpace();
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path1;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path2;
     path1.push_back(start);
@@ -267,12 +268,14 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             for (int i = 0; i < valid_ck_cnt; i++)
             {
-                if(si_->isValid(next_state->get())) break;
+                if (is_in_bounds(next_state, space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds()))
+                    if(si_->isValid(next_state->get())) break;
                 next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             }
             for (int i = 0; i < colli_ck_cnt; i++)
             {
-                if(si_->checkMotion(start_now->get(), next_state->get())) break;
+                if (is_in_bounds(next_state, space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds()))
+                    if(si_->checkMotion(start_now->get(), next_state->get())) break;
                 next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             }
             
@@ -322,12 +325,14 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             for (int i = 0; i < valid_ck_cnt; i++)
             {
-                if(si_->isValid(next_state->get())) break;
+                if (is_in_bounds(next_state, space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds()))
+                    if(si_->isValid(next_state->get())) break;
                 next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             }
             for (int i = 0; i < colli_ck_cnt; i++)
             {
-                if(si_->checkMotion(start_now->get(), next_state->get())) break;
+                if (is_in_bounds(next_state, space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds()))
+                    if(si_->checkMotion(start_now->get(), next_state->get())) break;
                 next_state = generate_state_from_mvn(alpha.to(at::kCPU), mean.to(at::kCPU), sigma.to(at::kCPU));
             }
             
