@@ -105,54 +105,53 @@ class Plan_OMPL:
             self.ss = og.SimpleSetup(self.si)
             
         if configure_type == "Two_Link_2D_vec":
-            vector_space1 = ob.RealVectorStateSpace(2)
-            vector_space2 = ob.RealVectorStateSpace(2)
+            vector_space1 = ob.RealVectorStateSpace(4)
+            # vector_space2 = ob.RealVectorStateSpace(2)
             # set bounds
-            bounds1 = ob.RealVectorBounds(2)
+            bounds1 = ob.RealVectorBounds(4)
             bounds1.setLow(0, set_bounds[0])
             bounds1.setLow(1, set_bounds[0])
+            bounds1.setLow(2, -3.14)
+            bounds1.setLow(3, -3.14)
+            
             bounds1.setHigh(0, set_bounds[1])
             bounds1.setHigh(1, set_bounds[1])
-            
-            bounds2 = ob.RealVectorBounds(2)
-            bounds2.setLow(0, -3.14)
-            bounds2.setLow(1, -3.14)
-            bounds2.setHigh(0, 3.14)
-            bounds2.setHigh(1, 3.14)
+            bounds1.setHigh(2, 3.14)
+            bounds1.setHigh(3, 3.14)
+
             
             vector_space1.setBounds(bounds1)
-            vector_space2.setBounds(bounds2)
+            # vector_space2.setBounds(bounds2)
             self.space = ob.CompoundStateSpace()
             self.space.addSubspace(vector_space1, 1.0)
-            self.space.addSubspace(vector_space2, 0.5)
+            # self.space.addSubspace(vector_space2, 0.5)
 
             # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
             self.ss = og.SimpleSetup(self.si)
 
         if configure_type == "Three_Link_2D_vec":
-            vector_space1 = ob.RealVectorStateSpace(2)
-            vector_space2 = ob.RealVectorStateSpace(3)
+            vector_space1 = ob.RealVectorStateSpace(5)
+            # vector_space2 = ob.RealVectorStateSpace(3)
             # set bounds
-            bounds1 = ob.RealVectorBounds(2)
+            bounds1 = ob.RealVectorBounds(5)
             bounds1.setLow(0, set_bounds[0])
             bounds1.setLow(1, set_bounds[0])
+            bounds1.setLow(2, -3.14)
+            bounds1.setLow(3, -3.14)
+            bounds1.setLow(4, -3.14)
+            
             bounds1.setHigh(0, set_bounds[1])
             bounds1.setHigh(1, set_bounds[1])
-            
-            bounds2 = ob.RealVectorBounds(3)
-            bounds2.setLow(0, -3.14)
-            bounds2.setLow(1, -3.14)
-            bounds2.setLow(2, -3.14)
-            bounds2.setHigh(0, 3.14)
-            bounds2.setHigh(1, 3.14)
-            bounds2.setHigh(2, 3.14)
+            bounds1.setHigh(2, 3.14)
+            bounds1.setHigh(3, 3.14)
+            bounds1.setHigh(4, 3.14)
             
             vector_space1.setBounds(bounds1)
-            vector_space2.setBounds(bounds2)
+            # vector_space2.setBounds(bounds2)
             self.space = ob.CompoundStateSpace()
             self.space.addSubspace(vector_space1, 1.0)
-            self.space.addSubspace(vector_space2, 0.5)
+            # self.space.addSubspace(vector_space2, 0.5)
             
             # # create a simple setup object, note that si is needed when setting planner
             self.si = ob.SpaceInformation(self.space)
