@@ -3,9 +3,14 @@ import time
 
 import numpy as np
 import matplotlib
+import plotly.graph_objects as go
+import plotly.io as pio
 
 matplotlib.use('Agg')
+matplotlib.use('TkAgg')
+
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 import math
 import os
@@ -15,8 +20,8 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 def org_to_img(x, y, pic_shape, ppm):
-    x = x+20
-    y = y+20
+    x = x + 20
+    y = y + 20
     aixs1 = pic_shape[0] - 1 - y * ppm
     aixs2 = x * ppm
     return int(aixs1 + 0.5), int(aixs2 + 0.5)
@@ -203,6 +208,7 @@ def plot_rotat_rec_start_goal_2D(fig, start, goal, pixel_per_meter):
 
     return fig
 
+
 def plot_rotat_rec_start_goal_2D_two_link(fig, start, goal, pixel_per_meter):
     # plot start
     start_link1 = start[0]
@@ -230,8 +236,8 @@ def plot_rotat_rec_start_goal_2D_two_link(fig, start, goal, pixel_per_meter):
     fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal_link2[4]], r=4,
                                color="red")
 
-
     return fig
+
 
 def plot_rotat_rec_start_goal_2D_three_link(fig, start, goal, pixel_per_meter):
     # plot start
@@ -246,7 +252,7 @@ def plot_rotat_rec_start_goal_2D_three_link(fig, start, goal, pixel_per_meter):
     center_axis1, center_axis2 = org_to_img(start_link2[2], start_link2[3], fig.shape, pixel_per_meter)
     fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, start_link2[4]], r=4,
                                color="blue")
-    
+
     start_link3 = start[2]
     rec_size = [start_link3[1] * pixel_per_meter, start_link3[0] * pixel_per_meter]
     center_axis1, center_axis2 = org_to_img(start_link3[2], start_link3[3], fig.shape, pixel_per_meter)
@@ -265,15 +271,15 @@ def plot_rotat_rec_start_goal_2D_three_link(fig, start, goal, pixel_per_meter):
     center_axis1, center_axis2 = org_to_img(goal_link2[2], goal_link2[3], fig.shape, pixel_per_meter)
     fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal_link2[4]], r=4,
                                color="red")
-    
+
     goal_link3 = goal[2]
     rec_size = [goal_link3[1] * pixel_per_meter, goal_link3[0] * pixel_per_meter]
     center_axis1, center_axis2 = org_to_img(goal_link3[2], goal_link3[3], fig.shape, pixel_per_meter)
     fig = plot_rotating_rec_2D(fig=fig, rec_size=rec_size, state=[center_axis1, center_axis2, goal_link3[4]], r=4,
                                color="red")
 
-
     return fig
+
 
 def plot_rotat_rec_path_2D(fig, path, pixel_per_meter):
     # plot rectangles
@@ -299,7 +305,7 @@ def plot_rotat_rec_path_2D(fig, path, pixel_per_meter):
 
 def plot_rotat_rec_path_2D_two_link(fig, path, pixel_per_meter):
     # plot rectangles
-    centers_all = [[],[]]
+    centers_all = [[], []]
     for recs in path:
         for i in range(2):
             rec = recs[i]
@@ -320,9 +326,10 @@ def plot_rotat_rec_path_2D_two_link(fig, path, pixel_per_meter):
                 fig = plot_line_in_fig_2D(fig, start=p1, end=p2, r=1, color='red')
     return fig
 
+
 def plot_rotat_rec_path_2D_three_link(fig, path, pixel_per_meter):
     # plot rectangles
-    centers_all = [[],[],[]]
+    centers_all = [[], [], []]
     for recs in path:
         for i in range(3):
             rec = recs[i]
@@ -341,6 +348,206 @@ def plot_rotat_rec_path_2D_three_link(fig, path, pixel_per_meter):
                 p2 = centers[i + 1]
                 fig = plot_nearby(fig, p1[0], p1[1], r=3, color='red')
                 fig = plot_line_in_fig_2D(fig, start=p1, end=p2, r=1, color='red')
+    return fig
+
+
+def vis_for_3D_planning_point(cubes, path, save_fig_file):
+    # init figure
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_xlim([-20, 20])
+    ax.set_ylim([-20, 20])
+    ax.set_zlim([-20, 20])
+    # plot obstacles(cubes)
+    plot_multiple_cube_3D(cubes)
+    # plot path
+    path_x = []
+    path_y = []
+    path_z = []
+    path_len = len(path)
+    for i in range(path_len):
+        path_x.append(path[i][0])
+        path_y.append(path[i][1])
+        path_z.append(path[i][2])
+    plt.plot(path_x, path_y, path_z, c='green', marker='o')
+    # plot initial and goal
+    plt.plot(path[0][0], path[0][1], path[0][2], c='b', marker='o')
+    plt.plot(path[path_len - 1][0], path[path_len - 1][1], path[path_len - 1][2], c='r', marker='o')
+
+    # save fig
+    fig.savefig(save_fig_file + '.png')
+    return fig
+
+
+def plot_multiple_cube_3D(fig, cubes, color='dodgerblue', alpha=0.3):
+    """
+    :param fig:
+    :param cubes: [cube_vertices1, cube_vertices2,..]
+    :param color:
+    :param alpha:
+    :return:
+    """
+    for i in range(len(cubes)):
+        fig = plot_single_cube_3D(fig, cubes[i], color, alpha)
+    return fig
+
+
+def plot_single_cube_3D(fig, vertices, color='dodgerblue', alpha=0.3):
+    """
+    :param vertices: [[x_min,y_min,z_min], [x_max,y_max,z_max]]
+    :param color:
+    :param alpha: Opacity with 0 as completely transparent and 1 as opaque
+    :return:fig
+    """
+    # compute 8 vertices
+    x_min = vertices[0][0]
+    x_max = vertices[1][0]
+    y_min = vertices[0][1]
+    y_max = vertices[1][1]
+    z_min = vertices[0][2]
+    z_max = vertices[1][2]
+    vertices_all = [[x_min, y_min, z_min], [x_min, y_min, z_max], [x_min, y_max, z_max], [x_min, y_max, z_min],
+                    [x_max, y_min, z_min], [x_max, y_min, z_max], [x_max, y_max, z_max], [x_max, y_max, z_min]]
+    # faces: front, back, left, right, top, bottom
+    faces = [[vertices_all[4], vertices_all[7], vertices_all[6], vertices_all[5]],
+             [vertices_all[0], vertices_all[3], vertices_all[2], vertices_all[1]],
+             [vertices_all[0], vertices_all[4], vertices_all[5], vertices_all[1]],
+             [vertices_all[3], vertices_all[7], vertices_all[6], vertices_all[2]],
+             [vertices_all[5], vertices_all[6], vertices_all[2], vertices_all[1]],
+             [vertices_all[4], vertices_all[7], vertices_all[3], vertices_all[0]]]
+
+    # plot
+    ax = fig.get_axes()[0]
+    cube = Poly3DCollection(faces, linewidths=1, edgecolors='k')
+    cube.set_facecolor(color)
+    cube.set_alpha(alpha)
+    ax.add_collection3d(cube)
+    return fig
+
+
+def plot_single_cube_3D_plotly(fig, vertices, color='dodgerblue', alpha=0.3):
+    """
+    :param vertices: [[x_min,y_min,z_min], [x_max,y_max,z_max]]
+    :param color:
+    :param alpha: Opacity with 0 as completely transparent and 1 as opaque
+    :return:fig
+    """
+    # compute 8 vertices
+    x_min = vertices[0][0]
+    x_max = vertices[1][0]
+    y_min = vertices[0][1]
+    y_max = vertices[1][1]
+    z_min = vertices[0][2]
+    z_max = vertices[1][2]
+    vertices_all = [[x_min, y_min, z_min], [x_min, y_min, z_max], [x_min, y_max, z_max], [x_min, y_max, z_min],
+                    [x_max, y_min, z_min], [x_max, y_min, z_max], [x_max, y_max, z_max], [x_max, y_max, z_min]]
+    vertices_x = [v[0] for v in vertices_all]
+    vertices_y = [v[1] for v in vertices_all]
+    vertices_z = [v[2] for v in vertices_all]
+
+    # faces: front, back, left, right, top, bottom
+    faces = [[vertices_all[4], vertices_all[7], vertices_all[6], vertices_all[5]],
+             [vertices_all[0], vertices_all[3], vertices_all[2], vertices_all[1]],
+             [vertices_all[0], vertices_all[4], vertices_all[5], vertices_all[1]],
+             [vertices_all[3], vertices_all[7], vertices_all[6], vertices_all[2]],
+             [vertices_all[5], vertices_all[6], vertices_all[2], vertices_all[1]],
+             [vertices_all[4], vertices_all[7], vertices_all[3], vertices_all[0]]]
+
+    triangles_faces_index_0 = [4, 4, 0, 0, 0, 0, 3, 3, 3, 0, 1, 2]
+    triangles_faces_index_1 = [5, 6, 1, 2, 1, 5, 6, 7, 4, 4, 2, 6]
+    triangles_faces_index_2 = [6, 7, 2, 3, 5, 4, 2, 6, 7, 3, 5, 5]
+
+    # plot
+    cube = go.Mesh3d(
+        x=vertices_x,
+        y=vertices_y,
+        z=vertices_z,
+        i=triangles_faces_index_0,
+        j=triangles_faces_index_1,
+        k=triangles_faces_index_2,
+        facecolor=['rgba(255, 0, 0, 0.1)'] * 12  # 设置面的颜色和透明度
+    )
+    fig.add_trace(cube)
+    return fig
+
+
+def plot_multiple_cube_3D_plotly(fig, cubes, color='dodgerblue', alpha=0.3):
+    """
+    :param fig:
+    :param cubes: [cube_vertices1, cube_vertices2,..]
+    :param color:
+    :param alpha:
+    :return:
+    """
+    for i in range(len(cubes)):
+        fig = plot_single_cube_3D_plotly(fig, cubes[i], color, alpha)
+    return fig
+
+def vis_for_3D_planning_point_plotly(cubes, path=None, save_fig_file=None):
+    # init figure
+    layout = go.Layout(
+        scene=dict(
+            xaxis=dict(showticklabels=False, title='X'),
+            yaxis=dict(showticklabels=False, title='Y'),
+            zaxis=dict(showticklabels=False, title='Z'),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1, z=1)
+        )
+    )
+    fig = go.Figure(layout=layout)
+
+    # plot obstacles(cubes)
+    fig = plot_multiple_cube_3D_plotly(fig, cubes)
+    # plot path
+    path_x = []
+    path_y = []
+    path_z = []
+    path_len = len(path)
+    for i in range(path_len):
+        path_x.append(path[i][0])
+        path_y.append(path[i][1])
+        path_z.append(path[i][2])
+    path_line = go.Scatter3d(
+        x=path_x,
+        y=path_y,
+        z=path_z,
+        marker=dict(
+            size=10,
+            color='green'
+        ),
+        line=dict(
+            width=10,
+            color='red'
+        )
+    )
+    fig.add_trace(path_line)
+    # plot initial and goal
+    initial = go.Scatter3d(
+        x=[path[0][0]],
+        y=[path[0][1]],
+        z=[path[0][2]],
+        marker=dict(
+            size=10,
+            color='blue'
+        ),
+    )
+    goal = go.Scatter3d(
+        x=[path[path_len - 1][0]],
+        y=[path[path_len - 1][1]],
+        z=[path[path_len - 1][2]],
+        marker=dict(
+            size=10,
+            color='red'
+        ),
+    )
+    fig.add_trace(initial)
+    fig.add_trace(goal)
+
+    # save fig
+    pio.write_html(fig, save_fig_file + '.html')
     return fig
 
 
@@ -367,6 +574,7 @@ def vis_for_2D_planning_two_link(rec_env, start, goal, path, size, pixel_per_met
     cv2.imwrite(save_fig_dir + '.png', fig)
     return fig
 
+
 def vis_for_2D_planning_three_link(rec_env, start, goal, path, size, pixel_per_meter, save_fig_dir):
     # create the fig and plot obstacles
     fig = plot_rotat_rec_env_2D(rec_env, size, pixel_per_meter)
@@ -377,6 +585,15 @@ def vis_for_2D_planning_three_link(rec_env, start, goal, path, size, pixel_per_m
     cv2.imwrite(save_fig_dir + '.png', fig)
     return fig
 
-# if __name__ == '__main__':
+
+if __name__ == '__main__':
+    # fig = plt.figure()
+    # plot_single_cube_3D_plotly(None, vertices=[[0, 0, 0], [1, 1, 1]])
+    vis_for_3D_planning_point_plotly([[[0, 0, 0], [1, 1, 1]], [[2,2,2], [3,3,3]]], [[2,2,2],[1,2,3], [7,5,2]])
+    # ax = fig.add_subplot(111, projection='3d')
+    # fig, ax = plot_cube_3D(fig, ax, [[0, 0, 0], [5, 5, 5]])
+    # fig, ax = plot_cube_3D(fig, ax, [[1, 2, 3], [4, 5, 6]])
+    # print(fig)
+    # plt.show()
 #     rec_obs = [[4, 5, 5, 6, -0.1*math.pi]]
 #     plot_rotat_rec_env_start_goal_2D(rec_env=rec_obs, pixel_per_meter=100)
