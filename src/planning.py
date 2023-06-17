@@ -3,7 +3,7 @@
 
 from plan_ompl import Plan_OMPL
 from env_robot import Env_Robot
-from visualization import vis_for_2D_planning_rigidbody, vis_for_2D_planning_two_link, vis_for_2D_planning_three_link
+from visualization import vis_for_2D_planning_rigidbody, vis_for_2D_planning_two_link, vis_for_2D_planning_three_link, vis_for_3D_planning_point_plotly
 
 from ompl import base, geometric
 import numpy as np
@@ -49,6 +49,7 @@ class Plan:
             print("vis", vis)
             solved, path = self.pl_ompl.solve_planning_2D(
                 start=start, goal=goal, time_lim=time_lim, simple=simple, interpolate=interpolate)
+
             if vis is not None:
                 self.start_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(start)
                 self.goal_vis = self.env_rob.get_list_rec_config_with_robot_from_ompl_state(goal)
@@ -70,5 +71,7 @@ class Plan:
         if self.type == "Three_Link_2D":
             vis_for_2D_planning_three_link(rec_env=rec_env, start=start, goal=goal,
                                          path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
+        if self.type == "Point_3D":
+            vis_for_3D_planning_point_plotly(cubes=rec_env, path=path, start=start, goal=goal, save_fig_file=save_fig_dir)
 
 

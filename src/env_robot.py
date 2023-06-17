@@ -383,6 +383,12 @@ class Env_Robot:
             return path_with_robot
 
     def get_list_rec_config_with_robot_from_ompl_state(self, state):
+        if self.robot_type == "Point_3D":
+            x = state[0]
+            y = state[1]
+            z = state[2]
+            return [x, y, z]
+
         if self.robot_type == "Point_2D":
             x = state[0]
             y = state[1]
@@ -462,3 +468,4 @@ class Env_Robot:
             obs_i_tf = fcl.Transform(obs_i_t)
             obs_i = fcl.CollisionObject(obs_i_model, obs_i_tf)
             self.obstacles.append(obs_i)
+            self.obstacles_vis.append([[l_b_x, l_b_y, l_b_z], [r_t_x, r_t_y, r_t_z]])
