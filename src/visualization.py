@@ -486,7 +486,7 @@ def plot_multiple_cube_3D_plotly(fig, cubes, color='dodgerblue', alpha=0.3):
         fig = plot_single_cube_3D_plotly(fig, cubes[i], color, alpha)
     return fig
 
-def vis_for_3D_planning_point_plotly(cubes, path=None, save_fig_file=None):
+def vis_for_3D_planning_point_plotly(cubes, path, start, goal, save_fig_file):
     # init figure
     layout = go.Layout(
         scene=dict(
@@ -526,18 +526,18 @@ def vis_for_3D_planning_point_plotly(cubes, path=None, save_fig_file=None):
     fig.add_trace(path_line)
     # plot initial and goal
     initial = go.Scatter3d(
-        x=[path[0][0]],
-        y=[path[0][1]],
-        z=[path[0][2]],
+        x=[start[0]],
+        y=[start[1]],
+        z=[start[2]],
         marker=dict(
             size=10,
             color='blue'
         ),
     )
     goal = go.Scatter3d(
-        x=[path[path_len - 1][0]],
-        y=[path[path_len - 1][1]],
-        z=[path[path_len - 1][2]],
+        x=[goal[0]],
+        y=[goal[1]],
+        z=[goal[2]],
         marker=dict(
             size=10,
             color='red'

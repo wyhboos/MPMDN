@@ -17,7 +17,7 @@ except ImportError:
     from ompl import geometric as og
 
 from env_robot import Env_Robot
-from visualization import vis_for_2D_planning_rigidbody, vis_for_2D_planning_two_link
+from visualization import vis_for_2D_planning_rigidbody, vis_for_2D_planning_two_link, vis_for_3D_planning_point_plotly
 import sys
 sys.path.append("./build")
 from MPN import *
