@@ -226,6 +226,7 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     int iter_cnt = 0;
     // int iter_cnt_lim = 10;
     int turn = 0;
+    base::StateSpacePtr space_ = si_->getStateSpace();
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path1;
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path2;
     path1.push_back(start);
@@ -257,15 +258,17 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             // valid check 
             for (int i = 0; i < valid_ck_cnt; i++)
-            {
-                if(si_->isValid(next_state->get())) break;
+            {   
+                if (is_in_bounds(next_state, space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds()))
+                    if(si_->isValid(next_state->get())) break;
                 at::Tensor output = Pnet.forward(inputs).toTensor();
                 next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             }
             // colli check
             for (int i = 0; i < colli_ck_cnt; i++)
             {
-                if(si_->checkMotion(start_now->get(), next_state->get())) break;
+                if (is_in_bounds(next_state, space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds()))
+                    if(si_->checkMotion(start_now->get(), next_state->get())) break;
                 at::Tensor output = Pnet.forward(inputs).toTensor();
                 next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             }
@@ -302,15 +305,17 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
             next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             // valid check 
             for (int i = 0; i < valid_ck_cnt; i++)
-            {
-                if(si_->isValid(next_state->get())) break;
+            {   
+                if(is_in_bounds(next_state, space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds()))
+                    if(si_->isValid(next_state->get())) break;
                 at::Tensor output = Pnet.forward(inputs).toTensor();
                 next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             }
             // colli check
             for (int i = 0; i < colli_ck_cnt; i++)
             {
-                if(si_->checkMotion(start_now->get(), next_state->get())) break;
+                if(is_in_bounds(next_state, space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds()))
+                    if(si_->checkMotion(start_now->get(), next_state->get())) break;
                 at::Tensor output = Pnet.forward(inputs).toTensor();
                 next_state = get_state_ompl_from_tensor(output.to(at::kCPU));
             }
@@ -670,12 +675,24 @@ void ompl::geometric::MPN::load_obs_cloud(std::string cloud_file)
 at::Tensor ompl::geometric::MPN::get_env_encoding(int index)
 {
     float *cloud_start = obs_clouds.data<float>();
-    cloud_start += index*2800;
     at::Tensor obs_cloud;
-    if (cloud_type == "CAE")
-        obs_cloud = torch::from_blob(cloud_start, {1,2800}).to(at::kCUDA);
-    else if(cloud_type == "PointNet")
-        obs_cloud = torch::from_blob(cloud_start, {1,2,1400}).to(at::kCUDA);
+    if (state_type == "Point_3D")
+    {
+        cloud_start += index*6000;
+        if (cloud_type == "CAE")
+            obs_cloud = torch::from_blob(cloud_start, {1,6000}).to(at::kCUDA);
+        else if(cloud_type == "PointNet")
+            obs_cloud = torch::from_blob(cloud_start, {1,3,2000}).to(at::kCUDA);
+
+    }
+    else
+    {
+        cloud_start += index*2800;
+        if (cloud_type == "CAE")
+            obs_cloud = torch::from_blob(cloud_start, {1,2800}).to(at::kCUDA);
+        else if(cloud_type == "PointNet")
+            obs_cloud = torch::from_blob(cloud_start, {1,2,1400}).to(at::kCUDA);
+    }
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();
