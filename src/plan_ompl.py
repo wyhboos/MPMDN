@@ -108,16 +108,17 @@ class Plan_OMPL:
             vector_space1 = ob.RealVectorStateSpace(4)
             # vector_space2 = ob.RealVectorStateSpace(2)
             # set bounds
+            # to avoid fold and enable using BIT* and IRRT*, the angle is bounded in (-0.75pi, 0.75pi)
             bounds1 = ob.RealVectorBounds(4)
             bounds1.setLow(0, set_bounds[0])
             bounds1.setLow(1, set_bounds[0])
-            bounds1.setLow(2, -3.14)
-            bounds1.setLow(3, -3.14)
+            bounds1.setLow(2, -3.14*0.75)
+            bounds1.setLow(3, -3.14*0.75)
             
             bounds1.setHigh(0, set_bounds[1])
             bounds1.setHigh(1, set_bounds[1])
-            bounds1.setHigh(2, 3.14)
-            bounds1.setHigh(3, 3.14)
+            bounds1.setHigh(2, 3.14*0.75)
+            bounds1.setHigh(3, 3.14*0.75)
 
             
             vector_space1.setBounds(bounds1)
@@ -134,18 +135,19 @@ class Plan_OMPL:
             vector_space1 = ob.RealVectorStateSpace(5)
             # vector_space2 = ob.RealVectorStateSpace(3)
             # set bounds
+            # to avoid fold and enable using BIT* and IRRT*, the angle is bounded in (-0.75pi, 0.75pi)
             bounds1 = ob.RealVectorBounds(5)
             bounds1.setLow(0, set_bounds[0])
             bounds1.setLow(1, set_bounds[0])
-            bounds1.setLow(2, -3.14)
-            bounds1.setLow(3, -3.14)
-            bounds1.setLow(4, -3.14)
+            bounds1.setLow(2, -3.14*0.75)
+            bounds1.setLow(3, -3.14*0.75)
+            bounds1.setLow(4, -3.14*0.75)
             
             bounds1.setHigh(0, set_bounds[1])
             bounds1.setHigh(1, set_bounds[1])
-            bounds1.setHigh(2, 3.14)
-            bounds1.setHigh(3, 3.14)
-            bounds1.setHigh(4, 3.14)
+            bounds1.setHigh(2, 3.14*0.75)
+            bounds1.setHigh(3, 3.14*0.75)
+            bounds1.setHigh(4, 3.14*0.75)
             
             vector_space1.setBounds(bounds1)
             # vector_space2.setBounds(bounds2)
