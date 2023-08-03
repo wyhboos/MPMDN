@@ -70,7 +70,7 @@ def generate_path_main(args):
     # planning
     paths_all = []
     suc_cnt = 0
-    for i in range(50 * part, 50 * (part + 1)):
+    for i in range(40 * part, 40 * (part + 1)):
         print("Planning Env:", i)
         paths_env = []
         for j in range(400):
@@ -82,12 +82,12 @@ def generate_path_main(args):
             goal = pl.pl_ompl.conver_list_config_to_ompl_config(goal)
             rec_env = rec_envs[i, :, :]
             pl.env_rob.load_rec_obs(rec_env)
-            solved, path = pl.plan(start=start, goal=goal, vis=vis, time_lim=0.25, simple=False)
+            solved, path = pl.plan(start=start, goal=goal, vis=vis, time_lim=1, simple=False)
             vis_i_j_ = vis + "/" +str(i)+str(j)
-            print(vis_i_j_)
-            print(pl.start_vis, pl.goal_vis, pl.path_rob_vis)
-            pl.vis(rec_env=pl.env_rob.obstacles_vis, start=pl.start_vis, goal=pl.goal_vis,
-                                            path=pl.path_rob_vis, size=50, pixel_per_meter=20, save_fig_dir=vis_i_j_)
+            # print(vis_i_j_)
+            # print(pl.start_vis, pl.goal_vis, pl.path_rob_vis)
+            # pl.vis(rec_env=pl.env_rob.obstacles_vis, start=pl.start_vis, goal=pl.goal_vis,
+            #                                 path=pl.path_rob_vis, size=50, pixel_per_meter=20, save_fig_dir=vis_i_j_)
             if solved and solved.asString() == "Exact solution":
                 suc_cnt += 1
                 paths_env.append(path)
