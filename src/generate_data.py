@@ -29,6 +29,7 @@ def generate_path_main(args):
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Rigidbody_2D":
         vis = "./fig/S2D/S2D_Rigidbody/S2D_Rigidbody"
+        create_dir(vis)
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Rigidbody_Path_" + str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Rigidbody.npy"
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
@@ -38,7 +39,8 @@ def generate_path_main(args):
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Two_Link_Path.npy"
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Two_Link_2D_vec":
-        vis = "./fig/S2D/S2D_Two_Link/S2D_Two_Link_vec"
+        vis = "./fig/S2D/S2D_Two_Link_vec"
+        create_dir(vis)
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Two_Link_vec_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_1000_pts_400_Two_Link_vec_sg.npy"
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
@@ -55,7 +57,7 @@ def generate_path_main(args):
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
     pl = Plan(type,"RRTstar", set_bounds=(-15, 15))
-    g_s_g = 1
+    g_s_g = 0
 
     # generate start and goal
     if g_s_g:
@@ -80,7 +82,11 @@ def generate_path_main(args):
             goal = pl.pl_ompl.conver_list_config_to_ompl_config(goal)
             rec_env = rec_envs[i, :, :]
             pl.env_rob.load_rec_obs(rec_env)
-            solved, path = pl.plan(start=start, goal=goal, vis=None, time_lim=0.25, simple=False)
+            solved, path = pl.plan(start=start, goal=goal, vis=vis, time_lim=0.25, simple=False)
+            vis_i_j_ = vis + "/" +str(i)+str(j)
+            print(vis_i_j_)
+            pl.vis(rec_env=pl.env_rob.obstacles_vis, start=pl.start_vis, goal=pl.goal_vis,
+                                            path=pl.path_rob_vis, size=50, pixel_per_meter=20, save_fig_dir=vis_i_j_)
             if solved and solved.asString() == "Exact solution":
                 suc_cnt += 1
                 paths_env.append(path)
