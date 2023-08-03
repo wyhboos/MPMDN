@@ -60,6 +60,35 @@ def change_S2D_cloud_to_PointNet_format():
     print(cloud_data_2[0, 1, :7])
     np.save("/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy", cloud_data_2)
 
+def generate_start_goal(pl, rec_envs, cnt, s_g_file, rm_trivial=True):
+    """_summary_
+
+    Args:
+        pl (_type_): class plan
+        rec_envs (_type_): rectangles of obstacles
+        cnt (_type_): (enviroment index, count of pairs of start and goal to generate)
+        s_g_file (_type_): save file
+        rm_trivial (bool, optional): whether to remove trivial start and goal (not obs between the line)
+    """
+    env_pts = []
+    motion_ck_fun = None
+    if rm_trivial:
+        motion_ck_fun = pl.pl_ompl.si.checkMotion
+    for i in range(cnt[0]):
+        print("Generating start goal, Env:", i)
+        rec_env = rec_envs[i, :, :]
+        pl.env_rob.load_rec_obs(rec_env)
+        pts = []
+        for j in range(cnt[1]):
+            start, goal = pl.pl_ompl.generate_valid_start_goal(motion_ck_fun=motion_ck_fun)
+            start = pl.pl_ompl.convert_ompl_config_to_list_config(start)
+            goal = pl.pl_ompl.convert_ompl_config_to_list_config(goal)
+            # print(start, goal)
+            pts.append([start, goal])
+        env_pts.append(pts)
+    np.save(s_g_file, np.array(env_pts))
+    print("Generate and Save Start Goal Suc!")
+    
     
     
     

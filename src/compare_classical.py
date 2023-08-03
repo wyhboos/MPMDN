@@ -61,25 +61,7 @@ def get_statistics_classical(para_dict):
 
     # generate start and goal
     if g_s_g:
-        env_pts = []
-        for i in range(100):
-            print("Generating start goal, Env:", i)
-            rec_env = rec_envs[i, :, :]
-            if type == "Point_3D":
-                pl.env_rob.load_rec_obs_3D(rec_env)
-            else:
-                pl.env_rob.load_rec_obs_2D(rec_env)
-            pts = []
-            for j in range(10):
-                print(i, j)
-                start, goal = pl.pl_ompl.generate_valid_start_goal()
-                start = pl.pl_ompl.convert_ompl_config_to_list_config(start)
-                goal = pl.pl_ompl.convert_ompl_config_to_list_config(goal)
-                # print(start, goal)
-                pts.append([start, goal])
-            env_pts.append(pts)
-        np.save(s_g_file, np.array(env_pts))
-        print("Generate Start Goal Suc!")
+        generate_start_goal(pl=pl,rec_envs=rec_envs,cnt=(1000,10),s_g_file=s_g_file,rm_trivial=True)
         return
         # load start goal
     else:
