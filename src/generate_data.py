@@ -85,6 +85,7 @@ def generate_path_main(args):
             solved, path = pl.plan(start=start, goal=goal, vis=vis, time_lim=0.25, simple=False)
             vis_i_j_ = vis + "/" +str(i)+str(j)
             print(vis_i_j_)
+            print(pl.start_vis, pl.goal_vis, pl.path_rob_vis)
             pl.vis(rec_env=pl.env_rob.obstacles_vis, start=pl.start_vis, goal=pl.goal_vis,
                                             path=pl.path_rob_vis, size=50, pixel_per_meter=20, save_fig_dir=vis_i_j_)
             if solved and solved.asString() == "Exact solution":
