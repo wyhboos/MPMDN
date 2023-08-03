@@ -422,6 +422,12 @@ class Env_Robot:
             for i, rec in enumerate(link_states):
                 recs.append(self.robot_size[2 * i:2 * i + 2] + link_states[i])
             return recs
+        
+    def load_rec_obs(self, rec_obs):
+        if self.robot_type == "Point_3D":
+            self.load_rec_obs_3D(rec_obs)
+        else:
+            self.load_rec_obs_2D(rec_obs)
 
     def load_rec_obs_2D(self, rec_obs):
         if self.obstacles is not None:

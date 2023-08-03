@@ -218,7 +218,7 @@ class Plan_OMPL:
         self.ss.setOptimizationObjective(self.termination)
         
 
-    def generate_valid_start_goal(self, colli_fun = None):
+    def generate_valid_start_goal(self, motion_ck_fun = None):
         start = ob.State(self.space)
         while True:
             while True:
@@ -230,9 +230,9 @@ class Plan_OMPL:
                 goal.random()
                 if self.StateValidityChecker(goal()):
                     break
-            if colli_fun is None:
+            if motion_ck_fun is None:
                 break
-            elif not colli_fun(start(), goal()):
+            elif not motion_ck_fun(start(), goal()):
                 break
         return start, goal
 
