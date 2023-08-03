@@ -18,6 +18,8 @@ def generate_path_main(args):
         type = "Point_3D"
     elif type == 4:
         type = "Point_2D"
+    elif type == 5:
+        type = "Two_Link_2D_vec"
     print("Part:", part)
     print("type:", type)
     if type == "Point_2D":
@@ -35,6 +37,11 @@ def generate_path_main(args):
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Two_Link_Path_"+str(part)
         s_g_file = "./Data/S2D/1000env_400pt/S2D_env_100_pts_4000_Two_Link_Path.npy"
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+    if type == "Two_Link_2D_vec":
+        vis = "./fig/S2D/S2D_Two_Link/S2D_Two_Link_vec"
+        path_save_file = "./Data/S2D/1000env_400pt/S2D_Two_Link_vec_Path_"+str(part)
+        s_g_file = "./Data/S2D/1000env_400pt/S2D_env_1000_pts_400_Two_Link_vec_sg.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     if type == "Three_Link_2D":
         vis = "./fig/S2D/S2D_Three_Link/S2D_3L"
         path_save_file = "./Data/S2D/1000env_400pt/S2D_Three_Link_Path_"+str(part)
@@ -47,8 +54,8 @@ def generate_path_main(args):
         env_file = "./Data/C3D/c3d_obs_rec_50000.npy"
     # load env
     rec_envs = np.load(env_file, allow_pickle=True)
-    pl = Plan(type,"RRTstar", set_bounds=(-20, 20))
-    g_s_g = 0
+    pl = Plan(type,"RRTstar", set_bounds=(-15, 15))
+    g_s_g = 1
 
     # generate start and goal
     if g_s_g:
@@ -86,6 +93,6 @@ if __name__ == '__main__':
     # generate_start_goal_points()
     parser = argparse.ArgumentParser()
     parser.add_argument('--part', type=int, default=0)
-    parser.add_argument('--type', type=int, default="2")
+    parser.add_argument('--type', type=int, default="5")
     args = parser.parse_args()
     generate_path_main(args)
