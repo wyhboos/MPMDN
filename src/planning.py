@@ -60,7 +60,7 @@ class Plan:
             return solved, path
 
     def vis(self, rec_env, start, goal, path, size, pixel_per_meter, save_fig_dir):
-        if self.type == "Two_Link_2D":
+        if self.type == "Two_Link_2D" or self.type == "Two_Link_2D_vec":
             vis_for_2D_planning_two_link(rec_env=rec_env, start=start, goal=goal,
                                          path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
 
@@ -68,7 +68,7 @@ class Plan:
             vis_for_2D_planning_rigidbody(rec_env=rec_env, start=start, goal=goal,
                                           path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
             
-        if self.type == "Three_Link_2D":
+        if self.type == "Three_Link_2D" or self.type == "Three_Link_2D_vec":
             vis_for_2D_planning_three_link(rec_env=rec_env, start=start, goal=goal,
                                          path=path, size=size, pixel_per_meter=pixel_per_meter, save_fig_dir=save_fig_dir)
         if self.type == "Point_3D":

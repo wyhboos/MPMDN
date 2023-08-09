@@ -364,7 +364,7 @@ class Env_Robot:
                 path_with_robot.append(self.robot_size + cfg)
             return path_with_robot
         
-        if self.robot_type == "Two_Link_2D":
+        if self.robot_type == "Two_Link_2D" or self.robot_type == "Two_Link_2D_vec":
             for cfg in path:
                 state = self.get_link_config_2D(cfg, self.robot_size)
                 recs = []
@@ -373,7 +373,7 @@ class Env_Robot:
                 path_with_robot.append(recs)
             return path_with_robot
         
-        if self.robot_type == "Three_Link_2D":
+        if self.robot_type == "Three_Link_2D" or self.robot_type == "Three_Link_2D_vec":
             for cfg in path:
                 state = self.get_link_config_2D(cfg, self.robot_size)
                 recs = []
@@ -400,7 +400,7 @@ class Env_Robot:
             angle = state().getYaw()
             return self.robot_size + [x, y, angle]
 
-        if self.robot_type == "Two_Link_2D":
+        if self.robot_type == "Two_Link_2D" or self.robot_type == "Two_Link_2D_vec":
             x = state[0]
             y = state[1]
             yaw1 = state[2]
@@ -411,7 +411,7 @@ class Env_Robot:
                 recs.append(self.robot_size[2 * i:2 * i + 2] + link_states[i])
             return recs
         
-        if self.robot_type == "Three_Link_2D":
+        if self.robot_type == "Three_Link_2D" or self.robot_type == "Three_Link_2D_vec":
             x = state[0]
             y = state[1]
             yaw1 = state[2]
