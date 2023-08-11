@@ -585,6 +585,34 @@ def vis_for_2D_planning_three_link(rec_env, start, goal, path, size, pixel_per_m
     cv2.imwrite(save_fig_dir + '.png', fig)
     return fig
 
+def vis_for_points_in_3D_plotly(points, save_fig_file):
+    """
+    assume the points is organized as (dimension, cnt)
+    """
+    layout = go.Layout(
+        scene=dict(
+            xaxis=dict(showticklabels=False, title='X'),
+            yaxis=dict(showticklabels=False, title='Y'),
+            zaxis=dict(showticklabels=False, title='Z'),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1, z=1)
+        )
+    )
+    fig = go.Figure(layout=layout)
+    cnt = points.shape[1]
+    for i in range(cnt):
+        point = go.Scatter3d(
+        x=[points[0,i]],
+        y=[points[1,i]],
+        z=[points[2,i]],
+        marker=dict(
+            size=1,
+            color='blue'),)
+        fig.add_trace(point)
+    pio.write_html(fig, save_fig_file)
+        
+
+    
 
 if __name__ == '__main__':
     # fig = plt.figure()
