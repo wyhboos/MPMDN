@@ -81,6 +81,210 @@ from planning import *
 ## END_SUB_TUTORIAL
 
 
+    #   tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
+
+
+    #     # for multimodal and environemnt encoding
+    #     tutorial.add_box(location=[0.62,0,0.4], name='obs1', size = [0.5,0.55,0.03])
+    #     tutorial.add_box(location=[0.62,-0.25,0.2], name='obs2', size = [0.5,0.03,0.4])
+    #     tutorial.add_box(location=[0.62,0.25,0.2], name='obs3', size = [0.5,0.03,0.4])
+
+    #     tutorial.add_box(location=[0.27,0,0.2], name='obs4', size = [0.2,1.05,0.03])
+    #     tutorial.add_box(location=[0.27,-0.5,0.1], name='obs5', size = [0.2,0.03,0.2])
+    #     tutorial.add_box(location=[0.27,0.5,0.1], name='obs6', size = [0.2,0.03,0.2])
+
+    #     tutorial.add_box(location=[0.45,0,0.5], name='obs7', size = [0.05,0.3,0.2])
+    #     tutorial.add_box(location=[0.7,0,0.5], name='obs8', size = [0.05,0.3,0.2])
+
+    #     tutorial.add_box(location=[0.27,-0.125,0.275], name='obs_right', size = [0.2,0.02,0.15])
+
+    #     tutorial.add_box(location=[0.27, 0.125,0.29], name='obs_left', size = [0.2,0.02,0.18])
+
+    #     tutorial.add_box(location=[0.27, 0.375,0.26], name='obs_left2', size = [0.2,0.02,0.12])
+
+    #     tutorial.add_box(location=[0.27, -0.375,0.29], name='obs_right2', size = [0.2,0.02,0.18])
+
+    #     tutorial.add_box(location=[0.575, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
+    #     tutorial.init_planning_scene_service()
+
+def generate_random_table_case():
+    # for the high table two obs
+    dis = random.uniform(0.2,0.3)
+    obs_length_y = random.uniform(0.25, 0.35)
+    obs_length_z = random.uniform(0.175,0.225)
+    center_x = random.uniform(0.55,0.6)
+    center_y = random.uniform(-0.05,0.05)
+
+    position_obs1 = [center_x-0.5*dis, center_y, 0.4+0.5*obs_length_z]
+    position_obs2 = [center_x+0.5*dis, center_y, 0.4+0.5*obs_length_z]
+    size_obs1 = [0.05, obs_length_y, obs_length_z]
+    size_obs2 = [0.05, obs_length_y, obs_length_z]
+
+    # for the low table four dividers
+    center_y_delta = [random.uniform(-0.005, 0.005) for i in range(4)]
+    center_y = [-0.375, -0.125, 0.125, 0.375]
+    obs_length_z = [random.uniform(0.12, 0.18) for i in range(4)]
+    position_obs_all = [[0.27, center_y_delta[i]+center_y[i], 0.2+0.5*obs_length_z[i]] for i in range(4)]
+    size_obs_all = [[0.2, 0.01, obs_length_z[i]] for i in range(4)]
+
+    # intergrate
+    size = [size_obs1, size_obs2] + size_obs_all
+    position = [position_obs1, position_obs2] + position_obs_all
+    return size, position
+
+def gen_rand_tbcase_save(env_cnt, save_file):
+    envs = []
+    env_0_size = [[0.05,0.3,0.2], [0.05,0.3,0.2], [0.2,0.02,0.15], [0.2,0.02,0.18], [0.2,0.02,0.12], [0.2,0.02,0.18]]
+    env_0_pose = [[0.45,0,0.5], [0.7,0,0.5], [0.27,-0.125,0.275], [0.27, 0.125,0.29], [0.27, 0.375,0.26], [0.27, -0.375,0.29]]
+    envs.append([env_0_size, env_0_pose])
+    for i in range(env_cnt):
+        size, position = generate_random_table_case()
+        envs.append([size,position])
+    envs = np.array(envs)
+    print(envs.shape, envs)
+    np.save(save_file, np.array(envs))
+
+def change_rectange_to_point_clouds(center_pose, plane_size, point_cnt):
+    x_range = plane_size[0]
+    y_range = plane_size[1]
+    z_range = plane_size[2]
+    cloud_points = []
+    for i in range(point_cnt):
+        x = random.uniform(0,x_range)-0.5*x_range
+        y = random.uniform(0,y_range)-0.5*y_range
+        z = random.uniform(0,z_range)-0.5*z_range
+        cloud_points.append([x+center_pose[0], y+center_pose[1], z+center_pose[2]])
+    return cloud_points
+
+
+def change_box_to_point_clouds_surface(pose, size, point_cnt):
+    cloud_points = []
+
+    surface_center_poses = []
+    for i in range(3):
+        s_c1 =copy.copy(pose)
+        s_c2 =copy.copy(pose)
+        s_c1[i] = s_c1[i] - 0.5*size[i]
+        s_c2[i] = s_c2[i] + 0.5*size[i]
+        surface_center_poses.append(s_c1)
+        surface_center_poses.append(s_c2)
+
+    surface_sizes = []
+    for i in range(3):
+        s_si1 =copy.copy(size)
+        s_si2 =copy.copy(size)
+        s_si1[i] = 0
+        s_si2[i] = 0
+        surface_sizes.append(s_si1)
+        surface_sizes.append(s_si2)
+
+    areas = []
+    area_all = 0
+    for s in surface_sizes:
+        a = compute_area_3d_rectangle(s)
+        area_all += a
+        areas.append(a)
+    
+    point_cnt_surface = []
+    point_cnt_temp = 0
+    for a in areas:
+        points = int(point_cnt*a/area_all+0.5)
+        point_cnt_surface.append(points)
+        point_cnt_temp += points
+    cnt_dff = point_cnt-point_cnt_temp
+    if cnt_dff != 0:
+        for i in range(abs(cnt_dff)):
+            index = random.randint(0, 5)
+            if cnt_dff>0:
+                point_cnt_surface[index] += 1
+            else:
+                point_cnt_surface[index] -= 1
+    for i in range(6):
+        cloud_point = change_rectange_to_point_clouds(center_pose=surface_center_poses[i], plane_size=surface_sizes[i], point_cnt=point_cnt_surface[i])
+        cloud_points += cloud_point
+    return cloud_points
+
+def change_box_to_point_clouds(pose, size, point_cnt):
+    x_range = size[0]
+    y_range = size[1]
+    z_range = size[2]
+
+    cloud_points = []
+    for i in range(point_cnt):
+        x = random.uniform(0,x_range)-0.5*x_range
+        y = random.uniform(0,y_range)-0.5*y_range
+        z = random.uniform(0,z_range)-0.5*z_range
+        cloud_points.append([x+pose[0], y+pose[1], z+pose[2]])
+    return cloud_points
+
+def change_sence_to_point_clouds(scene, point_cnt):
+    """
+    scene=[[size1,size2,..],[pose1,pose2,..]]
+    """
+    point_all = []
+    l = len(scene[0])
+    volume_sum = 0
+    points_cnt = []
+    volume_all =[]
+    pt_cnt_tmp = 0
+    for i in range(l):
+        # volume = compute_box_volume(size=scene[0][i])
+        volume = compute_box_surface_area(size=scene[0][i]) #use surface!
+        volume_sum+=volume
+        volume_all.append(volume)
+
+    for i in range(l):
+        pt_cnt = int(point_cnt*volume_all[i]/volume_sum+0.5)
+        pt_cnt_tmp += pt_cnt
+        points_cnt.append(pt_cnt)
+    cnt_dff = point_cnt-pt_cnt_tmp
+    if cnt_dff != 0:
+        for i in range(abs(cnt_dff)):
+            index = random.randint(0, l-1)
+            if cnt_dff>0:
+                points_cnt[index] += 1
+            else:
+                points_cnt[index] -= 1
+    # print(points_cnt)
+    for i in range(l):
+        # points_i = change_box_to_point_clouds(size=list(scene[0])[i], pose=list(scene[1])[i], point_cnt=points_cnt[i])
+        points_i = change_box_to_point_clouds_surface(size=list(scene[0])[i], pose=list(scene[1])[i], point_cnt=points_cnt[i])
+        # print(points_i)
+        print(len(points_i))
+        point_all += points_i
+
+    print(np.array(point_all).shape)
+    return point_all
+
+def get_cloud_points_save(env_file, save_file):
+    envs = np.load(env_file, allow_pickle=True)
+    cloud_points_all = []
+    for i in range(100):
+        env_i = list(list(envs)[i])
+        cloud_point_i = change_sence_to_point_clouds(scene=env_i, point_cnt=500)
+        cloud_points_all.append(cloud_point_i)
+    cloud_points_all = np.array(cloud_points_all)
+    print(cloud_points_all.shape)
+    cloud_points_all = cloud_points_all.reshape(100, 500, 3)
+    cloud_points_all = np.transpose(cloud_points_all, (0,2,1))
+    print(cloud_points_all.shape)
+    np.save(save_file, cloud_points_all)
+
+def compute_area_3d_rectangle(size):
+    area = 1
+    for i in range(3):
+        if size[i] != 0:
+            area *= size[i]
+    return area
+
+
+def compute_box_volume(size):
+    return float(size[0]*size[1]*size[2])
+
+def compute_box_surface_area(size):
+    return 2*(size[0]*size[1]+size[0]*size[2]+size[1]*size[2])
+
+
 def all_close(goal, actual, tolerance):
     """
     Convenience method for testing if the values in two lists are within a tolerance of each other.
@@ -199,7 +403,228 @@ class MoveGroupPythonInterfaceTutorial(object):
         self.planner_id = self.move_group.get_planner_id()
         rospy.loginfo("self.planner_id")
         print("self.planner_id:", self.planner_id)
-        self.init_user_planner(planner="RRTConnect")
+        self.init_user_planner(planner="BITstar")
+        # self.init_user_planner(planner="IRRTstar")
+        # self.init_user_planner(planner="TRRT")
+
+        
+    def init_ik_service(self):
+        self.ik_service = rospy.ServiceProxy('compute_ik', GetPositionIK)
+        rospy.wait_for_service('compute_ik')
+        # ik_request.ik_request.group_name = "panda_arm"
+
+    def query_inverse_kinematic_service(self, position, orientation):
+        # rospy.wait_for_service('/compute_ik')
+        # ik_service = rospy.ServiceProxy('/compute_ik', GetPositionIK)
+        # 创建请求对象
+        ik_request = GetPositionIKRequest()
+    
+        # # 设置运动组名称
+        ik_request.ik_request.group_name = "panda_arm"
+
+        ik_request.ik_request.pose_stamped.header.frame_id = "panda_link0"
+        ik_request.ik_request.pose_stamped.pose.position.x = position[0]  # 逆运动学目标x坐标
+        ik_request.ik_request.pose_stamped.pose.position.y = position[1]  # 逆运动学目标y坐标
+        ik_request.ik_request.pose_stamped.pose.position.z = position[2]  # 逆运动学目标z坐标
+
+        # 设置逆运动学目标的姿态四元数
+        ik_request.ik_request.pose_stamped.pose.orientation.x = orientation[0]
+        ik_request.ik_request.pose_stamped.pose.orientation.y = orientation[1]
+        ik_request.ik_request.pose_stamped.pose.orientation.z = orientation[2]
+        ik_request.ik_request.pose_stamped.pose.orientation.w = orientation[3]
+
+        response = self.ik_service(ik_request)
+        
+        # print(response.solution.joint_state.position[0:7])
+        return list(response.solution.joint_state.position[0:7])
+
+    def init_planning_scene_service(self):
+        self.apply_planning_quest_srv = rospy.ServiceProxy('apply_planning_scene',ApplyPlanningScene)
+
+    def apply_robot_joint_state(self, joint_value):
+        js = joint_value + [0.035, 0.035]
+        self.state.joint_state.position = js
+
+        planning_scene = PlanningScene()
+        planning_scene.is_diff = True
+        planning_scene.robot_state = self.state
+        request = ApplyPlanningSceneRequest()
+        request.scene = planning_scene
+        response = self.apply_planning_quest_srv(request)
+
+    def apply_ik_solution(self, position, orientation):
+        joint_state_value = self.query_inverse_kinematic_service(position=position, orientation=orientation)
+        self.apply_robot_joint_state(joint_state_value) 
+
+    def generate_random_pose(self, pose_index=1):
+        if pose_index == 0:
+            pose_0_x = random.uniform(0.25,0.35)
+            pose_0_y = random.uniform(-0.1, 0.1)
+            pose_0_z = random.uniform(0.55, 0.6)
+            return [pose_0_x,pose_0_y,pose_0_z]
+        elif pose_index == 1:
+            pose_1_x = random.uniform(0.54,0.61)
+            pose_1_y = random.uniform(-0.08, 0.08)
+            pose_1_z = 0.6
+            return [pose_1_x,pose_1_y,pose_1_z]
+        else:
+            pose2_y_list = [-0.5,-0.25,0,0.25,0.5]
+            pose_2_x = random.uniform(0.25,0.3)
+            pose_2_y = random.uniform(-0.01,0.01)+pose2_y_list[int(random.randint(0,4))]
+            # pose_2_y = random.uniform(-0.01,0.01)+pose2_y_list[int(pose_index)]
+            pose_2_z = 0.35
+            return [pose_2_x,pose_2_y,pose_2_z]
+
+    def show_random_pose(self):
+        orientation = [3.141592653589793, -1.7874680211325668e-16, -0.7853981633974488]
+        orientation = quaternion_from_euler(orientation[0], orientation[1], orientation[2])
+        pose1_l = []
+        pose2_l = []
+        for i in range(100):
+            pose1, pose2 = self.generate_random_pose()
+            self.apply_robot_joint_state([0.0, -0.7853981633974483, 0.0, -2.356194490192345, 0.0, 1.5707963267948966, 0.7853981633974483])
+            rospy.sleep(0.01)
+            jv_1 = self.query_inverse_kinematic_service(pose1, orientation)
+            self.apply_robot_joint_state([0.0, -0.7853981633974483, 0.0, -2.356194490192345, 0.0, 1.5707963267948966, 0.7853981633974483])
+            rospy.sleep(0.01)
+            jv_2 = self.query_inverse_kinematic_service(pose2, orientation)
+            pose1_l.append(jv_1)
+            pose2_l.append(jv_2)
+        for i in range(100):
+            input("press Enter to show pose2")
+            self.apply_robot_joint_state(pose2_l[i])
+
+    def generate_random_valid_pose_joint_state_for_table_case(self, pose_cnt=100, save_file=None):
+        # set the initial pose for the inverse kinematic solution to take as reference
+        self.apply_robot_joint_state([0.0, -0.7853981633974483, 0.0, -2.356194490192345, 0.0, 1.5707963267948966, 0.7853981633974483])
+        rospy.sleep(0.01)
+        pose_0_l = []
+        pose_1_l = []
+        pose_2_l = []
+        orientation = [3.141592653589793, -1.7874680211325668e-16, -0.7853981633974488]
+        orientation = quaternion_from_euler(orientation[0], orientation[1], orientation[2])
+
+        cnt = 0
+        while True:
+            print(0, cnt)
+            pose_0 = self.generate_random_pose(pose_index=0)
+            pose_0_js = self.query_inverse_kinematic_service(pose_0, orientation)
+            valid_flag = self.state_valid_checker_joint_value(pose_0_js)
+            if valid_flag:
+                cnt += 1
+                pose_0_l.append([pose_0,pose_0_js])
+            if cnt>= pose_cnt:
+                break
+
+        cnt = 0
+        while True:
+            print(1, cnt)
+            pose_1 = self.generate_random_pose(pose_index=1)
+            pose_1_js = self.query_inverse_kinematic_service(pose_1, orientation)
+            valid_flag = self.state_valid_checker_joint_value(pose_1_js)
+            if valid_flag:
+                cnt += 1
+                pose_1_l.append([pose_1,pose_1_js])
+            if cnt>= pose_cnt:
+                break
+        
+        cnt = 0
+        while True:
+            print(2, cnt)
+            pose_2 = self.generate_random_pose(pose_index=2)
+            pose_2_js = self.query_inverse_kinematic_service(pose_2, orientation)
+            valid_flag = self.state_valid_checker_joint_value(pose_2_js)
+            if valid_flag:
+                cnt += 1
+                pose_2_l.append([pose_2,pose_2_js])
+            if cnt>= 5*pose_cnt:
+                break
+        
+        data = [pose_0_l, pose_1_l, pose_2_l]
+
+        if save_file is not None:
+            np.save(save_file, np.array(data, dtype="object"))
+
+        return [pose_0_l, pose_1_l, pose_2_l]
+
+    def for_test_plan_table_case_vis(self,pose_file):
+        pose_all = np.load(pose_file, allow_pickle=True)
+        pose_0 = pose_all[0]
+        pose_1 = pose_all[1]
+        pose_2 = pose_all[2]
+        print(len(pose_0), len(pose_1), len(pose_2))
+        for i in range(100):
+            config0 = pose_0[i][1]
+            config1 = pose_1[i][1]
+            config2 = pose_2[i][1]
+            input("Press Enter to show trajectory!")
+            s,js = self.plan_start_goal_user(start=config0, goal=config1, time_lim=100, interpolate=50)
+            self.show_joint_value_path_new(js)
+
+            input("Press Enter to show trajectory!")
+            s,js = self.plan_start_goal_user(start=config1, goal=config2, time_lim=100, interpolate=50)
+            self.show_joint_value_path_new(js)
+         
+    def combine_start_goal_for_table_case(self, pose, pose_file=None, save_s_g_file=None):
+        if pose_file is not None:
+            pose_all = np.load(pose_file, allow_pickle=True)
+        else: 
+            pose_all = pose
+        s_g_all = []
+        pose_0 = pose_all[0]
+        pose_1 = pose_all[1]
+        pose_2 = pose_all[2]
+        for i in range(100):
+            print(i)
+            for j in range(100):
+                s_g_all.append([pose_0[i][1], pose_1[j][1]])
+        for i in range(100):
+            print(i)
+            for j in range(500):
+                s_g_all.append([pose_1[i][1], pose_2[j][1]])
+        s_g_all = np.array(s_g_all)
+        print(s_g_all.shape)
+        np.random.shuffle(s_g_all)
+        if save_s_g_file is not None:
+            np.save(save_s_g_file, s_g_all)
+            print("save suc!")
+        return s_g_all
+
+    def add_box_scene(self, size, pose, name):
+        l = len(size)
+        for i in range(l):
+            self.add_box(size=size[i], location=pose[i], name=name[i])
+
+    def load_scene(self, file, index):
+        print("Load env_index:", index)
+        name = ['obs7', 'obs8', 'obs_right2', 'obs_right1', 'obs_left1', 'obs_left2']
+        if self.envs is None:
+            self.envs = np.load(file, allow_pickle=True)
+        env = list(self.envs)[index]
+        size = list(list(env)[0])
+        pose = list(list(env)[1])
+        self.add_box_scene(size=size, pose=pose, name=name)
+    
+    def gen_pose_start_goal_for_multiple_env(self, env_file, save_s_g_file):
+        
+        # load env0's start goal
+        s_g_0 = np.load("/home/wyh/data/table_case_s_g_60000.npy", allow_pickle=True)
+
+        pose_all = []
+        start_goal_all = []
+        start_goal_all.append(s_g_0)
+        for i in range(1, 20):
+            print("For env:", i)
+            self.load_scene(file=env_file, index=i)
+            pose_i = self.generate_random_valid_pose_joint_state_for_table_case(pose_cnt=100)
+            pose_all.append(pose_i)
+            s_g_i = self.combine_start_goal_for_table_case(pose_i)
+            start_goal_all.append(s_g_i)
+        start_goal_all = np.array(start_goal_all)
+        print(start_goal_all.shape)
+        np.save(save_s_g_file, start_goal_all)
+
+    
         
 
     def getStateValidity(self, robot_state, group_name='panda_arm', constraints=None, print_depth=False):
@@ -354,8 +779,13 @@ class MoveGroupPythonInterfaceTutorial(object):
         s_g = np.load(s_g_file)
         l = len(s_g)
         path_all = []
-        for i in range(l):
-            print("path:", i)
+        suc = 0
+        suc_all = []
+        time_all = []
+        length_all = []
+        node_cnt_all = []
+        for i in range(int(thread%5)*200, (int(thread%5)+1)*200):
+            print("env_index",env_index, "path:", i, "suc", suc)
             path = []
             start = list(s_g[i][0])
             goal = list(s_g[i][1])
@@ -363,10 +793,17 @@ class MoveGroupPythonInterfaceTutorial(object):
             if solve.asString() == "Exact solution":
                 path_all.append(path)
             
-            if i%5000 == 0:
-                np.save(path_save_file+"part_"+str(i)+".npy", np.array(path_all, dtype='object'))
+            if i% 10 == 0 or i ==(int(thread%5)+1)*200:
+                header = ["time", "length","node_cnt", "suc"]
+                with open(file="/home/wyh/data/BITstar_table_case_data_thread"+str(thread)+".csv", mode='w', encoding='utf-8', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(header)
+                    for i in range(len(suc_all)):
+                        writer.writerow([time_all[i], length_all[i],node_cnt_all[i],suc_all[i]])
+            if (i% 10 == 0 and i>0) or i == (int(thread%5)+1)*200:
+                np.save(path_save_file + "_env_" + str(env_index)  + "thread_" + str(thread) +".npy", np.array(path_all, dtype='object'))
 
-        np.save(path_save_file+"part_"+str(i)+".npy", np.array(path_all, dtype='object'))
+        np.save(path_save_file+"thread_"+str(thread)+".npy", np.array(path_all, dtype='object'))
 
     def compare_classical(self):
         state_valid_func = self.state_valid_checker_ompl
@@ -767,9 +1204,98 @@ def main():
         tutorial.add_box(location=[0.15,0.15,0.9], name='boX10')
 
         tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
-        tutorial.plan_random()
-        # tutorial.move_group.set_planner_id("BITstar")
-        # tutorial.generate_valid_start_goal_save(cnt=1000, save_file="/home/wyh/start_goal_compare.npy")
+
+
+        # for multimodal and environemnt encoding
+        tutorial.add_box(location=[0.62,0,0.4], name='obs1', size = [0.5,0.55,0.03])
+        tutorial.add_box(location=[0.62,-0.25,0.2], name='obs2', size = [0.5,0.03,0.4])
+        tutorial.add_box(location=[0.62,0.25,0.2], name='obs3', size = [0.5,0.03,0.4])
+
+        tutorial.add_box(location=[0.27,0,0.2], name='obs4', size = [0.2,1.05,0.03])
+        tutorial.add_box(location=[0.27,-0.5,0.1], name='obs5', size = [0.2,0.03,0.2])
+        tutorial.add_box(location=[0.27,0.5,0.1], name='obs6', size = [0.2,0.03,0.2])
+
+        # tutorial.add_box(location=[0.45,0,0.5], name='obs7', size = [0.05,0.3,0.2])
+        # tutorial.add_box(location=[0.7,0,0.5], name='obs8', size = [0.05,0.3,0.2])
+
+        # tutorial.add_box(location=[0.27,-0.125,0.275], name='obs_right', size = [0.2,0.02,0.15])
+
+        # tutorial.add_box(location=[0.27, 0.125,0.29], name='obs_left', size = [0.2,0.02,0.18])
+
+        # tutorial.add_box(location=[0.27, 0.375,0.26], name='obs_left2', size = [0.2,0.02,0.12])
+
+        # tutorial.add_box(location=[0.27, -0.375,0.29], name='obs_right2', size = [0.2,0.02,0.18])
+
+        tutorial.add_box(location=[0.575, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
+        tutorial.init_planning_scene_service()
+        tutorial.init_ik_service()
+        # tutorial.object_to_point_cloud_test()
+        # tutorial.apply_robot_joint_state()
+
+
+        # divider environment setup
+        # tutorial.add_box(location=[0.4,0,0.2], name='obs_bot', size = [0.4,0.1,0.4])
+        # tutorial.add_box(location=[0.6,0,0.6], name='obs_top', size = [0.5,0.02,0.4])
+
+        # tutorial.plan_random_defaut_planner()
+        # tutorial.plan_random()
+        tutorial.move_group.set_planner_id("RRTConnect")
+        # tutorial.generate_random_valid_pose_joint_state_for_table_case(100, save_file="/home/wyh/data/table_case_pose_100.npy")
+        # tutorial.for_test_plan_table_case_vis(pose_file="/home/wyh/data/table_case_pose_100.npy")
+        # tutorial.combine_start_goal_for_table_case(pose_file="/home/wyh/data/table_case_pose_100.npy", save_s_g_file="/home/wyh/data/table_case_s_g_60000.npy")
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--thread_index', type=int, default=0)
+        parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
+        args = parser.parse_args()
+        thread_index = args.thread_index
+        print(thread_index)
+        print(args)
+        tutorial.load_scene(file="/home/wyh/data/table_case_env_100.npy", index=int(thread_index/5)+1)
+        tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_e20_p60000.npy", 
+                                          path_save_file="/home/wyh/data/table_case_BITs.npy", 
+                                          thread=thread_index, env_index=int(thread_index/5)+1)
+        
+
+        # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_60000.npy", path_save_file="/home/wyh/data/table_case_BIT_star_part", thread=thread_index)
+        # tutorial.init_ik_service()
+        # tutorial.query_inverse_kinematic_service(position=[0.5,0.1,0.5], orientation=[0,0,0,1])
+
+        # tutorial.init_planning_scene_service()
+        # tutorial.apply_planing_quest()
+        # gen_rand_tbcase_save(env_cnt=99, save_file="/home/wyh/data/table_case_env_100.npy")
+        # tutorial.gen_pose_start_goal_for_multiple_env(env_file="/home/wyh/data/table_case_env_100.npy", save_s_g_file="/home/wyh/data/table_case_s_g_e100_p60000.npy")
+        # for i in range(100):
+            # input("Press Enter to show next env!")
+            # tutorial.load_scene(file="/home/wyh/data/table_case_env_100.npy", index=i)
+            # tutorial.show_random_pose()
+            # print("current pose of end effector is:")
+            # end_eff_state = tutorial.move_group.get_current_pose()
+            # print(end_eff_state)
+            # qua = end_eff_state.pose.orientation
+            # print("eular agnle is:", euler_from_quaternion([qua.x,qua.y,qua.z,qua.w]))
+            # print("current state of the joint value is:")
+            # print(tutorial.move_group.get_current_state())
+            # position_input = input("please input the position of end effector:")
+            # # orientation_input = input("please input the orientation of end effector:")
+            # position = position_input.split(',')
+            # position = [float(p) for p in position]
+            # # orientation = orientation_input.split(',')
+            # # orientation = [float(o) for o in orientation]
+            # orientation = [3.141592653589793, -1.7874680211325668e-16, -0.7853981633974488]
+            # orientation = quaternion_from_euler(orientation[0], orientation[1], orientation[2])
+            # input("============ Press `Enter` to send ...")
+            # tutorial.apply_ik_solution(position, orientation)
+
+            # print("current pose of end effector is:")
+            # end_eff_state = tutorial.move_group.get_current_pose()
+            # print(end_eff_state)
+            # qua = end_eff_state.pose.orientation
+            # print("eular agnle is:", euler_from_quaternion([qua.x,qua.y,qua.z,qua.w]))
+            # print("current state of the joint value is:")
+            # print(tutorial.move_group.get_current_state())
+            # tutorial.plan_random()
+        # tutorial.generate_valid_start_goal_save(cnt=50000, save_file="/home/wyh/start_goal_rrtstar.npy")
         # tutorial.compare_classical()
         # tutorial.generate_paths_user_plan("/home/wyh/start_goal_3_usr.npy", "/home/wyh/robot_path/path_usr_")
         # for i in range(10):
