@@ -297,6 +297,210 @@ def compute_box_surface_area(size):
     return 2*(size[0]*size[1]+size[0]*size[2]+size[1]*size[2])
 
 
+    #   tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
+
+
+    #     # for multimodal and environemnt encoding
+    #     tutorial.add_box(location=[0.62,0,0.4], name='obs1', size = [0.5,0.55,0.03])
+    #     tutorial.add_box(location=[0.62,-0.25,0.2], name='obs2', size = [0.5,0.03,0.4])
+    #     tutorial.add_box(location=[0.62,0.25,0.2], name='obs3', size = [0.5,0.03,0.4])
+
+    #     tutorial.add_box(location=[0.27,0,0.2], name='obs4', size = [0.2,1.05,0.03])
+    #     tutorial.add_box(location=[0.27,-0.5,0.1], name='obs5', size = [0.2,0.03,0.2])
+    #     tutorial.add_box(location=[0.27,0.5,0.1], name='obs6', size = [0.2,0.03,0.2])
+
+    #     tutorial.add_box(location=[0.45,0,0.5], name='obs7', size = [0.05,0.3,0.2])
+    #     tutorial.add_box(location=[0.7,0,0.5], name='obs8', size = [0.05,0.3,0.2])
+
+    #     tutorial.add_box(location=[0.27,-0.125,0.275], name='obs_right', size = [0.2,0.02,0.15])
+
+    #     tutorial.add_box(location=[0.27, 0.125,0.29], name='obs_left', size = [0.2,0.02,0.18])
+
+    #     tutorial.add_box(location=[0.27, 0.375,0.26], name='obs_left2', size = [0.2,0.02,0.12])
+
+    #     tutorial.add_box(location=[0.27, -0.375,0.29], name='obs_right2', size = [0.2,0.02,0.18])
+
+    #     tutorial.add_box(location=[0.575, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
+    #     tutorial.init_planning_scene_service()
+
+def generate_random_table_case():
+    # for the high table two obs
+    dis = random.uniform(0.2,0.3)
+    obs_length_y = random.uniform(0.25, 0.35)
+    obs_length_z = random.uniform(0.175,0.225)
+    center_x = random.uniform(0.55,0.6)
+    center_y = random.uniform(-0.05,0.05)
+
+    position_obs1 = [center_x-0.5*dis, center_y, 0.4+0.5*obs_length_z]
+    position_obs2 = [center_x+0.5*dis, center_y, 0.4+0.5*obs_length_z]
+    size_obs1 = [0.05, obs_length_y, obs_length_z]
+    size_obs2 = [0.05, obs_length_y, obs_length_z]
+
+    # for the low table four dividers
+    center_y_delta = [random.uniform(-0.005, 0.005) for i in range(4)]
+    center_y = [-0.375, -0.125, 0.125, 0.375]
+    obs_length_z = [random.uniform(0.12, 0.18) for i in range(4)]
+    position_obs_all = [[0.27, center_y_delta[i]+center_y[i], 0.2+0.5*obs_length_z[i]] for i in range(4)]
+    size_obs_all = [[0.2, 0.01, obs_length_z[i]] for i in range(4)]
+
+    # intergrate
+    size = [size_obs1, size_obs2] + size_obs_all
+    position = [position_obs1, position_obs2] + position_obs_all
+    return size, position
+
+def gen_rand_tbcase_save(env_cnt, save_file):
+    envs = []
+    env_0_size = [[0.05,0.3,0.2], [0.05,0.3,0.2], [0.2,0.02,0.15], [0.2,0.02,0.18], [0.2,0.02,0.12], [0.2,0.02,0.18]]
+    env_0_pose = [[0.45,0,0.5], [0.7,0,0.5], [0.27,-0.125,0.275], [0.27, 0.125,0.29], [0.27, 0.375,0.26], [0.27, -0.375,0.29]]
+    envs.append([env_0_size, env_0_pose])
+    for i in range(env_cnt):
+        size, position = generate_random_table_case()
+        envs.append([size,position])
+    envs = np.array(envs)
+    print(envs.shape, envs)
+    np.save(save_file, np.array(envs))
+
+def change_rectange_to_point_clouds(center_pose, plane_size, point_cnt):
+    x_range = plane_size[0]
+    y_range = plane_size[1]
+    z_range = plane_size[2]
+    cloud_points = []
+    for i in range(point_cnt):
+        x = random.uniform(0,x_range)-0.5*x_range
+        y = random.uniform(0,y_range)-0.5*y_range
+        z = random.uniform(0,z_range)-0.5*z_range
+        cloud_points.append([x+center_pose[0], y+center_pose[1], z+center_pose[2]])
+    return cloud_points
+
+
+def change_box_to_point_clouds_surface(pose, size, point_cnt):
+    cloud_points = []
+
+    surface_center_poses = []
+    for i in range(3):
+        s_c1 =copy.copy(pose)
+        s_c2 =copy.copy(pose)
+        s_c1[i] = s_c1[i] - 0.5*size[i]
+        s_c2[i] = s_c2[i] + 0.5*size[i]
+        surface_center_poses.append(s_c1)
+        surface_center_poses.append(s_c2)
+
+    surface_sizes = []
+    for i in range(3):
+        s_si1 =copy.copy(size)
+        s_si2 =copy.copy(size)
+        s_si1[i] = 0
+        s_si2[i] = 0
+        surface_sizes.append(s_si1)
+        surface_sizes.append(s_si2)
+
+    areas = []
+    area_all = 0
+    for s in surface_sizes:
+        a = compute_area_3d_rectangle(s)
+        area_all += a
+        areas.append(a)
+    
+    point_cnt_surface = []
+    point_cnt_temp = 0
+    for a in areas:
+        points = int(point_cnt*a/area_all+0.5)
+        point_cnt_surface.append(points)
+        point_cnt_temp += points
+    cnt_dff = point_cnt-point_cnt_temp
+    if cnt_dff != 0:
+        for i in range(abs(cnt_dff)):
+            index = random.randint(0, 5)
+            if cnt_dff>0:
+                point_cnt_surface[index] += 1
+            else:
+                point_cnt_surface[index] -= 1
+    for i in range(6):
+        cloud_point = change_rectange_to_point_clouds(center_pose=surface_center_poses[i], plane_size=surface_sizes[i], point_cnt=point_cnt_surface[i])
+        cloud_points += cloud_point
+    return cloud_points
+
+def change_box_to_point_clouds(pose, size, point_cnt):
+    x_range = size[0]
+    y_range = size[1]
+    z_range = size[2]
+
+    cloud_points = []
+    for i in range(point_cnt):
+        x = random.uniform(0,x_range)-0.5*x_range
+        y = random.uniform(0,y_range)-0.5*y_range
+        z = random.uniform(0,z_range)-0.5*z_range
+        cloud_points.append([x+pose[0], y+pose[1], z+pose[2]])
+    return cloud_points
+
+def change_sence_to_point_clouds(scene, point_cnt):
+    """
+    scene=[[size1,size2,..],[pose1,pose2,..]]
+    """
+    point_all = []
+    l = len(scene[0])
+    volume_sum = 0
+    points_cnt = []
+    volume_all =[]
+    pt_cnt_tmp = 0
+    for i in range(l):
+        # volume = compute_box_volume(size=scene[0][i])
+        volume = compute_box_surface_area(size=scene[0][i]) #use surface!
+        volume_sum+=volume
+        volume_all.append(volume)
+
+    for i in range(l):
+        pt_cnt = int(point_cnt*volume_all[i]/volume_sum+0.5)
+        pt_cnt_tmp += pt_cnt
+        points_cnt.append(pt_cnt)
+    cnt_dff = point_cnt-pt_cnt_tmp
+    if cnt_dff != 0:
+        for i in range(abs(cnt_dff)):
+            index = random.randint(0, l-1)
+            if cnt_dff>0:
+                points_cnt[index] += 1
+            else:
+                points_cnt[index] -= 1
+    # print(points_cnt)
+    for i in range(l):
+        # points_i = change_box_to_point_clouds(size=list(scene[0])[i], pose=list(scene[1])[i], point_cnt=points_cnt[i])
+        points_i = change_box_to_point_clouds_surface(size=list(scene[0])[i], pose=list(scene[1])[i], point_cnt=points_cnt[i])
+        # print(points_i)
+        print(len(points_i))
+        point_all += points_i
+
+    print(np.array(point_all).shape)
+    return point_all
+
+def get_cloud_points_save(env_file, save_file):
+    envs = np.load(env_file, allow_pickle=True)
+    cloud_points_all = []
+    for i in range(100):
+        env_i = list(list(envs)[i])
+        cloud_point_i = change_sence_to_point_clouds(scene=env_i, point_cnt=500)
+        cloud_points_all.append(cloud_point_i)
+    cloud_points_all = np.array(cloud_points_all)
+    print(cloud_points_all.shape)
+    cloud_points_all = cloud_points_all.reshape(100, 500, 3)
+    cloud_points_all = np.transpose(cloud_points_all, (0,2,1))
+    print(cloud_points_all.shape)
+    np.save(save_file, cloud_points_all)
+
+def compute_area_3d_rectangle(size):
+    area = 1
+    for i in range(3):
+        if size[i] != 0:
+            area *= size[i]
+    return area
+
+
+def compute_box_volume(size):
+    return float(size[0]*size[1]*size[2])
+
+def compute_box_surface_area(size):
+    return 2*(size[0]*size[1]+size[0]*size[2]+size[1]*size[2])
+
+
 def all_close(goal, actual, tolerance):
     """
     Convenience method for testing if the values in two lists are within a tolerance of each other.
