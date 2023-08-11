@@ -110,13 +110,14 @@ ompl::base::PlannerStatus ompl::geometric::MPMDN::solve(const base::PlannerTermi
     colli_nnrep = 0;
     failed = false;
     rep_flg = false;
-    if (state_type == "panda_arm")
-    {
-        Env_encoding = torch::ones({1, 28}).to(at::kCUDA);
-    }
-    else{
-        Env_encoding = get_env_encoding(env_index);
-    }
+    // if (state_type == "panda_arm")
+    // {
+    //     Env_encoding = torch::ones({1, 28}).to(at::kCUDA);
+    // }
+    // else{
+    //     Env_encoding = get_env_encoding(env_index);
+    // }
+    Env_encoding = get_env_encoding(env_index);
 
     auto start_o = std::chrono::high_resolution_clock::now();
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_b = bidirectional_plan(&start, &goal);
@@ -805,12 +806,22 @@ at::Tensor ompl::geometric::MPMDN::get_env_encoding(int index)
     at::Tensor obs_cloud;
     if (state_type == "Point_3D")
     {
-        cloud_start += index*6000;
         if (cloud_type == "CAE")
+        {
+            cloud_start += index*6000;
             obs_cloud = torch::from_blob(cloud_start, {1,6000}).to(at::kCUDA);
+        }
         else if(cloud_type == "PointNet")
+        {
+            cloud_start += index*6000;
             obs_cloud = torch::from_blob(cloud_start, {1,3,2000}).to(at::kCUDA);
-
+        }
+        else if(cloud_type == "PointNet_500")
+        {
+            cloud_start += index*1500;
+            obs_cloud = torch::from_blob(cloud_start, {1,3,500}).to(at::kCUDA);
+        }
+            
     }
     else
     {
