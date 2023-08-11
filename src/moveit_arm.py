@@ -54,8 +54,9 @@ import moveit_commander
 from shape_msgs.msg import SolidPrimitive
 import moveit_msgs
 import geometry_msgs
-from moveit_msgs.msg import PlanningScene, CollisionObject
+from moveit_msgs.msg import PlanningScene, CollisionObject, RobotTrajectory
 import moveit_ros_planning_interface
+from trajectory_msgs.msg import JointTrajectoryPoint
 
 try:
     from math import pi, tau, dist, fabs, cos
@@ -70,15 +71,230 @@ except:  # For Python 2 compatibility
 
 from std_msgs.msg import String
 from moveit_commander.conversions import pose_to_list
-from moveit_msgs.srv import GetStateValidity, GetStateValidityRequest, GetStateValidityResponse
+from moveit_msgs.srv import GetPositionIK, GetPositionIKRequest
+from moveit_msgs.srv import GetStateValidity, GetStateValidityRequest, GetStateValidityResponse,ApplyPlanningScene,ApplyPlanningSceneRequest,ApplyPlanningSceneResponse
+from moveit_msgs.msg import RobotState
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+import random
+# from geometry_msgs.msg import PoseStamped,Quaternion
+# import tf2_ros,tf2_geometry_msgs
 import numpy as np
+
 import sys
 sys.path.append("/home/wyh/Code/MPMDN/src")
 sys.path.append("/home/wyh/Code/MPMDN/build")
 
+import csv
 from planning import *
 # from compare_classical import *
 ## END_SUB_TUTORIAL
+
+# def transform_eluer_to_quaternion(eluer):
+#     quaternion = quaternion_from_euler(eluer[0], eluer[1], eluer[2])
+#     return quaternion
+
+    #   tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
+
+
+    #     # for multimodal and environemnt encoding
+    #     tutorial.add_box(location=[0.62,0,0.4], name='obs1', size = [0.5,0.55,0.03])
+    #     tutorial.add_box(location=[0.62,-0.25,0.2], name='obs2', size = [0.5,0.03,0.4])
+    #     tutorial.add_box(location=[0.62,0.25,0.2], name='obs3', size = [0.5,0.03,0.4])
+
+    #     tutorial.add_box(location=[0.27,0,0.2], name='obs4', size = [0.2,1.05,0.03])
+    #     tutorial.add_box(location=[0.27,-0.5,0.1], name='obs5', size = [0.2,0.03,0.2])
+    #     tutorial.add_box(location=[0.27,0.5,0.1], name='obs6', size = [0.2,0.03,0.2])
+
+    #     tutorial.add_box(location=[0.45,0,0.5], name='obs7', size = [0.05,0.3,0.2])
+    #     tutorial.add_box(location=[0.7,0,0.5], name='obs8', size = [0.05,0.3,0.2])
+
+    #     tutorial.add_box(location=[0.27,-0.125,0.275], name='obs_right', size = [0.2,0.02,0.15])
+
+    #     tutorial.add_box(location=[0.27, 0.125,0.29], name='obs_left', size = [0.2,0.02,0.18])
+
+    #     tutorial.add_box(location=[0.27, 0.375,0.26], name='obs_left2', size = [0.2,0.02,0.12])
+
+    #     tutorial.add_box(location=[0.27, -0.375,0.29], name='obs_right2', size = [0.2,0.02,0.18])
+
+    #     tutorial.add_box(location=[0.575, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
+    #     tutorial.init_planning_scene_service()
+
+def generate_random_table_case():
+    # for the high table two obs
+    dis = random.uniform(0.2,0.3)
+    obs_length_y = random.uniform(0.25, 0.35)
+    obs_length_z = random.uniform(0.175,0.225)
+    center_x = random.uniform(0.55,0.6)
+    center_y = random.uniform(-0.05,0.05)
+
+    position_obs1 = [center_x-0.5*dis, center_y, 0.4+0.5*obs_length_z]
+    position_obs2 = [center_x+0.5*dis, center_y, 0.4+0.5*obs_length_z]
+    size_obs1 = [0.05, obs_length_y, obs_length_z]
+    size_obs2 = [0.05, obs_length_y, obs_length_z]
+
+    # for the low table four dividers
+    center_y_delta = [random.uniform(-0.005, 0.005) for i in range(4)]
+    center_y = [-0.375, -0.125, 0.125, 0.375]
+    obs_length_z = [random.uniform(0.12, 0.18) for i in range(4)]
+    position_obs_all = [[0.27, center_y_delta[i]+center_y[i], 0.2+0.5*obs_length_z[i]] for i in range(4)]
+    size_obs_all = [[0.2, 0.01, obs_length_z[i]] for i in range(4)]
+
+    # intergrate
+    size = [size_obs1, size_obs2] + size_obs_all
+    position = [position_obs1, position_obs2] + position_obs_all
+    return size, position
+
+def gen_rand_tbcase_save(env_cnt, save_file):
+    envs = []
+    env_0_size = [[0.05,0.3,0.2], [0.05,0.3,0.2], [0.2,0.02,0.15], [0.2,0.02,0.18], [0.2,0.02,0.12], [0.2,0.02,0.18]]
+    env_0_pose = [[0.45,0,0.5], [0.7,0,0.5], [0.27,-0.125,0.275], [0.27, 0.125,0.29], [0.27, 0.375,0.26], [0.27, -0.375,0.29]]
+    envs.append([env_0_size, env_0_pose])
+    for i in range(env_cnt):
+        size, position = generate_random_table_case()
+        envs.append([size,position])
+    envs = np.array(envs)
+    print(envs.shape, envs)
+    np.save(save_file, np.array(envs))
+
+def change_rectange_to_point_clouds(center_pose, plane_size, point_cnt):
+    x_range = plane_size[0]
+    y_range = plane_size[1]
+    z_range = plane_size[2]
+    cloud_points = []
+    for i in range(point_cnt):
+        x = random.uniform(0,x_range)-0.5*x_range
+        y = random.uniform(0,y_range)-0.5*y_range
+        z = random.uniform(0,z_range)-0.5*z_range
+        cloud_points.append([x+center_pose[0], y+center_pose[1], z+center_pose[2]])
+    return cloud_points
+
+
+def change_box_to_point_clouds_surface(pose, size, point_cnt):
+    cloud_points = []
+
+    surface_center_poses = []
+    for i in range(3):
+        s_c1 =copy.copy(pose)
+        s_c2 =copy.copy(pose)
+        s_c1[i] = s_c1[i] - 0.5*size[i]
+        s_c2[i] = s_c2[i] + 0.5*size[i]
+        surface_center_poses.append(s_c1)
+        surface_center_poses.append(s_c2)
+
+    surface_sizes = []
+    for i in range(3):
+        s_si1 =copy.copy(size)
+        s_si2 =copy.copy(size)
+        s_si1[i] = 0
+        s_si2[i] = 0
+        surface_sizes.append(s_si1)
+        surface_sizes.append(s_si2)
+
+    areas = []
+    area_all = 0
+    for s in surface_sizes:
+        a = compute_area_3d_rectangle(s)
+        area_all += a
+        areas.append(a)
+    
+    point_cnt_surface = []
+    point_cnt_temp = 0
+    for a in areas:
+        points = int(point_cnt*a/area_all+0.5)
+        point_cnt_surface.append(points)
+        point_cnt_temp += points
+    cnt_dff = point_cnt-point_cnt_temp
+    if cnt_dff != 0:
+        for i in range(abs(cnt_dff)):
+            index = random.randint(0, 5)
+            if cnt_dff>0:
+                point_cnt_surface[index] += 1
+            else:
+                point_cnt_surface[index] -= 1
+    for i in range(6):
+        cloud_point = change_rectange_to_point_clouds(center_pose=surface_center_poses[i], plane_size=surface_sizes[i], point_cnt=point_cnt_surface[i])
+        cloud_points += cloud_point
+    return cloud_points
+
+def change_box_to_point_clouds(pose, size, point_cnt):
+    x_range = size[0]
+    y_range = size[1]
+    z_range = size[2]
+
+    cloud_points = []
+    for i in range(point_cnt):
+        x = random.uniform(0,x_range)-0.5*x_range
+        y = random.uniform(0,y_range)-0.5*y_range
+        z = random.uniform(0,z_range)-0.5*z_range
+        cloud_points.append([x+pose[0], y+pose[1], z+pose[2]])
+    return cloud_points
+
+def change_sence_to_point_clouds(scene, point_cnt):
+    """
+    scene=[[size1,size2,..],[pose1,pose2,..]]
+    """
+    point_all = []
+    l = len(scene[0])
+    volume_sum = 0
+    points_cnt = []
+    volume_all =[]
+    pt_cnt_tmp = 0
+    for i in range(l):
+        # volume = compute_box_volume(size=scene[0][i])
+        volume = compute_box_surface_area(size=scene[0][i]) #use surface!
+        volume_sum+=volume
+        volume_all.append(volume)
+
+    for i in range(l):
+        pt_cnt = int(point_cnt*volume_all[i]/volume_sum+0.5)
+        pt_cnt_tmp += pt_cnt
+        points_cnt.append(pt_cnt)
+    cnt_dff = point_cnt-pt_cnt_tmp
+    if cnt_dff != 0:
+        for i in range(abs(cnt_dff)):
+            index = random.randint(0, l-1)
+            if cnt_dff>0:
+                points_cnt[index] += 1
+            else:
+                points_cnt[index] -= 1
+    # print(points_cnt)
+    for i in range(l):
+        # points_i = change_box_to_point_clouds(size=list(scene[0])[i], pose=list(scene[1])[i], point_cnt=points_cnt[i])
+        points_i = change_box_to_point_clouds_surface(size=list(scene[0])[i], pose=list(scene[1])[i], point_cnt=points_cnt[i])
+        # print(points_i)
+        print(len(points_i))
+        point_all += points_i
+
+    print(np.array(point_all).shape)
+    return point_all
+
+def get_cloud_points_save(env_file, save_file):
+    envs = np.load(env_file, allow_pickle=True)
+    cloud_points_all = []
+    for i in range(100):
+        env_i = list(list(envs)[i])
+        cloud_point_i = change_sence_to_point_clouds(scene=env_i, point_cnt=500)
+        cloud_points_all.append(cloud_point_i)
+    cloud_points_all = np.array(cloud_points_all)
+    print(cloud_points_all.shape)
+    cloud_points_all = cloud_points_all.reshape(100, 500, 3)
+    cloud_points_all = np.transpose(cloud_points_all, (0,2,1))
+    print(cloud_points_all.shape)
+    np.save(save_file, cloud_points_all)
+
+def compute_area_3d_rectangle(size):
+    area = 1
+    for i in range(3):
+        if size[i] != 0:
+            area *= size[i]
+    return area
+
+
+def compute_box_volume(size):
+    return float(size[0]*size[1]*size[2])
+
+def compute_box_surface_area(size):
+    return 2*(size[0]*size[1]+size[0]*size[2]+size[1]*size[2])
 
 
     #   tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
@@ -325,11 +541,11 @@ class MoveGroupPythonInterfaceTutorial(object):
         ##
         ## First initialize `moveit_commander`_ and a `rospy`_ node:
         moveit_commander.roscpp_initialize(sys.argv)
-        rospy.init_node("move_group_python_interface_tutoria666", anonymous=True)
+        rospy.init_node("move_group_python_interface", anonymous=True)
 
         #init collision check service
         rospy.loginfo("Initializing stateValidity class")
-        self.sv_srv = rospy.ServiceProxy("/check_state_validity", GetStateValidity)
+        self.sv_srv = rospy.ServiceProxy("check_state_validity", GetStateValidity)
         rospy.loginfo("Connecting to State Validity service")
         rospy.wait_for_service("check_state_validity")
         rospy.loginfo("Reached this point")
@@ -353,12 +569,12 @@ class MoveGroupPythonInterfaceTutorial(object):
         group_name = "panda_arm"
         move_group = moveit_commander.MoveGroupCommander(group_name)
 
-        self.pls_pub = rospy.Publisher("/planning_scene", PlanningScene, queue_size=20)
+        self.pls_pub = rospy.Publisher("planning_scene", PlanningScene, queue_size=20)
 
         ## Create a `DisplayTrajectory`_ ROS publisher which is used to display
         ## trajectories in Rviz:
         display_trajectory_publisher = rospy.Publisher(
-            "/move_group/display_planned_path",
+            "move_group/display_planned_path",
             moveit_msgs.msg.DisplayTrajectory,
             queue_size=20,
         )
@@ -397,7 +613,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         self.planning_frame = planning_frame
         self.eef_link = eef_link
         self.group_names = group_names
-
+        self.envs = None
         self.state = self.move_group.get_current_state()
 
         self.planner_id = self.move_group.get_planner_id()
@@ -656,21 +872,50 @@ class MoveGroupPythonInterfaceTutorial(object):
     def state_valid_checker_joint_value(self, joint_value):
         js = joint_value + [0.035, 0.035]
         self.state.joint_state.position = js
-        return self.getStateValidity(self.state)
+        valid = False
+        for i in range(20):
+            try:
+                valid = self.getStateValidity(self.state)
+            except:
+                print("Something wrong when calling state valid checker!Retry ",str(i), "/20!")
+                continue
+            else:
+                break
+        return valid
 
+    def plan_random_defaut_planner(self):
+        state = self.state
+        move_group = self.move_group
+        while True:
+            joint_goal = move_group.get_random_joint_values()
+            js = joint_goal + [0.035, 0.035]
+ 
+            state.joint_state.position = js
+            flag = self.getStateValidity(state)
+            if flag:
+                move_group.set_joint_value_target(joint_goal)
+                rospy.loginfo("Valid goal! Plan!")
+                break
+            else:
+                rospy.loginfo("Invalid goal!")
+
+
+
+        # 开始规划运动路径
+        start_t = time.time()
+        plan = move_group.plan()
+        print(type(plan))
+        print(type(plan[0]))
+        c_t = time.time()-start_t
+        # print("Time:", c_t)
+        # print(plan)
+        # print("Length:", len(plan[1].joint_trajectory.points))
+        # self.show_joint_value_path(p_j)
 
     def plan_random(self):
         state = self.state
         move_group = self.move_group
-        # joint_goal = move_group.get_random_joint_values()
-        # print(type(joint_goal))
 
-        # self.s = self.move_group.get_current_state()
-        # s.joint_state.position = joint_goal
-        # print(type(s))
-        # print(s)
-
-    
         while True:
             # print(s)
             joint_start = move_group.get_random_joint_values()
@@ -696,13 +941,15 @@ class MoveGroupPythonInterfaceTutorial(object):
 
         # 开始规划运动路径
         start_t = time.time()
-        s,p_j = self.plan_start_goal_user(joint_start, joint_goal)
+        s,p_j = self.plan_start_goal_user(joint_start, joint_goal, interpolate=100)
+        # print(p_j)
         # plan = move_group.plan()
         c_t = time.time()-start_t
         # print("Time:", c_t)
         # print(plan)
         # print("Length:", len(plan[1].joint_trajectory.points))
-        self.show_joint_value_path(p_j)
+        self.show_joint_value_path_new(p_j)
+        # self.show_joint_value_path(p_j)
         # self.display_trajectory(plan[1])
 
         # # 执行规划的运动路径
@@ -746,13 +993,13 @@ class MoveGroupPythonInterfaceTutorial(object):
         plan = move_group.plan()
         return plan
     
-    def init_user_planner(self, planner = "RRTstar"):
+    def init_user_planner(self, planner = "RRTConnect"):
         self.pl = Plan(type="panda_arm", planner=planner, set_bounds=None, state_valid_func=self.state_valid_checker_ompl)
     
-    def plan_start_goal_user(self, start, goal):
+    def plan_start_goal_user(self, start, goal, time_lim=10, interpolate=None):
         pl = self.pl
-        pl.pl_ompl.set_path_cost_threshold(100)
-        solve, path = pl.plan(start, goal, time_lim=3)
+        # pl.pl_ompl.set_path_cost_threshold(100)
+        solve, path = pl.plan(start, goal, time_lim=time_lim, interpolate=interpolate)
         return solve, path
 
     def generate_paths(self, s_g_file, path_save_file):
@@ -775,8 +1022,13 @@ class MoveGroupPythonInterfaceTutorial(object):
 
         np.save(path_save_file+"part_"+str(i)+".npy", np.array(path_all, dtype='object'))
 
-    def generate_paths_user_plan(self, s_g_file, path_save_file):
-        s_g = np.load(s_g_file)
+    def generate_paths_user_plan(self, s_g_file, path_save_file, thread=0, env_index=None):
+        print(s_g_file)
+        s_g = np.load(s_g_file, allow_pickle=True)
+        if env_index is not None:
+            s_g = list(s_g)[env_index]
+        # s_g = 
+        print(s_g)
         l = len(s_g)
         path_all = []
         suc = 0
@@ -789,9 +1041,18 @@ class MoveGroupPythonInterfaceTutorial(object):
             path = []
             start = list(s_g[i][0])
             goal = list(s_g[i][1])
-            solve, path = self.plan_start_goal_user(start, goal)   
+            solve, path = self.plan_start_goal_user(start, goal, time_lim=180)   
+            time_all.append(self.pl.pl_ompl.ss.getLastPlanComputationTime())
             if solve.asString() == "Exact solution":
+                suc += 1
+                suc_all.append(1)
                 path_all.append(path)
+                length_all.append(self.pl.pl_ompl.ss.getSolutionPath().length())
+                node_cnt_all.append(self.pl.pl_ompl.ss.getSolutionPath().getStateCount())
+            else:
+                suc_all.append(0)
+                length_all.append('nan')
+                node_cnt_all.append('nan')
             
             if i% 10 == 0 or i ==(int(thread%5)+1)*200:
                 header = ["time", "length","node_cnt", "suc"]
@@ -811,7 +1072,26 @@ class MoveGroupPythonInterfaceTutorial(object):
               "planner":"RRTstar", "use_ref":False, "simplelify": False,
               "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_35_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
         get_statistics_classical_arm(para_dict, state_valid_func)
-        
+
+    def show_joint_value_path_new(self, joint_value_path):
+        display_trajectory = moveit_msgs.msg.DisplayTrajectory()
+        rt = RobotTrajectory()
+        rt.joint_trajectory.joint_names = self.move_group.get_active_joints()
+
+        l = len(joint_value_path)
+        state = self.state
+        state.joint_state.position = joint_value_path[0] + [0.035, 0.035]
+        display_trajectory.trajectory_start = state
+        for i in range(l):
+            tp = JointTrajectoryPoint()
+            tp.positions = joint_value_path[i] + [0.035, 0.035]
+            tp.time_from_start = rospy.Duration(i*1)
+            rt.joint_trajectory.points.append(tp)
+        display_trajectory.trajectory.append(rt)
+        self.display_trajectory_publisher.publish(display_trajectory)
+            
+
+    
     def show_joint_value_path(self, joint_value_path):
         plans = []
         l = len(joint_value_path)
@@ -1155,7 +1435,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         )
 
 
-def main():
+def arm_main():
     try:
         print("")
         print("----------------------------------------------------------")
@@ -1188,21 +1468,21 @@ def main():
         # tutorial.execute_plan(cartesian_plan)
 
         # input("============ Press `Enter` to add a box to the planning scene ...")
-        tutorial.add_box(location=[0.2,0.1,0.5], name='box1')
-        tutorial.add_box(location=[0.3,0.4,0.3], name='box2')
+        # tutorial.add_box(location=[0.2,0.1,0.5], name='box1')
+        # tutorial.add_box(location=[0.3,0.4,0.3], name='box2')
 
-        tutorial.add_box(location=[-0.1,0.4,0.7], name='box3')
-        tutorial.add_box(location=[-0.3,0.35,0.25], name='box4')
+        # tutorial.add_box(location=[-0.1,0.4,0.7], name='box3')
+        # tutorial.add_box(location=[-0.3,0.35,0.25], name='box4')
 
-        tutorial.add_box(location=[0.1,-0.4,0.6], name='box5')
-        tutorial.add_box(location=[0.3,-0.4,0.35], name='box6')
+        # tutorial.add_box(location=[0.1,-0.4,0.6], name='box5')
+        # tutorial.add_box(location=[0.3,-0.4,0.35], name='box6')
 
-        tutorial.add_box(location=[-0.3,-0.3,0.65], name='box7')
-        tutorial.add_box(location=[-0.15,-0.4,0.45], name='box8')
+        # tutorial.add_box(location=[-0.3,-0.3,0.65], name='box7')
+        # tutorial.add_box(location=[-0.15,-0.4,0.45], name='box8')
 
-        tutorial.add_box(location=[-0.15,-0.15,0.8], name='box9')
-        tutorial.add_box(location=[0.15,0.15,0.9], name='boX10')
-
+        # tutorial.add_box(location=[-0.15,-0.15,0.8], name='box9')
+        # tutorial.add_box(location=[0.15,0.15,0.9], name='boX10')
+        
         tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
 
 
@@ -1297,7 +1577,7 @@ def main():
             # tutorial.plan_random()
         # tutorial.generate_valid_start_goal_save(cnt=50000, save_file="/home/wyh/start_goal_rrtstar.npy")
         # tutorial.compare_classical()
-        # tutorial.generate_paths_user_plan("/home/wyh/start_goal_3_usr.npy", "/home/wyh/robot_path/path_usr_")
+        # tutorial.generate_paths_user_plan("/home/wyh/start_goal_rrtstar.npy", "/home/wyh/robot_path/path_usr_rrtstar_")
         # for i in range(10):
         #     input("============ Press `Enter` to plan random ...")
         #     tutorial.planner_id = tutorial.move_group.get_planner_id()
@@ -1333,8 +1613,8 @@ def main():
         return
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
 ## BEGIN_TUTORIAL
 ## .. _moveit_commander:
