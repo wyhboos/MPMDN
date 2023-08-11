@@ -156,11 +156,145 @@ def gen_rand_tbcase_save(env_cnt, save_file):
     print(envs.shape, envs)
     np.save(save_file, np.array(envs))
 
+def change_rectange_to_point_clouds(center_pose, plane_size, point_cnt):
+    x_range = plane_size[0]
+    y_range = plane_size[1]
+    z_range = plane_size[2]
+    cloud_points = []
+    for i in range(point_cnt):
+        x = random.uniform(0,x_range)-0.5*x_range
+        y = random.uniform(0,y_range)-0.5*y_range
+        z = random.uniform(0,z_range)-0.5*z_range
+        cloud_points.append([x+center_pose[0], y+center_pose[1], z+center_pose[2]])
+    return cloud_points
 
 
+def change_box_to_point_clouds_surface(pose, size, point_cnt):
+    cloud_points = []
+
+    surface_center_poses = []
+    for i in range(3):
+        s_c1 =copy.copy(pose)
+        s_c2 =copy.copy(pose)
+        s_c1[i] = s_c1[i] - 0.5*size[i]
+        s_c2[i] = s_c2[i] + 0.5*size[i]
+        surface_center_poses.append(s_c1)
+        surface_center_poses.append(s_c2)
+
+    surface_sizes = []
+    for i in range(3):
+        s_si1 =copy.copy(size)
+        s_si2 =copy.copy(size)
+        s_si1[i] = 0
+        s_si2[i] = 0
+        surface_sizes.append(s_si1)
+        surface_sizes.append(s_si2)
+
+    areas = []
+    area_all = 0
+    for s in surface_sizes:
+        a = compute_area_3d_rectangle(s)
+        area_all += a
+        areas.append(a)
+    
+    point_cnt_surface = []
+    point_cnt_temp = 0
+    for a in areas:
+        points = int(point_cnt*a/area_all+0.5)
+        point_cnt_surface.append(points)
+        point_cnt_temp += points
+    cnt_dff = point_cnt-point_cnt_temp
+    if cnt_dff != 0:
+        for i in range(abs(cnt_dff)):
+            index = random.randint(0, 5)
+            if cnt_dff>0:
+                point_cnt_surface[index] += 1
+            else:
+                point_cnt_surface[index] -= 1
+    for i in range(6):
+        cloud_point = change_rectange_to_point_clouds(center_pose=surface_center_poses[i], plane_size=surface_sizes[i], point_cnt=point_cnt_surface[i])
+        cloud_points += cloud_point
+    return cloud_points
+
+def change_box_to_point_clouds(pose, size, point_cnt):
+    x_range = size[0]
+    y_range = size[1]
+    z_range = size[2]
+
+    cloud_points = []
+    for i in range(point_cnt):
+        x = random.uniform(0,x_range)-0.5*x_range
+        y = random.uniform(0,y_range)-0.5*y_range
+        z = random.uniform(0,z_range)-0.5*z_range
+        cloud_points.append([x+pose[0], y+pose[1], z+pose[2]])
+    return cloud_points
+
+def change_sence_to_point_clouds(scene, point_cnt):
+    """
+    scene=[[size1,size2,..],[pose1,pose2,..]]
+    """
+    point_all = []
+    l = len(scene[0])
+    volume_sum = 0
+    points_cnt = []
+    volume_all =[]
+    pt_cnt_tmp = 0
+    for i in range(l):
+        # volume = compute_box_volume(size=scene[0][i])
+        volume = compute_box_surface_area(size=scene[0][i]) #use surface!
+        volume_sum+=volume
+        volume_all.append(volume)
+
+    for i in range(l):
+        pt_cnt = int(point_cnt*volume_all[i]/volume_sum+0.5)
+        pt_cnt_tmp += pt_cnt
+        points_cnt.append(pt_cnt)
+    cnt_dff = point_cnt-pt_cnt_tmp
+    if cnt_dff != 0:
+        for i in range(abs(cnt_dff)):
+            index = random.randint(0, l-1)
+            if cnt_dff>0:
+                points_cnt[index] += 1
+            else:
+                points_cnt[index] -= 1
+    # print(points_cnt)
+    for i in range(l):
+        # points_i = change_box_to_point_clouds(size=list(scene[0])[i], pose=list(scene[1])[i], point_cnt=points_cnt[i])
+        points_i = change_box_to_point_clouds_surface(size=list(scene[0])[i], pose=list(scene[1])[i], point_cnt=points_cnt[i])
+        # print(points_i)
+        print(len(points_i))
+        point_all += points_i
+
+    print(np.array(point_all).shape)
+    return point_all
+
+def get_cloud_points_save(env_file, save_file):
+    envs = np.load(env_file, allow_pickle=True)
+    cloud_points_all = []
+    for i in range(100):
+        env_i = list(list(envs)[i])
+        cloud_point_i = change_sence_to_point_clouds(scene=env_i, point_cnt=500)
+        cloud_points_all.append(cloud_point_i)
+    cloud_points_all = np.array(cloud_points_all)
+    print(cloud_points_all.shape)
+    cloud_points_all = cloud_points_all.reshape(100, 500, 3)
+    cloud_points_all = np.transpose(cloud_points_all, (0,2,1))
+    print(cloud_points_all.shape)
+    np.save(save_file, cloud_points_all)
+
+def compute_area_3d_rectangle(size):
+    area = 1
+    for i in range(3):
+        if size[i] != 0:
+            area *= size[i]
+    return area
 
 
+def compute_box_volume(size):
+    return float(size[0]*size[1]*size[2])
 
+def compute_box_surface_area(size):
+    return 2*(size[0]*size[1]+size[0]*size[2]+size[1]*size[2])
 
 
 def all_close(goal, actual, tolerance):
@@ -474,6 +608,7 @@ class MoveGroupPythonInterfaceTutorial(object):
             self.add_box(size=size[i], location=pose[i], name=name[i])
 
     def load_scene(self, file, index):
+        print("Load env_index:", index)
         name = ['obs7', 'obs8', 'obs_right2', 'obs_right1', 'obs_left1', 'obs_left2']
         if self.envs is None:
             self.envs = np.load(file, allow_pickle=True)
@@ -484,12 +619,12 @@ class MoveGroupPythonInterfaceTutorial(object):
     
     def gen_pose_start_goal_for_multiple_env(self, env_file, save_s_g_file):
         
-        # load env1's start goal
-        s_g_1 = np.load("/home/wyh/data/table_case_s_g_60000.npy", allow_pickle=True)
+        # load env0's start goal
+        s_g_0 = np.load("/home/wyh/data/table_case_s_g_60000.npy", allow_pickle=True)
 
         pose_all = []
         start_goal_all = []
-        start_goal_all.append(s_g_1)
+        start_goal_all.append(s_g_0)
         for i in range(1, 20):
             print("For env:", i)
             self.load_scene(file=env_file, index=i)
@@ -697,7 +832,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         time_all = []
         length_all = []
         node_cnt_all = []
-        for i in range(int(thread%5)*300, (int(thread%5)+1)*300):
+        for i in range(int(thread%5)*200, (int(thread%5)+1)*200):
             print("env_index",env_index, "path:", i, "suc", suc)
             path = []
             start = list(s_g[i][0])
@@ -715,17 +850,17 @@ class MoveGroupPythonInterfaceTutorial(object):
                 length_all.append('nan')
                 node_cnt_all.append('nan')
             
-            if i% 10 == 0:
+            if i% 10 == 0 or i ==(int(thread%5)+1)*200:
                 header = ["time", "length","node_cnt", "suc"]
                 with open(file="/home/wyh/data/BITstar_table_case_data_thread"+str(thread)+".csv", mode='w', encoding='utf-8', newline='') as f:
                     writer = csv.writer(f)
                     writer.writerow(header)
                     for i in range(len(suc_all)):
                         writer.writerow([time_all[i], length_all[i],node_cnt_all[i],suc_all[i]])
-            if i% 10 == 0 and i>0:
+            if (i% 10 == 0 and i>0) or i == (int(thread%5)+1)*200:
                 np.save(path_save_file + "_env_" + str(env_index)  + "thread_" + str(thread) +".npy", np.array(path_all, dtype='object'))
 
-        np.save(path_save_file+"thread_"+str(i)+".npy", np.array(path_all, dtype='object'))
+        np.save(path_save_file+"thread_"+str(thread)+".npy", np.array(path_all, dtype='object'))
 
     def compare_classical(self):
         state_valid_func = self.state_valid_checker_ompl
@@ -1170,6 +1305,7 @@ def arm_main():
         tutorial.add_box(location=[0.575, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
         tutorial.init_planning_scene_service()
         tutorial.init_ik_service()
+        # tutorial.object_to_point_cloud_test()
         # tutorial.apply_robot_joint_state()
 
 
@@ -1189,12 +1325,14 @@ def arm_main():
         parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
         args = parser.parse_args()
         thread_index = args.thread_index
-        # print(thread_index)
-        # print(args)
-        tutorial.load_scene(file="/home/wyh/data/table_case_env_100.npy", index=int(thread_index/4)+1)
+        print(thread_index)
+        print(args)
+        tutorial.load_scene(file="/home/wyh/data/table_case_env_100.npy", index=int(thread_index/5)+1)
         tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_e20_p60000.npy", 
                                           path_save_file="/home/wyh/data/table_case_BITs.npy", 
                                           thread=thread_index, env_index=int(thread_index/5)+1)
+        
+
         # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_60000.npy", path_save_file="/home/wyh/data/table_case_BIT_star_part", thread=thread_index)
         # tutorial.init_ik_service()
         # tutorial.query_inverse_kinematic_service(position=[0.5,0.1,0.5], orientation=[0,0,0,1])

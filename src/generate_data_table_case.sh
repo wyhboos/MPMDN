@@ -18,8 +18,8 @@ done
 for i in {0..19}
 do
 # if [ "$i" == "1" ] || [ "$i" == "4" ] || [ "$i" == "7" ] || [ "$i" == "9" ] || [ "$i" == "9" ] || [ "$i" == "9" ]; then
-  env_index=$((i/5))
-  gnome-terminal --tab --title="Terminal $i" --command="bash -c 'rosrun moveit_tutorials mytest.py __ns:=/robot$env_index --thread_index $i; $SHELL'"
+  move_group_index=$((i/5))
+  gnome-terminal --tab --title="Terminal $i" --command="bash -c 'rosrun moveit_tutorials mytest.py __ns:=/robot$move_group_index --thread_index $i; $SHELL'"
   sleep 0.5
 # fi
 done
