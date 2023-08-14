@@ -677,7 +677,7 @@ at::Tensor ompl::geometric::MPN::get_env_encoding(int index)
 {
     float *cloud_start = obs_clouds.data<float>();
     at::Tensor obs_cloud;
-    if (state_type == "Point_3D")
+    if (state_type == "Point_3D" || state_type == "panda_arm")
     {
         if (cloud_type == "CAE")
         {

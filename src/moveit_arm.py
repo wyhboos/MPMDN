@@ -849,10 +849,10 @@ class MoveGroupPythonInterfaceTutorial(object):
         s_g_all = np.load(s_g_file, allow_pickle=True)
         for i in range(100):
             env_index = int(input("Input env_index:"))
-            s_g_index = int(random.uniform(0, 59999))
+            s_g_index = int(input("Input path_index:"))
             self.load_scene(file=env_file, index=env_index)
             s_g = list(s_g_all)[env_index]
-            s,js = self.plan_start_goal_user(start=s_g[s_g_index][0], goal=s_g[s_g_index][1], interpolate=50, time_lim=10)
+            s,js = self.plan_start_goal_user(start=s_g[s_g_index][0], goal=s_g[s_g_index][1], interpolate=None, time_lim=10)
             print("Suc:", s)
             self.show_joint_value_path_new(joint_value_path=js)
             
@@ -1013,6 +1013,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         if planner == "MPN" or planner == "MPMDN":
             self.pl = Plan(type="panda_arm", planner=planner, set_bounds=None, state_valid_func=self.state_valid_checker_ompl)
             self.pl.pl_ompl.planner.state_type = "panda_arm"
+            self.pl.pl_ompl.planner.cloud_type = "PointNet_500"
             self.pl.pl_ompl.planner.use_orcle = True
             self.pl.pl_ompl.planner.orcle_time_lim = 5
             self.pl.pl_ompl.planner.ori_simplify = True
@@ -1020,9 +1021,12 @@ class MoveGroupPythonInterfaceTutorial(object):
             self.pl.pl_ompl.planner.iter_cnt_lim = 20
             self.pl.pl_ompl.planner.valid_ck_cnt = 0
             self.pl.pl_ompl.planner.colli_ck_cnt = 40
-            self.pl.pl_ompl.planner.env_file = "/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000.npy"
-            self.pl.pl_ompl.planner.Enet_file = ""
-            self.pl.pl_ompl.planner.Pnet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MDN_ARM_TB_BITstar_MIX_40_1_ckp_520_libtorch.pt"
+            self.pl.pl_ompl.planner.env_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/tb_env_clouds_100_3_500_surface.npy"
+            self.pl.pl_ompl.planner.Enet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MDN_ARM_tb_Joint_1_ckp_180_Enet_libtorch.pt"
+            self.pl.pl_ompl.planner.Pnet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MDN_ARM_tb_Joint_1_ckp_180_Pnet_libtorch.pt"
+            
+            # self.pl.pl_ompl.planner.Enet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MPN_ARM_tb_Joint_1_ckp_1000_Enet_libtorch.pt"
+            # self.pl.pl_ompl.planner.Pnet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MPN_ARM_tb_Joint_1_ckp_1000_Pnet_libtorch.pt"
             self.pl.pl_ompl.planner.Pnet_train = True
             self.pl.pl_ompl.planner.reload_env_net()
         else:
@@ -1557,17 +1561,17 @@ def arm_main():
         # tutorial.for_test_plan_table_case_vis(pose_file="/home/wyh/data/table_case_pose_100.npy")
         # tutorial.combine_start_goal_for_table_case(pose_file="/home/wyh/data/table_case_pose_100.npy", save_s_g_file="/home/wyh/data/table_case_s_g_60000.npy")
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--thread_index', type=int, default=0)
-        parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
-        args = parser.parse_args()
-        thread_index = args.thread_index
-        print(thread_index)
-        print(args)
-        tutorial.load_scene(file="/home/wyh/data/table_case_env_100.npy", index=int(thread_index/5)+1)
-        tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_e20_p60000.npy", 
-                                          path_save_file="/home/wyh/data/table_case_BITs.npy", 
-                                          thread=thread_index, env_index=int(thread_index/5)+1)
+        # parser = argparse.ArgumentParser()
+        # parser.add_argument('--thread_index', type=int, default=0)
+        # parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
+        # args = parser.parse_args()
+        # thread_index = args.thread_index
+        # print(thread_index)
+        # print(args)
+        # tutorial.load_scene(file="/home/wyh/data/table_case_env_100.npy", index=int(thread_index/5)+1)
+        # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_e20_p60000.npy", 
+        #                                   path_save_file="/home/wyh/data/table_case_BITs.npy", 
+        #                                   thread=thread_index, env_index=int(thread_index/5)+1)
         
 
         # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_60000.npy", path_save_file="/home/wyh/data/table_case_BIT_star_part", thread=thread_index)

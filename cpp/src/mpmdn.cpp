@@ -804,7 +804,7 @@ at::Tensor ompl::geometric::MPMDN::get_env_encoding(int index)
 {
     float *cloud_start = obs_clouds.data<float>();
     at::Tensor obs_cloud;
-    if (state_type == "Point_3D")
+    if (state_type == "Point_3D" || state_type == "panda_arm")
     {
         if (cloud_type == "CAE")
         {
@@ -835,6 +835,7 @@ at::Tensor ompl::geometric::MPMDN::get_env_encoding(int index)
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(obs_cloud);
     at::Tensor output = Enet.forward(inputs).toTensor();
+    std::cout<<output<<std::endl;
     std::cout<<"env index:"<<index<<std::endl;
     return output;
 }
