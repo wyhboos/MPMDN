@@ -212,6 +212,8 @@ class Plan_OMPL:
             # self.planner.setGoalBias(0.01)
         elif planner == "RRTConnect":
             self.planner = og.RRTConnect(self.si)
+        elif planner == "LazyPRMstar":
+            self.planner = og.LazyPRMstar(self.si)
         self.ss.setPlanner(self.planner)
     
     def set_path_cost_threshold(self, cost=999):
