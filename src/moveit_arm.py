@@ -71,7 +71,7 @@ except:  # For Python 2 compatibility
 
 from std_msgs.msg import String
 from moveit_commander.conversions import pose_to_list
-from moveit_msgs.srv import GetPositionIK, GetPositionIKRequest
+from moveit_msgs.srv import GetPositionIK, GetPositionIKRequest, GetPositionFK, GetPositionFKRequest
 from moveit_msgs.srv import GetStateValidity, GetStateValidityRequest, GetStateValidityResponse,ApplyPlanningScene,ApplyPlanningSceneRequest,ApplyPlanningSceneResponse
 from moveit_msgs.msg import RobotState
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
@@ -662,9 +662,14 @@ class MoveGroupPythonInterfaceTutorial(object):
         self.planner_id = self.move_group.get_planner_id()
         rospy.loginfo("self.planner_id")
         print("self.planner_id:", self.planner_id)
-        self.init_user_planner(planner="MPMDN")
+        # self.init_user_planner(planner="BITstar")
+        self.init_user_planner(planner="MPN")
         # self.init_user_planner(planner="IRRTstar")
         # self.init_user_planner(planner="TRRT")
+        
+    def init_fk_service(self):
+        self.fk_service = rospy.ServiceProxy('compute_fk', GetPositionFK)
+        rospy.wait_for_service('compute_fk')
 
         
     def init_ik_service(self):
@@ -696,6 +701,12 @@ class MoveGroupPythonInterfaceTutorial(object):
         
         # print(response.solution.joint_state.position[0:7])
         return list(response.solution.joint_state.position[0:7])
+    
+    def query_forward_kinematic_service(self, joint_state):
+        fk_request = GetPositionFKRequest()
+        
+        fk_request.fk_link_names = "panda_arm"
+        
 
     def init_planning_scene_service(self):
         self.apply_planning_quest_srv = rospy.ServiceProxy('apply_planning_scene',ApplyPlanningScene)
@@ -906,16 +917,17 @@ class MoveGroupPythonInterfaceTutorial(object):
 
     def for_test_show_path_from_start_goal(self, env_file, s_g_file):
         s_g_all = np.load(s_g_file, allow_pickle=True)
+        print(s_g_all.shape)
         for i in range(100):
             env_index = int(input("Input env_index:"))
             s_g_index = int(input("Input path_index:"))
             self.load_scene(file=env_file, index=env_index)
             s_g = list(s_g_all)[env_index]
-            s,js = self.plan_start_goal_user(start=s_g[s_g_index][0], goal=s_g[s_g_index][1], interpolate=None, time_lim=10)
+            s,js, sta = self.plan_start_goal_user(start=s_g[s_g_index][0], goal=s_g[s_g_index][1], interpolate=None, time_lim=10)
             print("Suc:", s)
             self.show_joint_value_path_new(joint_value_path=js)
             
-        def for_vis_path_with_multiple_start_goal(self,env_file, s_g_file):
+    def for_vis_path_with_multiple_start_goal(self,env_file, s_g_file):
         s_g_file = list(np.load(s_g_file))
         while True:
             env_index = int(input("Enter env index:"))
@@ -930,7 +942,7 @@ class MoveGroupPythonInterfaceTutorial(object):
             #     time.sleep(1)
             #     self.apply_robot_joint_state(g)
             #     time.sleep(1)
-            s,js = self.plan_start_goal_user(start=s, goal=g, time_lim=5, interpolate=None)
+            s,js, sta = self.plan_start_goal_user(start=s, goal=g, time_lim=5, interpolate=None)
             self.show_joint_value_path_new(js)
 
 
@@ -953,7 +965,109 @@ class MoveGroupPythonInterfaceTutorial(object):
             s,js = self.plan_start_goal_user(start=s, goal=g, time_lim=5, interpolate=None)
             self.show_joint_value_path_new(js)
 
-
+    def see_left_or_right(self, path_file):
+        
+        
+        path = list(np.load(path, allow_pickle=True))
+        l = len(path)
+        for i in range(l):
+            js = path[-1]
+            self.apply_robot_joint_state(js)
+            
+            
+    def compare_nnplan_arm(self, env_file, s_g_file):
+        s_g_file = list(np.load(s_g_file))
+        sta_all = []
+        for i in range(7):
+            env_index = i
+            self.load_scene(file=env_file, index=env_index)
+            s_g = list(s_g_file[env_index])
+            for j in range(0, 500, 100):
+                print(i, j)
+                s_g_index = j
+                s = list(list(s_g[s_g_index])[0])
+                g = list(list(s_g[s_g_index])[1])
+                s, js, sta = self.plan_start_goal_user(start=s, goal=g, time_lim=5, interpolate=None)
+                sta_all.append(sta)
+        
+        l = len(sta_all)
+        average_all =[0 for i in range(4)]
+        for i in range(l):
+            sta_i = sta_all[i]
+            for j in range(4):
+                average_all[j] += sta_i[j]
+        for i in range(4):
+            average_all[i] /= l
+            
+            
+        
+        csv_file ="/home/wyhboos/Project/MPMDN/Data/panda_arm/mpn_average.csv"
+        header = ["time_all", "time_rp", "length","suc"]
+        with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            writer.writerow(average_all)
+            f.close()
+        
+        csv_file ="/home/wyhboos/Project/MPMDN/Data/panda_arm/mpn_detail.csv"
+        header = ["time_all", "time_rp", "length","suc"]
+        with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            for l in sta_all:
+                writer.writerow(l)
+            f.close()
+            
+    def compare_classical_arm(self, env_file, s_g_file, len_ref_file):
+        from utility import read_csv
+        dict_list = read_csv(len_ref_file)
+        
+    
+        s_g_file = list(np.load(s_g_file))
+        sta_all = []
+        for i in range(7):
+            env_index = i
+            self.load_scene(file=env_file, index=env_index)
+            s_g = list(s_g_file[env_index])
+            for j in range(0, 500, 100):
+                print(i, j)
+                s_g_index = j
+                ref_index = env_index*5 + (s_g_index/100)
+                mpn_length = float(dict_list[int(ref_index)]['length'])*1.5
+                print("mpn_length", mpn_length)
+                self.pl.pl_ompl.set_path_cost_threshold(mpn_length)
+                s = list(list(s_g[s_g_index])[0])
+                g = list(list(s_g[s_g_index])[1])
+                s, js, sta = self.plan_start_goal_user(start=s, goal=g, time_lim=180, interpolate=None)
+                sta_all.append(sta)
+        
+        l = len(sta_all)
+        average_all =[0 for i in range(4)]
+        for i in range(l):
+            sta_i = sta_all[i]
+            for j in range(3):
+                average_all[j] += sta_i[j]
+        for i in range(3):
+            average_all[i] /= l
+            
+        
+        csv_file ="/home/wyhboos/Project/MPMDN/Data/panda_arm/bitstar_average.csv"
+        header = ["time_all", "time_rp", "length","suc"]
+        with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            writer.writerow(average_all)
+            f.close()
+        
+        csv_file ="/home/wyhboos/Project/MPMDN/Data/panda_arm/bitstar_detail.csv"
+        header = ["time_all", "time_rp", "length","suc"]
+        with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            for l in sta_all:
+                writer.writerow(l)
+            f.close()
+                    
         
 
     def getStateValidity(self, robot_state, group_name='panda_arm', constraints=None, print_depth=False):
@@ -1111,19 +1225,19 @@ class MoveGroupPythonInterfaceTutorial(object):
             self.pl = Plan(type="panda_arm", planner=planner, set_bounds=None, state_valid_func=self.state_valid_checker_ompl)
             self.pl.pl_ompl.planner.state_type = "panda_arm"
             self.pl.pl_ompl.planner.cloud_type = "PointNet_500"
-            self.pl.pl_ompl.planner.use_orcle = True
-            self.pl.pl_ompl.planner.orcle_time_lim = 5
+            self.pl.pl_ompl.planner.use_orcle = False
+            self.pl.pl_ompl.planner.orcle_time_lim = 120
             self.pl.pl_ompl.planner.ori_simplify = True
             self.pl.pl_ompl.planner.nn_rep_cnt_lim = 0
             self.pl.pl_ompl.planner.iter_cnt_lim = 20
             self.pl.pl_ompl.planner.valid_ck_cnt = 0
             self.pl.pl_ompl.planner.colli_ck_cnt = 40
-            self.pl.pl_ompl.planner.env_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/tb_env_clouds_100_3_500_surface.npy"
-            self.pl.pl_ompl.planner.Enet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MDN_ARM_tb_Joint_1_ckp_180_Enet_libtorch.pt"
-            self.pl.pl_ompl.planner.Pnet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MDN_ARM_tb_Joint_1_ckp_180_Pnet_libtorch.pt"
+            self.pl.pl_ompl.planner.env_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/tb_env_new_clouds_100_3_500_surface.npy"
+            # self.pl.pl_ompl.planner.Enet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MDN_ARM_tb_new_tb_Joint_mix_40_batch2048_ckp_630_Enet_libtorch.pt"
+            # self.pl.pl_ompl.planner.Pnet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MDN_ARM_tb_new_tb_Joint_mix_40_batch2048_ckp_630_Pnet_libtorch.pt"
             
-            # self.pl.pl_ompl.planner.Enet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MPN_ARM_tb_Joint_1_ckp_1000_Enet_libtorch.pt"
-            # self.pl.pl_ompl.planner.Pnet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MPN_ARM_tb_Joint_1_ckp_1000_Pnet_libtorch.pt"
+            self.pl.pl_ompl.planner.Enet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MPN_ARM_tb_new_Joint_batch2048_1_ckp_350_Enet_libtorch.pt"
+            self.pl.pl_ompl.planner.Pnet_file = "/home/wyhboos/Project/MPMDN/Data/panda_arm/Model_structure/MPN_ARM_tb_new_Joint_batch2048_1_ckp_350_Pnet_libtorch.pt"
             self.pl.pl_ompl.planner.Pnet_train = True
             self.pl.pl_ompl.planner.reload_env_net()
         else:
@@ -1134,7 +1248,24 @@ class MoveGroupPythonInterfaceTutorial(object):
         pl = self.pl
         # pl.pl_ompl.set_path_cost_threshold(100)
         solve, path = pl.plan(start, goal, time_lim=time_lim, interpolate=interpolate)
-        return solve, path
+        if solve and solve.asString() == "Exact solution":
+            suc = 1
+        else:
+            suc = 0
+        # time_o = pl.pl_ompl.planner.time_o
+        # time_nnrp = pl.pl_ompl.planner.time_nnrp
+        # time_classical = pl.pl_ompl.planner.time_classical
+        # time_all = pl.pl_ompl.planner.time_all
+        # length = pl.pl_ompl.ss.getSolutionPath().length()
+        # return solve, path, [time_all, time_nnrp+time_classical, length, suc]
+        
+        # time_o = pl.pl_ompl.planner.time_o
+        # time_nnrp = pl.pl_ompl.planner.time_nnrp
+        # time_classical = pl.pl_ompl.planner.time_classical
+        time_all = pl.pl_ompl.ss.getLastPlanComputationTime()
+        length = pl.pl_ompl.ss.getSolutionPath().length()
+        return solve, path, [time_all, length, suc]
+        
 
     def generate_paths(self, s_g_file, path_save_file):
         s_g = np.load(s_g_file)
@@ -1618,7 +1749,7 @@ def arm_main():
         # tutorial.add_box(location=[-0.15,-0.15,0.8], name='box9')
         # tutorial.add_box(location=[0.15,0.15,0.9], name='boX10')
         
-        tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
+        # tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
 
 
         # for multimodal and environemnt encoding
@@ -1644,8 +1775,14 @@ def arm_main():
         tutorial.add_box(location=[0.625, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
         tutorial.init_planning_scene_service()
         tutorial.init_ik_service()
-        tutorial.for_test_show_path_from_start_goal(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_env_100.npy", s_g_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_s_g_e20_p60000.npy")
-        # tutorial.apply_robot_joint_state()
+        tutorial.for_test_show_path_from_start_goal(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_env_100_new.npy", 
+                                                    s_g_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_new_s_g_e20_p10000_grasp.npy")
+        # tutorial.compare_nnplan_arm(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_env_100_new.npy", 
+        #                                             s_g_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_new_s_g_e20_p10000.npy")
+        # # tutorial.apply_robot_joint_state()
+        # tutorial.compare_classical_arm(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_env_100_new.npy", 
+        #                                 s_g_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_new_s_g_e20_p10000.npy",
+        #                                 len_ref_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/mpmdn_detail.csv")
 
 
         # divider environment setup
@@ -1660,21 +1797,21 @@ def arm_main():
         # tutorial.for_test_plan_table_case_vis(pose_file="/home/wyh/data/table_case_pose_100.npy")
         # tutorial.combine_start_goal_for_table_case(pose_file="/home/wyh/data/table_case_pose_100.npy", save_s_g_file="/home/wyh/data/table_case_s_g_60000.npy")
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--thread_index', type=int, default=0)
-        parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
-        args = parser.parse_args()
-        thread_index = args.thread_index
-        print(thread_index)
-        print(args)
-        tutorial.load_scene(file="/home/wyh/data/table_case_env_100_new.npy", index=int(thread_index/2))
-        tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_new_s_g_e20_p10000.npy", 
-                                          path_save_file="/home/wyh/data/table_case_new_BITs.npy", 
-                                          thread=thread_index, env_index=int(thread_index/2))
+        # parser = argparse.ArgumentParser()
+        # parser.add_argument('--thread_index', type=int, default=0)
+        # parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
+        # args = parser.parse_args()
+        # thread_index = args.thread_index
+        # print(thread_index)
+        # print(args)
+        # tutorial.load_scene(file="/home/wyh/data/table_case_env_100_new.npy", index=int(thread_index/2))
+        # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_new_s_g_e20_p10000.npy", 
+        #                                   path_save_file="/home/wyh/data/table_case_new_BITs.npy", 
+        #                                   thread=thread_index, env_index=int(thread_index/2))
         
 
         # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_60000.npy", path_save_file="/home/wyh/data/table_case_BIT_star_part", thread=thread_index)
-        # tutorial.init_ik_service()
+        tutorial.init_ik_service()
         # tutorial.query_inverse_kinematic_service(position=[0.5,0.1,0.5], orientation=[0,0,0,1])
 
         # tutorial.init_planning_scene_service()
