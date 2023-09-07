@@ -52,13 +52,21 @@ def get_statistics(para_dict):
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_TL_sg_ev.npy"
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+        
+    if type == "Two_Link_2D_vec":
+        model_name = "S2D_TL_vec_" + planner + mode
+        vis = "./fig/S2D/TL/"+ planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
+        s_g_file = "./Data/S2D/S2D_env_1000_pts_400_Two_Link_vec_sg.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+        
     if type == "Three_Link_2D":
         model_name = "S2D_ThreeL_" + planner + mode
         vis = "./fig/S2D/ThreeL/"+ planner +"/" + see + "/" + mode + "/"
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_ThreeL_sg_ev_not_trivial.npy"
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
-    
+        
     if type == "Point_3D":
         model_name = "C3D_Pt_" + planner + mode
         vis = "./fig/C3D/Pt/" + planner +"/" + see + "/" + mode + "/"
@@ -225,7 +233,7 @@ def get_statistics(para_dict):
         avr = np.array(d).mean(axis=0)
         average.append(avr)
     
-    if type == "Rigidbody_2D" or type == "Two_Link_2D" or type == "Three_Link_2D":
+    if type == "Rigidbody_2D" or type == "Two_Link_2D" or type == "Three_Link_2D" or type == "Three_Link_2D_vec":
         csv_file = "./Data/S2D/Sta/" + model_name + "_" + see + "_avg_data.csv"
     elif type == "Point_3D":
         csv_file = "./Data/C3D/Sta/" + model_name + "_" + see + "_avg_data.csv"
@@ -237,7 +245,7 @@ def get_statistics(para_dict):
         writer.writerow(average)
         f.close()
 
-    if type == "Rigidbody_2D" or type == "Two_Link_2D" or type == "Three_Link_2D":
+    if type == "Rigidbody_2D" or type == "Two_Link_2D" or type == "Three_Link_2D" or type == "Three_Link_2D_vec":
         csv_file = "./Data/S2D/Sta/" + model_name + "_" + see + "_detail_data.csv"
     elif type == "Point_3D":
         csv_file = "./Data/C3D/Sta/" + model_name + "_" + see + "_detail_data.csv"
@@ -763,8 +771,42 @@ if __name__ == '__main__':
     
     
     
-
+    # S2D TL vec
+        # MPN SEEN
     
+    dict_1160 = {"para_index":1160,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,"cloud_type":"PointNet",
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TwoL_vec_Joint_1_train_mode_ckp_240_Enet_libtorch.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TwoL_vec_Joint_1_train_mode_ckp_240_Pnet_libtorch.pt"}
+    
+    dict_1170 = {"para_index":1170,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,"cloud_type":"PointNet",
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TwoL_vec_Joint_1_train_mode_ckp_240_Enet_libtorch.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MPN_S2D_TwoL_vec_Joint_1_train_mode_ckp_240_Pnet_libtorch.pt"}
+    
+        # MPMDN SEEN
+    
+    dict_1180 = {"para_index":1180,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":False, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,"cloud_type":"PointNet",
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_ThreeL_Joint_1_ckp_56_Enet_libtorch.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_ThreeL_Joint_1_ckp_56_Pnet_libtorch.pt"}
+    
+    dict_1190 = {"para_index":1190,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, "save_inva_colli_pair":False, "gen_s_g":False,
+              "planner":"MPMDN", "valid_ck_cnt":0, "colli_ck_cnt":40, "use_orcle":True, "ori_simplify":True, "nn_rep_cnt_lim":0, "iter_cnt_lim":20,"cloud_type":"PointNet",
+              "ompl_env_file":"/home/wyhboos/Project/MPMDN/Data/S2D/obs_cloud_2000_PointNet.npy",
+              "ompl_Enet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_ThreeL_Joint_1_ckp_56_Enet_libtorch.pt",
+              "ompl_Pnet_file":"/home/wyhboos/Project/MPMDN/Data/S2D/Model_structure/MDN_ThreeL_Joint_1_ckp_56_Pnet_libtorch.pt"}
+    
+    
+    all_dict["1160"] = dict_1160
+    all_dict["1170"] = dict_1170
+    all_dict["1180"] = dict_1180
+    all_dict["1190"] = dict_1190
+    
+
     
     all_dict["0"] = dict_0
     all_dict["1"] = dict_1

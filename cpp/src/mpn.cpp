@@ -827,7 +827,7 @@ ompl::geometric::SimpleSetup* ompl::geometric::MPN::setup_orcle_planner()
 
         ompl::geometric::SimpleSetup* ss=new ompl::geometric::SimpleSetup(space_);
         ss->setStateValidityChecker(si_->getStateValidityChecker());
-        ss->setPlanner(std::make_shared<ompl::geometric::RRTConnect>(ss->getSpaceInformation()));//RRTstar seems to fail to terminate when finding initial solution, so chose RRT
+        ss->setPlanner(std::make_shared<ompl::geometric::RRT>(ss->getSpaceInformation()));//RRTstar seems to fail to terminate when finding initial solution, so chose RRT
         return ss;
     }
 
