@@ -274,6 +274,10 @@ class Env_Robot:
             Vec_Y = state[0][1]
             Angle1_Yaw = state[0][2]
             Angle2_Yaw = state[0][3]
+            
+            if Angle2_Yaw>3.14*0.75 or Angle2_Yaw<-3.14*0.75:
+                return False
+            
             link_states = self.get_link_config_2D(
                 [Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw], self.robot_size)
 
@@ -303,6 +307,10 @@ class Env_Robot:
             Angle1_Yaw = state[0][2]
             Angle2_Yaw = state[0][3]
             Angle3_Yaw = state[0][4]
+            if Angle2_Yaw>3.14*0.75 or Angle2_Yaw<-3.14*0.75:
+                return False
+            if Angle3_Yaw>3.14*0.75 or Angle3_Yaw<-3.14*0.75:
+                return False
             link_states = self.get_link_config_2D(
                 [Vec_X, Vec_Y, Angle1_Yaw, Angle2_Yaw, Angle3_Yaw], self.robot_size)
 
@@ -354,6 +362,8 @@ class Env_Robot:
         :return:[[x_length, y_length, X, Y, Yaw]]
         """
         path_with_robot = []
+        if self.robot_type == "Point_3D":
+            return path
         if self.robot_type == "Point_2D":
             for cfg in path:
                 path_with_robot.append(self.robot_size + cfg + [0])

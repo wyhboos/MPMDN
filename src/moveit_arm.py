@@ -124,6 +124,35 @@ from planning import *
     #     tutorial.add_box(location=[0.575, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
     #     tutorial.init_planning_scene_service()
 
+def generate_random_box():
+    # 8 regions for 1 box each
+    x_range = [[-0.4,-0.05],[0.05,0.4]]
+    y_range = [[-0.4,-0.05],[0.05,0.4]]
+    z_range = [[0.25,0.45],[0.55,0.75]]
+    regions = []
+    for xr in x_range:
+        for yr in y_range:
+            for zr in z_range:
+                regions.append([xr,yr,zr])
+    
+    positions = []
+    sizes = []
+    size = [0.075, 0.075, 0.075]
+    for region in regions:
+        x = random.uniform(region[0][0], region[0][1])
+        y = random.uniform(region[1][0], region[1][1])
+        z = random.uniform(region[2][0], region[2][1])
+        positions.append([x,y,z])
+        sizes.append(size)
+    
+    return sizes, positions
+        
+        
+        
+        
+
+    
+
 def generate_random_table_case():
     # for the high table two obs
     dis = random.uniform(0.2,0.3)
@@ -142,7 +171,7 @@ def generate_random_table_case():
     center_y = [-0.375, -0.125, 0.125, 0.375]
     obs_length_z = [random.uniform(0.12, 0.18) for i in range(4)]
     position_obs_all = [[0.27, center_y_delta[i]+center_y[i], 0.2+0.5*obs_length_z[i]] for i in range(4)]
-    size_obs_all = [[0.2, 0.01, obs_length_z[i]] for i in range(4)]
+    size_obs_all = [[0.2, 0.01, obs_5length_z[i]] for i in range(4)]
 
     # intergrate
     size = [size_obs1, size_obs2] + size_obs_all
@@ -885,6 +914,26 @@ class MoveGroupPythonInterfaceTutorial(object):
         l = len(size)
         for i in range(l):
             self.add_box(size=size[i], location=pose[i], name=name[i])
+        
+    def view_random_box(self):
+        select_sence = []
+        select_cnt = 0
+        while True:
+            size, pose = generate_random_box()
+            name = ['rb1', 'rb2', 'rb3', 'rb4', 'rb5', 'rb6', 'rb7', 'rb8']
+            self.add_box_scene(size, pose, name)
+            flag = input("Select input 's':")
+            if flag == 's':
+                print("Select!")
+                select_cnt += 1
+                select_sence.append([size, pose])
+                if select_cnt>= 10:
+                    print(len(select_sence))
+                    break
+            else:
+                print("Not select!")
+        np.save("/home/wyhboos/data/random_box_scence.npy", np.array(select_sence))
+        
 
     def load_scene(self, file, index):
         print("Load env_index:", index)
@@ -1753,30 +1802,31 @@ def arm_main():
 
 
         # for multimodal and environemnt encoding
-        tutorial.add_box(location=[0.67,0,0.4], name='obs1', size = [0.5,0.55,0.03])
-        tutorial.add_box(location=[0.67,-0.25,0.2], name='obs2', size = [0.5,0.03,0.4])
-        tutorial.add_box(location=[0.67,0.25,0.2], name='obs3', size = [0.5,0.03,0.4])
+        # tutorial.add_box(location=[0.67,0,0.4], name='obs1', size = [0.5,0.55,0.03])
+        # tutorial.add_box(location=[0.67,-0.25,0.2], name='obs2', size = [0.5,0.03,0.4])
+        # tutorial.add_box(location=[0.67,0.25,0.2], name='obs3', size = [0.5,0.03,0.4])
 
-        tutorial.add_box(location=[0.32,0,0.2], name='obs4', size = [0.2,1.05,0.03])
-        tutorial.add_box(location=[0.32,-0.5,0.1], name='obs5', size = [0.2,0.03,0.2])
-        tutorial.add_box(location=[0.32,0.5,0.1], name='obs6', size = [0.2,0.03,0.2])
+        # tutorial.add_box(location=[0.32,0,0.2], name='obs4', size = [0.2,1.05,0.03])
+        # tutorial.add_box(location=[0.32,-0.5,0.1], name='obs5', size = [0.2,0.03,0.2])
+        # tutorial.add_box(location=[0.32,0.5,0.1], name='obs6', size = [0.2,0.03,0.2])
 
-        # tutorial.add_box(location=[0.45,0,0.5], name='obs7', size = [0.05,0.3,0.2])
-        # tutorial.add_box(location=[0.7,0,0.5], name='obs8', size = [0.05,0.3,0.2])
+        # # tutorial.add_box(location=[0.45,0,0.5], name='obs7', size = [0.05,0.3,0.2])
+        # # tutorial.add_box(location=[0.7,0,0.5], name='obs8', size = [0.05,0.3,0.2])
 
-        # tutorial.add_box(location=[0.27,-0.125,0.275], name='obs_right', size = [0.2,0.02,0.15])
+        # # tutorial.add_box(location=[0.27,-0.125,0.275], name='obs_right', size = [0.2,0.02,0.15])
 
-        # tutorial.add_box(location=[0.27, 0.125,0.29], name='obs_left', size = [0.2,0.02,0.18])
+        # # tutorial.add_box(location=[0.27, 0.125,0.29], name='obs_left', size = [0.2,0.02,0.18])
 
-        # tutorial.add_box(location=[0.27, 0.375,0.26], name='obs_left2', size = [0.2,0.02,0.12])
+        # # tutorial.add_box(location=[0.27, 0.375,0.26], name='obs_left2', size = [0.2,0.02,0.12])
 
-        # tutorial.add_box(location=[0.27, -0.375,0.29], name='obs_right2', size = [0.2,0.02,0.18])
+        # # tutorial.add_box(location=[0.27, -0.375,0.29], name='obs_right2', size = [0.2,0.02,0.18])
 
-        tutorial.add_box(location=[0.625, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
+        # tutorial.add_box(location=[0.625, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
         tutorial.init_planning_scene_service()
         tutorial.init_ik_service()
-        tutorial.for_test_show_path_from_start_goal(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_env_100_new.npy", 
-                                                    s_g_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_new_s_g_e20_p10000_grasp.npy")
+        tutorial.view_random_box()
+        # tutorial.for_test_show_path_from_start_goal(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_env_100_new.npy", 
+        #                                             s_g_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_new_s_g_e20_p10000_grasp.npy")
         # tutorial.compare_nnplan_arm(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_env_100_new.npy", 
         #                                             s_g_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_new_s_g_e20_p10000.npy")
         # # tutorial.apply_robot_joint_state()
