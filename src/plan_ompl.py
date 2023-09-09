@@ -195,6 +195,7 @@ class Plan_OMPL:
         
 
     def set_planner(self, planner="MPMDN"):
+        self.planner_name = planner
         if planner == "MPN":
             self.planner = MPN(self.si)
         if planner == "MPMDN":
@@ -214,6 +215,18 @@ class Plan_OMPL:
             self.planner = og.RRTConnect(self.si)
         elif planner == "LazyPRMstar":
             self.planner = og.LazyPRMstar(self.si)
+        elif planner == "AITstar":
+            self.planner = og.AITstar(self.si)
+        elif planner == "ABITstar":
+            self.planner = og.ABITstar(self.si)
+        elif planner == "STRRTstar":
+            self.planner = og.STRRTstar(self.si)
+        elif planner == "PRMstar":
+            self.planner = og.PRMstar(self.si)
+        elif planner == "SPARS":
+            self.planner = og.SPARS(self.si)
+        elif planner == "BFMT":
+            self.planner = og.BFMT(self.si)
         self.ss.setPlanner(self.planner)
     
     def set_path_cost_threshold(self, cost=999):
@@ -376,7 +389,10 @@ class Plan_OMPL:
             return state_ompl
 
     def solve_planning_2D(self, start, goal, time_lim=10, simple=False, interpolate=None):
-        self.ss.clear()
+        if self.planner_name == "LazyPRMstar" or self.planner_name == "PRMstar":
+            pass
+        else:  
+            self.ss.clear()
         self.ss.setStartAndGoalStates(start, goal)
         solved = self.ss.solve(time_lim)
         path = []

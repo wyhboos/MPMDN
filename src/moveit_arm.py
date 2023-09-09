@@ -923,8 +923,12 @@ class MoveGroupPythonInterfaceTutorial(object):
         self.planner_id = self.move_group.get_planner_id()
         rospy.loginfo("self.planner_id")
         print("self.planner_id:", self.planner_id)
-        # self.init_user_planner(planner="BITstar")
-        self.init_user_planner(planner="MPN")
+        # self.init_user_planner(planner="LazyPRMstar")
+        self.init_user_planner(planner="ABITstar")
+
+        # self.init_user_planner(planner="RRTConnect")
+
+        # self.init_user_planner(planner="BFMT")
         # self.init_user_planner(planner="IRRTstar")
         # self.init_user_planner(planner="TRRT")
         
@@ -1147,6 +1151,17 @@ class MoveGroupPythonInterfaceTutorial(object):
         for i in range(l):
             self.add_box(size=size[i], location=pose[i], name=name[i])
         
+    def load_box_scene(self,file, index):
+        print("Load env_index:", index)
+        name = ['rb1', 'rb2', 'rb3', 'rb4', 'rb5', 'rb6', 'rb7', 'rb8']
+        if self.envs is None:
+            self.envs = np.load(file, allow_pickle=True)
+        env = list(self.envs)[index]
+        size = list(list(env)[0])
+        pose = list(list(env)[1])
+        self.add_box_scene(size=size, pose=pose, name=name)
+
+
     def view_random_box(self):
         select_sence = []
         select_cnt = 0
@@ -1185,7 +1200,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         pose_all = []
         start_goal_all = []
         # start_goal_all.append(s_g_0)
-        for i in range(0, 20):
+        for i in range(0, 10):
             print("For env:", i)
             self.load_scene(file=env_file, index=i)
             pose_i = self.generate_random_valid_pose_joint_state_for_table_case(pose_cnt=100)
@@ -1207,24 +1222,6 @@ class MoveGroupPythonInterfaceTutorial(object):
             s,js, sta = self.plan_start_goal_user(start=s_g[s_g_index][0], goal=s_g[s_g_index][1], interpolate=None, time_lim=10)
             print("Suc:", s)
             self.show_joint_value_path_new(joint_value_path=js)
-            
-    def for_vis_path_with_multiple_start_goal(self,env_file, s_g_file):
-        s_g_file = list(np.load(s_g_file))
-        while True:
-            env_index = int(input("Enter env index:"))
-            self.load_scene(file=env_file, index=env_index)
-            s_g = list(s_g_file[env_index])
-            s_g_index = int(input("Enter start goal index:"))
-            s = list(list(s_g[s_g_index])[0])
-            g = list(list(s_g[s_g_index])[1])
-            print("start:", s, "goal", g)
-            # for i in range(3):
-            #     self.apply_robot_joint_state(s)
-            #     time.sleep(1)
-            #     self.apply_robot_joint_state(g)
-            #     time.sleep(1)
-            s,js, sta = self.plan_start_goal_user(start=s, goal=g, time_lim=5, interpolate=None)
-            self.show_joint_value_path_new(js)
 
 
         
@@ -1232,7 +1229,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         s_g_file = list(np.load(s_g_file))
         while True:
             env_index = int(input("Enter env index:"))
-            self.load_scene(file=env_file, index=env_index)
+            self.load_box_scene(file=env_file, index=env_index)
             s_g = list(s_g_file[env_index])
             s_g_index = int(input("Enter start goal index:"))
             s = list(list(s_g[s_g_index])[0])
@@ -1243,7 +1240,9 @@ class MoveGroupPythonInterfaceTutorial(object):
             #     time.sleep(1)
             #     self.apply_robot_joint_state(g)
             #     time.sleep(1)
-            s,js = self.plan_start_goal_user(start=s, goal=g, time_lim=5, interpolate=None)
+            time_lim = int(input("Enter limit time:"))
+            s,js,t = self.plan_start_goal_user(start=s, goal=g, time_lim=time_lim, interpolate=None)
+            print(t)
             self.show_joint_value_path_new(js)
 
     def see_left_or_right(self, path_file):
@@ -1492,6 +1491,38 @@ class MoveGroupPythonInterfaceTutorial(object):
         
         np.save(save_file, np.array(start_goal))
 
+    def generate_valid_start_goal_for_multiple_box_scene(self, env_file, save_sg_file, rm_trivial=True):
+        s_g = []
+        if rm_trivial:
+            # init the collision checker in ompl!
+            start, goal = self.generate_valid_start_goal()
+            self.plan_start_goal_user(start=start, goal=goal, time_lim=1)
+            trivial_cnt = 0
+        for i in range(7):
+            s_g_env_i = []
+            self.load_box_scene(env_file, index=i)
+            for j in range(2000):
+                print("Env:", i, "Path:", j)
+                while True:
+                    start, goal = self.generate_valid_start_goal()
+                    if rm_trivial:
+                        start_ompl = self.pl.pl_ompl.conver_list_config_to_ompl_config(start)
+                        goal_ompl = self.pl.pl_ompl.conver_list_config_to_ompl_config(goal)
+                        if not self.pl.pl_ompl.si.checkMotion(start_ompl(),goal_ompl()):
+                            break
+                        else:
+                            trivial_cnt += 1
+                            print('Trivial case!', trivial_cnt)
+                    else:
+                        break
+                s_g_env_i.append([start, goal])
+            s_g.append(s_g_env_i)
+        np.save(save_sg_file, np.array(s_g))
+            
+
+                
+
+
     def plan_start_goal(self, start, goal):
         state = self.state
         move_group = self.move_group
@@ -1531,8 +1562,10 @@ class MoveGroupPythonInterfaceTutorial(object):
         solve, path = pl.plan(start, goal, time_lim=time_lim, interpolate=interpolate)
         if solve and solve.asString() == "Exact solution":
             suc = 1
+            length = pl.pl_ompl.ss.getSolutionPath().length()
         else:
             suc = 0
+            length = 'nan'
         # time_o = pl.pl_ompl.planner.time_o
         # time_nnrp = pl.pl_ompl.planner.time_nnrp
         # time_classical = pl.pl_ompl.planner.time_classical
@@ -1544,7 +1577,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         # time_nnrp = pl.pl_ompl.planner.time_nnrp
         # time_classical = pl.pl_ompl.planner.time_classical
         time_all = pl.pl_ompl.ss.getLastPlanComputationTime()
-        length = pl.pl_ompl.ss.getSolutionPath().length()
+
         return solve, path, [time_all, length, suc]
         
 
@@ -1582,12 +1615,12 @@ class MoveGroupPythonInterfaceTutorial(object):
         time_all = []
         length_all = []
         node_cnt_all = []
-        for i in range(10000+int(thread%2)*200, 10000+(int(thread%2)+1)*200):
+        for i in range(int(thread%4)*400, (int(thread%4)+1)*400):
             print("env_index",env_index, "path:", i, "suc", suc)
             path = []
             start = list(s_g[i][0])
             goal = list(s_g[i][1])
-            solve, path = self.plan_start_goal_user(start, goal, time_lim=180)   
+            solve, path, t = self.plan_start_goal_user(start, goal, time_lim=120)   
             time_all.append(self.pl.pl_ompl.ss.getLastPlanComputationTime())
             if solve.asString() == "Exact solution":
                 suc += 1
@@ -1601,14 +1634,14 @@ class MoveGroupPythonInterfaceTutorial(object):
                 length_all.append('nan')
                 node_cnt_all.append('nan')
             
-            if i% 10 == 0 or i ==10000+(int(thread%2)+1)*200-1:
+            if i% 1 == 0 or i ==(int(thread%4)+1)*400-1:
                 header = ["time", "length","node_cnt", "suc"]
-                with open(file="/home/wyh/data/BITstar_table_case_data_thread"+str(thread)+".csv", mode='w', encoding='utf-8', newline='') as f:
+                with open(file=path_save_file+str(thread)+".csv", mode='w', encoding='utf-8', newline='') as f:
                     writer = csv.writer(f)
                     writer.writerow(header)
                     for i in range(len(suc_all)):
                         writer.writerow([time_all[i], length_all[i],node_cnt_all[i],suc_all[i]])
-            if (i% 10 == 0 and i>0) or i == 10000+(int(thread%2)+1)*200-1:
+            if (i% 1 == 0 and i>0) or i ==(int(thread%4)+1)*400-1:
                 np.save(path_save_file + "_env_" + str(env_index)  + "thread_" + str(thread) +".npy", np.array(path_all, dtype='object'))
 
         np.save(path_save_file+"thread_"+str(thread)+".npy", np.array(path_all, dtype='object'))
@@ -2030,7 +2063,7 @@ def arm_main():
         # tutorial.add_box(location=[-0.15,-0.15,0.8], name='box9')
         # tutorial.add_box(location=[0.15,0.15,0.9], name='boX10')
         
-        # tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
+        tutorial.add_box(location=[0,0,-0.05], name='plane', size = [2,2,0.01])
 
 
         # for multimodal and environemnt encoding
@@ -2056,7 +2089,7 @@ def arm_main():
         # tutorial.add_box(location=[0.625, 0,0.425], name='grasp_obj', size = [0.05,0.05,0.05])
         tutorial.init_planning_scene_service()
         tutorial.init_ik_service()
-        tutorial.view_random_box()
+        # tutorial.view_random_box()
         # tutorial.for_test_show_path_from_start_goal(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_env_100_new.npy", 
         #                                             s_g_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_new_s_g_e20_p10000_grasp.npy")
         # tutorial.compare_nnplan_arm(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/table_case_env_100_new.npy", 
@@ -2079,28 +2112,30 @@ def arm_main():
         # tutorial.for_test_plan_table_case_vis(pose_file="/home/wyh/data/table_case_pose_100.npy")
         # tutorial.combine_start_goal_for_table_case(pose_file="/home/wyh/data/table_case_pose_100.npy", save_s_g_file="/home/wyh/data/table_case_s_g_60000.npy")
 
-        # parser = argparse.ArgumentParser()
-        # parser.add_argument('--thread_index', type=int, default=0)
-        # parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
-        # args = parser.parse_args()
-        # thread_index = args.thread_index
-        # print(thread_index)
-        # print(args)
-        # tutorial.load_scene(file="/home/wyh/data/table_case_env_100_new.npy", index=int(thread_index/2))
-        # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_new_s_g_e20_p10000.npy", 
-        #                                   path_save_file="/home/wyh/data/table_case_new_BITs.npy", 
-        #                                   thread=thread_index, env_index=int(thread_index/2))
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--thread_index', type=int, default=0)
+        parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
+        args = parser.parse_args()
+        thread_index = args.thread_index
+        print(thread_index)
+        print(args)
+        tutorial.load_box_scene(file="/home/wyh/Code/MPMDN/Data/panda_arm/random_box_scence.npy", index=int(thread_index/4))
+        tutorial.generate_paths_user_plan(s_g_file="/home/wyh/Code/MPMDN/Data/panda_arm/box_sence_sg_7_2000.npy", 
+                                          path_save_file="/home/wyh/Code/MPMDN/Data/panda_arm/0909/box_sence_ABITstar", 
+                                          thread=thread_index, env_index=int(thread_index/4))
         
 
         # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_60000.npy", path_save_file="/home/wyh/data/table_case_BIT_star_part", thread=thread_index)
         tutorial.init_ik_service()
+        # tutorial.generate_valid_start_goal_for_multiple_box_scene(env_file="/home/wyh/Code/MPMDN/Data/panda_arm/random_box_scence.npy", 
+        #                                                           save_sg_file="/home/wyh/Code/MPMDN/Data/panda_arm/box_sence_sg_7_2000.npy")
         # tutorial.query_inverse_kinematic_service(position=[0.5,0.1,0.5], orientation=[0,0,0,1])
 
         # tutorial.init_planning_scene_service()
         # tutorial.apply_planing_quest()
         # gen_rand_tbcase_save_new(env_cnt=100, save_file="/home/wyh/data/table_case_env_100_new.npy")
-        # tutorial.for_vis_path_with_multiple_start_goal(env_file="/home/wyh/data/table_case_env_100_new.npy", 
-        #                                                s_g_file="/home/wyh/data/table_case_new_s_g_e20_p10000.npy")
+        # tutorial.for_vis_path_with_multiple_start_goal(env_file="/home/wyh/Code/MPMDN/Data/panda_arm/random_box_scence.npy", 
+        #                                                s_g_file="/home/wyh/Code/MPMDN/Data/panda_arm/box_sence_sg_7_2000.npy")
         # tutorial.gen_pose_start_goal_for_multiple_env(env_file="/home/wyh/data/table_case_env_100_new.npy", 
         #                                               save_s_g_file="/home/wyh/data/table_case_new_s_g_e20_p10000.npy")
         # for i in range(100):
