@@ -1,6 +1,6 @@
 import os
 import csv
-
+import copy
 import numpy as np
 from moveit_arm import get_cloud_points_save
 from visualization import vis_for_points_in_3D_plotly
@@ -76,6 +76,7 @@ def generate_start_goal(pl, rec_envs, cnt, s_g_file, rm_trivial=True):
     motion_ck_fun = None
     if rm_trivial:
         motion_ck_fun = pl.pl_ompl.si.checkMotion
+        pl.plan()
     for i in range(cnt[0]):
         print("Generating start goal, Env:", i)
         rec_env = rec_envs[i, :, :]
@@ -97,8 +98,29 @@ def vis_cloud_point_test():
     for i in range(100):
         vis_for_points_in_3D_plotly(points=points[i, :, :], save_fig_file="/home/wyh/data/vis/tb_pc_surface_500_"+str(i)+".html")
     
+def get_same_point_for_grasp_place():
+    s_g = np.load("/home/wyh/data/table_case_new_s_g_e20_p10000.npy")
+    print(s_g.shape)
+    grasp = []
+    for i in range(5):
+        env_i = s_g[i, :10000, :, :]
+        env_i = env_i.reshape(10000, 2, 7)
+        np.random.shuffle(env_i)
+        env_i = list(env_i)
+        grasp_same = []
+        for j in range(50):
+            for k in range(20):
+                grasp_same.append(copy.copy(env_i[j]))
+        grasp.append(grasp_same)
+    np.save("/home/wyh/data/table_case_new_s_g_e20_p10000_grasp.npy", np.array(grasp))
+
+
+
+
+
     
 if __name__ == '__main__':
+    get_same_point_for_grasp_place()
     # change_S2D_cloud_to_PointNet_format()
     # get_cloud_points_save(env_file="/home/wyh/data/table_case_env_100_new.npy", save_file="/home/wyh/data/tb_env_new_clouds_100_3_500_surface.npy")
-    vis_cloud_point_test()
+    # vis_cloud_point_test()

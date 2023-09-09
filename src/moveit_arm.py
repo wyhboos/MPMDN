@@ -71,7 +71,7 @@ except:  # For Python 2 compatibility
 
 from std_msgs.msg import String
 from moveit_commander.conversions import pose_to_list
-from moveit_msgs.srv import GetPositionIK, GetPositionIKRequest
+from moveit_msgs.srv import GetPositionIK, GetPositionIKRequest, GetPositionFK, GetPositionFKRequest
 from moveit_msgs.srv import GetStateValidity, GetStateValidityRequest, GetStateValidityResponse,ApplyPlanningScene,ApplyPlanningSceneRequest,ApplyPlanningSceneResponse
 from moveit_msgs.msg import RobotState
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
@@ -661,7 +661,66 @@ class MoveGroupPythonInterfaceTutorial(object):
         # self.init_user_planner(planner="IRRTstar")
         # self.init_user_planner(planner="TRRT")
 
-        
+    def fk(self, joint_value):
+        # 等待 /compute_fk 服务可用
+        # print(self.move_group.get_current_joint_values())
+        # print(self.robot.get_active_joint_names())
+        rospy.wait_for_service('/compute_fk')
+
+        # 创建服务代理
+        compute_fk = rospy.ServiceProxy('/compute_fk', GetPositionFK)
+
+        # 设置请求
+        fk_request = GetPositionFKRequest()
+        fk_request.header.stamp = rospy.Time.now()
+        fk_request.header.frame_id = "panda_link0"  # 替换为您的机器人基座坐标系
+        ef = self.move_group.get_end_effector_link()
+        fk_request.fk_link_names = [ef]  # 替换为您的末端执行器链接名称
+        fk_request.robot_state.joint_state.name = ["panda_joint1", "panda_joint2", "panda_joint3", "panda_joint4", "panda_joint5", "panda_joint6", "panda_joint7"]  # 替换为机器人的关节名称
+        fk_request.robot_state.joint_state.position = joint_value
+
+        # 调用服务并获取结果
+        fk_result = compute_fk(fk_request)
+
+  
+        position = fk_result.pose_stamped[0].pose.position
+        # print([position.x, position.y, position.z])
+        return [position.x, position.y, position.z]
+    
+    def see_left_right(self, path_file):
+        paths = np.load(path_file, allow_pickle=True)
+        l = len(paths)
+        left = 0
+        right = 0
+        while True:
+            path_index = int(input("Enter path index!"))
+            path_i = paths[path_index]
+            for i in range(len(path_i)-1):
+                input("Press enter to show!")
+                js = path_i[i]
+                pos = self.fk(js)
+                print(i,"------------------------------------------------------", path_i[-1])
+                print("js:", js)
+                print("pos:", pos)
+                self.apply_robot_joint_state(js)
+
+
+        for i in range(l):
+            pos1 = self.fk(paths[i][-3])
+            pos2 = self.fk(paths[i][-2])
+            pos3 = self.fk(paths[i][1])
+            y = pos1[1]
+            print("----------------------------------------------------")
+            print("index", i, "last", y, "goal",pos2[1],"length", paths[i][-1])
+            print("first step pos",pos3[1])
+            print("first step js",paths[i][1])
+            if y > 0:
+                left+=1
+                # print()
+            else:
+                right+=1
+        print(left)
+        print(right)       
     def init_ik_service(self):
         self.ik_service = rospy.ServiceProxy('compute_ik', GetPositionIK)
         rospy.wait_for_service('compute_ik')
@@ -1113,11 +1172,13 @@ class MoveGroupPythonInterfaceTutorial(object):
         time_all = []
         length_all = []
         node_cnt_all = []
-        for i in range(10000+int(thread%2)*200, 10000+(int(thread%2)+1)*200):
+        for i in range(int(thread%2)*200, (int(thread%2)+1)*200):
             print("env_index",env_index, "path:", i, "suc", suc)
             path = []
             start = list(s_g[i][0])
             goal = list(s_g[i][1])
+            print("start", start)
+            print("goal", goal)
             solve, path = self.plan_start_goal_user(start, goal, time_lim=180)   
             time_all.append(self.pl.pl_ompl.ss.getLastPlanComputationTime())
             if solve.asString() == "Exact solution":
@@ -1132,14 +1193,14 @@ class MoveGroupPythonInterfaceTutorial(object):
                 length_all.append('nan')
                 node_cnt_all.append('nan')
             
-            if i% 10 == 0 or i ==10000+(int(thread%2)+1)*200-1:
+            if i% 10 == 0 or i ==(int(thread%2)+1)*200-1:
                 header = ["time", "length","node_cnt", "suc"]
                 with open(file="/home/wyh/data/BITstar_table_case_data_thread"+str(thread)+".csv", mode='w', encoding='utf-8', newline='') as f:
                     writer = csv.writer(f)
                     writer.writerow(header)
                     for i in range(len(suc_all)):
                         writer.writerow([time_all[i], length_all[i],node_cnt_all[i],suc_all[i]])
-            if (i% 10 == 0 and i>0) or i == 10000+(int(thread%2)+1)*200-1:
+            if (i% 10 == 0 and i>0) or i == (int(thread%2)+1)*200-1:
                 np.save(path_save_file + "_env_" + str(env_index)  + "thread_" + str(thread) +".npy", np.array(path_all, dtype='object'))
 
         np.save(path_save_file+"thread_"+str(thread)+".npy", np.array(path_all, dtype='object'))
@@ -1598,6 +1659,8 @@ def arm_main():
         # tutorial.plan_random_defaut_planner()
         # tutorial.plan_random()
         tutorial.move_group.set_planner_id("RRTConnect")
+        # tutorial.fk()
+        # tutorial.see_left_right(path_file="/home/wyh/data/lazyprmstar_0_4_env_400_grasp/table_case_new_BITs.npythread_0.npy")
         
         # tutorial.generate_random_valid_pose_joint_state_for_table_case(100, save_file="/home/wyh/data/table_case_new_pose_100.npy")
         # tutorial.for_test_plan_table_case_vis(pose_file="/home/wyh/data/table_case_pose_100.npy")
@@ -1611,8 +1674,8 @@ def arm_main():
         print(thread_index)
         print(args)
         tutorial.load_scene(file="/home/wyh/data/table_case_env_100_new.npy", index=int(thread_index/2))
-        tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_new_s_g_e20_p10000.npy", 
-                                          path_save_file="/home/wyh/data/table_case_new_BITs.npy", 
+        tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_new_s_g_e20_p10000_grasp.npy", 
+                                          path_save_file="/home/wyh/data/tb_grasp_same", 
                                           thread=thread_index, env_index=int(thread_index/2))
         
 
