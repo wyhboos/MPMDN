@@ -104,13 +104,14 @@ ompl::base::PlannerStatus ompl::geometric::MPN::solve(const base::PlannerTermina
     colli_nnrep = 0;
     failed = false;
     rep_flg = false;
-    if (state_type == "panda_arm")
-    {
-        Env_encoding = torch::ones({1, 28}).to(at::kCUDA);
-    }
-    else{
-        Env_encoding = get_env_encoding(env_index);
-    }
+    // if (state_type == "panda_arm")
+    // {
+    //     Env_encoding = torch::ones({1, 28}).to(at::kCUDA);
+    // }
+    // else{
+    //     Env_encoding = get_env_encoding(env_index);
+    // }
+    Env_encoding = get_env_encoding(env_index);
 
     auto start_o = std::chrono::high_resolution_clock::now();
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_b = bidirectional_plan(&start, &goal);
@@ -550,6 +551,19 @@ at::Tensor ompl::geometric::MPN::get_state_tensor_from_state(ompl::base::ScopedS
         state_t[0][3] = yaw2;
         return state_t;
     }
+    if (state_type=="Two_Link_2D_vec")
+    {
+        at::Tensor state_t = torch::ones({1, 4});
+        float j1 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
+        float j2 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
+        float j3 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[2];
+        float j4 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[3];
+        state_t[0][0] = j1;
+        state_t[0][1] = j2;
+        state_t[0][2] = j3;
+        state_t[0][3] = j4;
+        return state_t;
+    }
     if (state_type=="Three_Link_2D")
     {
         at::Tensor state_t = torch::ones({1, 5});
@@ -563,6 +577,21 @@ at::Tensor ompl::geometric::MPN::get_state_tensor_from_state(ompl::base::ScopedS
         state_t[0][2] = yaw1;
         state_t[0][3] = yaw2;
         state_t[0][4] = yaw3;
+        return state_t;
+    }
+    if (state_type=="Three_Link_2D_vec")
+    {
+        at::Tensor state_t = torch::ones({1, 5});
+        float j1 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0];
+        float j2 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1];
+        float j3 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[2];
+        float j4 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[3];
+        float j5 = state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[4];
+        state_t[0][0] = j1;
+        state_t[0][1] = j2;
+        state_t[0][2] = j3;
+        state_t[0][3] = j4;
+        state_t[0][4] = j5;
         return state_t;
     }
     if (state_type=="panda_arm")
@@ -615,6 +644,13 @@ ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPN::g
         state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value = float_ptr[2];
         state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value = float_ptr[3];
     }
+    if (state_type=="Two_Link_2D_vec")
+    {
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]=float_ptr[0];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=float_ptr[1];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[2]=float_ptr[2];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[3]=float_ptr[3];
+    }
     if (state_type=="Three_Link_2D")
     {
         state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]= float_ptr[0];
@@ -622,6 +658,14 @@ ompl::base::ScopedState<ompl::base::CompoundStateSpace>* ompl::geometric::MPN::g
         state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value = float_ptr[2];
         state->get()->as<ompl::base::SO2StateSpace::StateType>(2)->value = float_ptr[3];
         state->get()->as<ompl::base::SO2StateSpace::StateType>(3)->value = float_ptr[4];
+    }
+    if (state_type=="Three_Link_2D_vec")
+    {
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[0]=float_ptr[0];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[1]=float_ptr[1];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[2]=float_ptr[2];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[3]=float_ptr[3];
+        state->get()->as<ompl::base::RealVectorStateSpace::StateType>(0)->values[4]=float_ptr[4];
     }
     if (state_type=="panda_arm")
     {
@@ -676,14 +720,24 @@ at::Tensor ompl::geometric::MPN::get_env_encoding(int index)
 {
     float *cloud_start = obs_clouds.data<float>();
     at::Tensor obs_cloud;
-    if (state_type == "Point_3D")
+    if (state_type == "Point_3D" || state_type == "panda_arm")
     {
-        cloud_start += index*6000;
         if (cloud_type == "CAE")
+        {
+            cloud_start += index*6000;
             obs_cloud = torch::from_blob(cloud_start, {1,6000}).to(at::kCUDA);
+        }
         else if(cloud_type == "PointNet")
+        {
+            cloud_start += index*6000;
             obs_cloud = torch::from_blob(cloud_start, {1,3,2000}).to(at::kCUDA);
-
+        }
+        else if(cloud_type == "PointNet_500")
+        {
+            cloud_start += index*1500;
+            obs_cloud = torch::from_blob(cloud_start, {1,3,500}).to(at::kCUDA);
+        }
+            
     }
     else
     {
@@ -777,6 +831,22 @@ ompl::geometric::SimpleSetup* ompl::geometric::MPN::setup_orcle_planner()
         ss->setPlanner(std::make_shared<ompl::geometric::RRT>(ss->getSpaceInformation()));
         return ss;
     }
+    if (state_type == "Two_Link_2D_vec")
+    {   
+        base::StateSpacePtr space_ = si_->getStateSpace();
+        // ompl::base::RealVectorBounds bounds = space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        ompl::base::RealVectorStateSpace* vector_space =new ompl::base::RealVectorStateSpace(4);
+        ompl::base::RealVectorBounds bounds = space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        vector_space->setBounds(bounds);
+        ompl::base::StateSpacePtr vector_space_ptr(vector_space);
+        auto cs(std::make_shared<ompl::base::CompoundStateSpace>());
+        cs->addSubspace(vector_space_ptr, 1.0);
+
+        ompl::geometric::SimpleSetup* ss=new ompl::geometric::SimpleSetup(space_);
+        ss->setStateValidityChecker(si_->getStateValidityChecker());
+        ss->setPlanner(std::make_shared<ompl::geometric::RRT>(ss->getSpaceInformation()));//RRTstar seems to fail to terminate when finding initial solution, so chose RRT
+        return ss;
+    }
     if (state_type == "Three_Link_2D")
     {   
         base::StateSpacePtr space_ = si_->getStateSpace();
@@ -801,6 +871,22 @@ ompl::geometric::SimpleSetup* ompl::geometric::MPN::setup_orcle_planner()
         ompl::geometric::SimpleSetup* ss=new ompl::geometric::SimpleSetup(space_);
         ss->setStateValidityChecker(si_->getStateValidityChecker());
         ss->setPlanner(std::make_shared<ompl::geometric::RRT>(ss->getSpaceInformation()));
+        return ss;
+    }
+    if (state_type == "Three_Link_2D_vec")
+    {   
+        base::StateSpacePtr space_ = si_->getStateSpace();
+        // ompl::base::RealVectorBounds bounds = space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        ompl::base::RealVectorStateSpace* vector_space =new ompl::base::RealVectorStateSpace(5);
+        ompl::base::RealVectorBounds bounds = space_->as<ompl::base::CompoundStateSpace>()->getSubspace(0)->as<ompl::base::RealVectorStateSpace>()->getBounds();
+        vector_space->setBounds(bounds);
+        ompl::base::StateSpacePtr vector_space_ptr(vector_space);
+        auto cs(std::make_shared<ompl::base::CompoundStateSpace>());
+        cs->addSubspace(vector_space_ptr, 1.0);
+
+        ompl::geometric::SimpleSetup* ss=new ompl::geometric::SimpleSetup(space_);
+        ss->setStateValidityChecker(si_->getStateValidityChecker());
+        ss->setPlanner(std::make_shared<ompl::geometric::RRT>(ss->getSpaceInformation()));//RRTstar seems to fail to terminate when finding initial solution, so chose RRT
         return ss;
     }
     if (state_type == "panda_arm")
@@ -866,6 +952,10 @@ bool ompl::geometric::MPN::is_in_bounds(ompl::base::ScopedState<ompl::base::Comp
         if(angle2>3.14 || angle2<-3.14) return false;
         return true;
     }
+    if (state_type == "Two_Link_2D_vec")
+    {
+        return true;
+    }
     if (state_type == "Three_Link_2D")
     {
         double angle1 = state->get()->as<ompl::base::SO2StateSpace::StateType>(1)->value;
@@ -874,6 +964,10 @@ bool ompl::geometric::MPN::is_in_bounds(ompl::base::ScopedState<ompl::base::Comp
         if(angle1>3.14 || angle1<-3.14) return false;
         if(angle2>3.14 || angle2<-3.14) return false;
         if(angle3>3.14 || angle3<-3.14) return false;
+        return true;
+    }
+    if (state_type == "Three_Link_2D_vec")
+    {
         return true;
     }
 }

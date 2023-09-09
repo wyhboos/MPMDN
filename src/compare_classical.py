@@ -40,6 +40,14 @@ def get_statistics_classical(para_dict):
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_TL_sg_ev.npy"
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+    
+    if type == "Two_Link_2D_vec":
+        model_name = "S2D_TL_vec_" + planner + mode
+        vis = "./fig/S2D/TL_vec/"+ planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
+        s_g_file = "./Data/S2D/S2D_env_1000_pts_400_Two_Link_vec_sg.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+        
     if type == "Three_Link_2D":
         model_name = "S2D_TL_" + planner + mode
         vis = "./fig/S2D/ThreeL/"+ planner +"/" + see + "/" + mode + "/"
@@ -108,9 +116,9 @@ def get_statistics_classical(para_dict):
                 mpn_suc = dict_list[int(10*(i-900)+j)]['suc']
             if mpn_suc:
                 if see == "seen": 
-                    mpn_length = float(dict_list[int(10*(i)+j)]['length'])*1.05
+                    mpn_length = float(dict_list[int(10*(i)+j)]['length'])*1.1
                 else:
-                    mpn_length = float(dict_list[int(10*(i-900)+j)]['length'])*1.05
+                    mpn_length = float(dict_list[int(10*(i-900)+j)]['length'])*1.1
             else:
                 mpn_length = 9999
                 
@@ -158,7 +166,7 @@ def get_statistics_classical(para_dict):
     for d in datas:
         avr = np.array(d).mean(axis=0)
         average.append(avr)
-    if type == "Rigidbody_2D" or type == "Two_Link_2D" or type == "Three_Link_2D":
+    if type == "Rigidbody_2D" or type == "Two_Link_2D_vec" or type == "Three_Link_2D" or type == "Three_Link_2D_vec":
         csv_file = "./Data/S2D/Sta/" + model_name + "_" + see + "_avg_data.csv"
     elif type == "Point_3D":
         csv_file = "./Data/C3D/Sta/" + model_name + "_" + see + "_avg_data.csv"
@@ -169,7 +177,7 @@ def get_statistics_classical(para_dict):
         writer.writerow(average)
         f.close()
         
-    if type == "Rigidbody_2D" or type == "Two_Link_2D" or type == "Three_Link_2D":
+    if type == "Rigidbody_2D" or type == "Two_Link_2D_vec" or type == "Three_Link_2D" or type == "Three_Link_2D_vec":
         csv_file = "./Data/S2D/Sta/" + model_name + "_" + see + "_detail_data.csv"
     elif type == "Point_3D":
         csv_file = "./Data/C3D/Sta/" + model_name + "_" + see + "_detail_data.csv"
@@ -327,29 +335,75 @@ if __name__ == '__main__':
     
     #S2D TL RRTstar
         #SEEN
-    dict_10 = {"para_index":10,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, 
+    dict_10 = {"para_index":10,"type":"Two_Link_2D_vec", "see":"seen", "vis_flag":False, 
               "planner":"RRTstar", "use_ref":True, "simplelify": False,
               "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_15_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
     
-    dict_11 = {"para_index":11,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, 
+    dict_11 = {"para_index":11,"type":"Two_Link_2D_vec", "see":"seen", "vis_flag":False, 
               "planner":"RRTstar", "use_ref":True,"simplelify": True,
               "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_15_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
     
-    dict_12 = {"para_index":12,"type":"Two_Link_2D", "see":"seen", "vis_flag":False, 
+    dict_12 = {"para_index":12,"type":"Two_Link_2D_vec", "see":"seen", "vis_flag":False, 
               "planner":"RRTstar", "use_ref":False,"simplelify": True,
               "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_15_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
         #UNSEEN
-    dict_13 = {"para_index":13,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, 
+    dict_13 = {"para_index":13,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, 
               "planner":"RRTstar", "use_ref":True, "simplelify": False,
               "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_17_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
     
-    dict_14 = {"para_index":14,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, 
+    dict_14 = {"para_index":14,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, 
               "planner":"RRTstar", "use_ref":True,"simplelify": True,
               "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_17_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
     
-    dict_15 = {"para_index":15,"type":"Two_Link_2D", "see":"unseen", "vis_flag":False, 
+    dict_15 = {"para_index":15,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, 
               "planner":"RRTstar", "use_ref":False,"simplelify": True,
               "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_17_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
+
+    #S2D TL IRRTstar
+        #SEEN
+    dict_11 = {"para_index":10,"type":"Two_Link_2D_vec", "see":"seen", "vis_flag":False, 
+              "planner":"IRRTstar", "use_ref":True, "simplelify": False,
+              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_vec_MPMDNpara_1150_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
+    
+    # dict_11 = {"para_index":11,"type":"Two_Link_2D_vec", "see":"seen", "vis_flag":False, 
+    #           "planner":"RRTstar", "use_ref":True,"simplelify": True,
+    #           "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_15_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
+    
+    # dict_12 = {"para_index":12,"type":"Two_Link_2D_vec", "see":"seen", "vis_flag":False, 
+    #           "planner":"RRTstar", "use_ref":False,"simplelify": True,
+    #           "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_15_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
+        #UNSEEN
+    dict_13 = {"para_index":13,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, 
+              "planner":"IRRTstar", "use_ref":True, "simplelify": False,
+              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_vec_MPMDNpara_1190_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
+    
+    # dict_14 = {"para_index":14,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, 
+    #           "planner":"RRTstar", "use_ref":True,"simplelify": True,
+    #           "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_17_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
+    
+    # dict_15 = {"para_index":15,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, 
+    #           "planner":"RRTstar", "use_ref":False,"simplelify": True,
+    #           "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_17_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
+    
+    
+    #S2D TL BITstar
+        #SEEN
+    dict_12 = {"para_index":12,"type":"Two_Link_2D_vec", "see":"seen", "vis_flag":False, 
+              "planner":"BITstar", "use_ref":True, "simplelify": False,
+              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_vec_MPMDNpara_1150_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
+    
+    # dict_11 = {"para_index":11,"type":"Two_Link_2D_vec", "see":"seen", "vis_flag":False, 
+    #           "planner":"RRTstar", "use_ref":True,"simplelify": True,
+    #           "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_15_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
+    
+    # dict_12 = {"para_index":12,"type":"Two_Link_2D_vec", "see":"seen", "vis_flag":False, 
+    #           "planner":"RRTstar", "use_ref":False,"simplelify": True,
+    #           "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_15_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
+        #UNSEEN
+    dict_14 = {"para_index":14,"type":"Two_Link_2D_vec", "see":"unseen", "vis_flag":False, 
+              "planner":"BITstar", "use_ref":True, "simplelify": False,
+              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_vec_MPMDNpara_1190_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
+    
     
     #S2D ThreeL RRTstar
         #SEEN

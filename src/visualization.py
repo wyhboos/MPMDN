@@ -461,6 +461,7 @@ def plot_single_cube_3D_plotly(fig, vertices, color='dodgerblue', alpha=0.3):
     triangles_faces_index_2 = [6, 7, 2, 3, 5, 4, 2, 6, 7, 3, 5, 5]
 
     # plot
+    color = 'rgba(255, 0, 0,' + str(alpha) + ')'
     cube = go.Mesh3d(
         x=vertices_x,
         y=vertices_y,
@@ -468,7 +469,7 @@ def plot_single_cube_3D_plotly(fig, vertices, color='dodgerblue', alpha=0.3):
         i=triangles_faces_index_0,
         j=triangles_faces_index_1,
         k=triangles_faces_index_2,
-        facecolor=['rgba(255, 0, 0, 0.1)'] * 12  # 设置面的颜色和透明度
+        facecolor=[color] * 12  # 设置面的颜色和透明度
     )
     fig.add_trace(cube)
     return fig
@@ -500,7 +501,7 @@ def vis_for_3D_planning_point_plotly(cubes, path, start, goal, save_fig_file):
     fig = go.Figure(layout=layout)
 
     # plot obstacles(cubes)
-    fig = plot_multiple_cube_3D_plotly(fig, cubes)
+    fig = plot_multiple_cube_3D_plotly(fig, cubes, alpha=0.4)
     # plot path
     path_x = []
     path_y = []
@@ -520,7 +521,7 @@ def vis_for_3D_planning_point_plotly(cubes, path, start, goal, save_fig_file):
         ),
         line=dict(
             width=10,
-            color='red'
+            color='green'
         )
     )
     fig.add_trace(path_line)
