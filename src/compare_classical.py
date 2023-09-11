@@ -49,10 +49,17 @@ def get_statistics_classical(para_dict):
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
         
     if type == "Three_Link_2D":
-        model_name = "S2D_TL_" + planner + mode
+        model_name = "S2D_ThreeL_" + planner + mode
         vis = "./fig/S2D/ThreeL/"+ planner +"/" + see + "/" + mode + "/"
         create_dir(vis)
         s_g_file = "./Data/S2D/S2D_ThreeL_sg_ev.npy"
+        env_file = "./Data/S2D/S2D_env_30000_rec.npy"
+    
+    if type == "Three_Link_2D_vec":
+        model_name = "S2D_ThreeL_vec" + planner + mode
+        vis = "./fig/S2D/ThreeL_vec/"+ planner +"/" + see + "/" + mode + "/"
+        create_dir(vis)
+        s_g_file = "./Data/S2D/S2D_env_1000_pts_400_Three_Link_vec_sg.npy"
         env_file = "./Data/S2D/S2D_env_30000_rec.npy"
     
     if type == "Point_3D":
@@ -405,31 +412,28 @@ if __name__ == '__main__':
               "ref_file":"./Data/S2D/Sta/" + "S2D_TL_vec_MPMDNpara_1190_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
     
     
-    #S2D ThreeL RRTstar
+    #S2D ThreeL IRRTstar
         #SEEN
-    dict_30 = {"para_index":30,"type":"Three_Link_2D", "see":"seen", "vis_flag":False, 
-              "planner":"RRTstar", "use_ref":True, "simplelify": False,
-              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_35_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
-    
-    dict_31 = {"para_index":31,"type":"Three_Link_2D", "see":"seen", "vis_flag":False, 
-              "planner":"RRTstar", "use_ref":True,"simplelify": True,
-              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_35_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
-    
-    dict_32 = {"para_index":32,"type":"Three_Link_2D", "see":"seen", "vis_flag":False, 
-              "planner":"RRTstar", "use_ref":False,"simplelify": True,
-              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_35_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
+    dict_30 = {"para_index":30,"type":"Three_Link_2D_vec", "see":"seen", "vis_flag":False, 
+              "planner":"IRRTstar", "use_ref":True, "simplelify": False,
+              "ref_file":"./Data/S2D/Sta/" + "S2D_ThreeL_vecMPMDNpara_1250_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
+
         #UNSEEN
-    dict_33 = {"para_index":33,"type":"Three_Link_2D", "see":"unseen", "vis_flag":False, 
-              "planner":"RRTstar", "use_ref":True, "simplelify": False,
-              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_37_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
+    dict_33 = {"para_index":33,"type":"Three_Link_2D_vec", "see":"unseen", "vis_flag":False, 
+              "planner":"IRRTstar", "use_ref":True, "simplelify": False,
+              "ref_file":"./Data/S2D/Sta/" + "S2D_ThreeL_vecMPMDNpara_1290_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
     
-    dict_34 = {"para_index":34,"type":"Three_Link_2D", "see":"unseen", "vis_flag":False, 
-              "planner":"RRTstar", "use_ref":True,"simplelify": True,
-              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_37_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
-    
-    dict_35 = {"para_index":35,"type":"Three_Link_2D", "see":"unseen", "vis_flag":False, 
-              "planner":"RRTstar", "use_ref":False,"simplelify": True,
-              "ref_file":"./Data/S2D/Sta/" + "S2D_TL_MPMDNpara_37_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
+    #S2D ThreeL IRRTstar
+        #SEEN
+    dict_31 = {"para_index":31,"type":"Three_Link_2D_vec", "see":"seen", "vis_flag":False, 
+              "planner":"BITstar", "use_ref":True, "simplelify": False,
+              "ref_file":"./Data/S2D/Sta/" + "S2D_ThreeL_vecMPMDNpara_1250_ocl_1_vck_0_cck_40_seen_detail_data.csv"}
+
+        #UNSEEN
+    dict_32 = {"para_index":32,"type":"Three_Link_2D_vec", "see":"unseen", "vis_flag":False, 
+              "planner":"BITstar", "use_ref":True, "simplelify": False,
+              "ref_file":"./Data/S2D/Sta/" + "S2D_ThreeL_vecMPMDNpara_1290_ocl_1_vck_0_cck_40_unseen_detail_data.csv"}
+
     
     all_dict["0"] = dict_0
     all_dict["1"] = dict_1
@@ -449,8 +453,8 @@ if __name__ == '__main__':
     all_dict["31"] = dict_31
     all_dict["32"] = dict_32
     all_dict["33"] = dict_33
-    all_dict["34"] = dict_34
-    all_dict["35"] = dict_35
+    # all_dict["34"] = dict_34
+    # all_dict["35"] = dict_35
 
     
     parser = argparse.ArgumentParser()

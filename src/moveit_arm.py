@@ -537,7 +537,7 @@ def change_sence_to_point_clouds(scene, point_cnt):
 def get_cloud_points_save(env_file, save_file):
     envs = np.load(env_file, allow_pickle=True)
     cloud_points_all = []
-    for i in range(100):
+    for i in range(10):
         env_i = list(list(envs)[i])
         cloud_point_i = change_sence_to_point_clouds(scene=env_i, point_cnt=500)
         cloud_points_all.append(cloud_point_i)
@@ -779,13 +779,13 @@ def change_sence_to_point_clouds(scene, point_cnt):
 def get_cloud_points_save(env_file, save_file):
     envs = np.load(env_file, allow_pickle=True)
     cloud_points_all = []
-    for i in range(100):
+    for i in range(10):
         env_i = list(list(envs)[i])
         cloud_point_i = change_sence_to_point_clouds(scene=env_i, point_cnt=500)
         cloud_points_all.append(cloud_point_i)
     cloud_points_all = np.array(cloud_points_all)
     print(cloud_points_all.shape)
-    cloud_points_all = cloud_points_all.reshape(100, 500, 3)
+    cloud_points_all = cloud_points_all.reshape(10, 500, 3)
     cloud_points_all = np.transpose(cloud_points_all, (0,2,1))
     print(cloud_points_all.shape)
     np.save(save_file, cloud_points_all)
@@ -2112,17 +2112,17 @@ def arm_main():
         # tutorial.for_test_plan_table_case_vis(pose_file="/home/wyh/data/table_case_pose_100.npy")
         # tutorial.combine_start_goal_for_table_case(pose_file="/home/wyh/data/table_case_pose_100.npy", save_s_g_file="/home/wyh/data/table_case_s_g_60000.npy")
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--thread_index', type=int, default=0)
-        parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
-        args = parser.parse_args()
-        thread_index = args.thread_index
-        print(thread_index)
-        print(args)
-        tutorial.load_box_scene(file="/home/wyh/Code/MPMDN/Data/panda_arm/random_box_scence.npy", index=int(thread_index/4))
-        tutorial.generate_paths_user_plan(s_g_file="/home/wyh/Code/MPMDN/Data/panda_arm/box_sence_sg_7_2000.npy", 
-                                          path_save_file="/home/wyh/Code/MPMDN/Data/panda_arm/0909/box_sence_ABITstar", 
-                                          thread=thread_index, env_index=int(thread_index/4))
+        # parser = argparse.ArgumentParser()
+        # parser.add_argument('--thread_index', type=int, default=0)
+        # parser.add_argument('_ns', type=str, default=0) #it's tricky, for rosrun to add namespce, without it parser will go wrong
+        # args = parser.parse_args()
+        # thread_index = args.thread_index
+        # print(thread_index)
+        # print(args)
+        # tutorial.load_box_scene(file="/home/wyh/Code/MPMDN/Data/panda_arm/random_box_scence.npy", index=int(thread_index/4))
+        # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/Code/MPMDN/Data/panda_arm/box_sence_sg_7_2000.npy", 
+        #                                   path_save_file="/home/wyh/Code/MPMDN/Data/panda_arm/0909/box_sence_ABITstar", 
+        #                                   thread=thread_index, env_index=int(thread_index/4))
         
 
         # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_60000.npy", path_save_file="/home/wyh/data/table_case_BIT_star_part", thread=thread_index)

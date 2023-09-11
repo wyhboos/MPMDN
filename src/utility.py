@@ -120,7 +120,8 @@ def get_same_point_for_grasp_place():
 
     
 if __name__ == '__main__':
-    get_same_point_for_grasp_place()
+    # get_same_point_for_grasp_place()
     # change_S2D_cloud_to_PointNet_format()
     # get_cloud_points_save(env_file="/home/wyh/data/table_case_env_100_new.npy", save_file="/home/wyh/data/tb_env_new_clouds_100_3_500_surface.npy")
-    vis_cloud_point_test()
+    get_cloud_points_save(env_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/random_box_scence.npy", save_file="/home/wyhboos/Project/MPMDN/Data/panda_arm/random_box_scence_clouds_500_surface.npy")
+    # vis_cloud_point_test()
