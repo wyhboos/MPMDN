@@ -146,8 +146,13 @@ def get_statistics_classical(para_dict):
                 time_all = pl.pl_ompl.ss.getLastPlanComputationTime() + pl.pl_ompl.sp_ct
             else:
                 time_all = pl.pl_ompl.ss.getLastPlanComputationTime()
-            length = pl.pl_ompl.ss.getSolutionPath().length()
-            node_cnt = pl.pl_ompl.ss.getSolutionPath().getStateCount()
+                
+            if solved:
+                length = pl.pl_ompl.ss .getSolutionPath().length()
+                node_cnt = pl.pl_ompl.ss.getSolutionPath().getStateCount()
+            else:
+                length = mpn_length
+                node_cnt = 2
             if vis_flag:
                 vis_i_j = vis + model_name + "_env_" + str(i) + "_pts_" + str(j)
                 vis_i_j_ = vis_i_j
