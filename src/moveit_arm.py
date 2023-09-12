@@ -925,7 +925,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         print("self.planner_id:", self.planner_id)
         # self.init_user_planner(planner="LazyPRMstar")
         # self.init_user_planner(planner="ABITstar")
-        # self.init_user_planner(planner="BITstar")
+        self.init_user_planner(planner="BITstar")
         
         # self.init_user_planner(planner="MPMDN")
         # self.init_user_planner(planner="MPN")
@@ -935,7 +935,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         # self.init_user_planner(planner="RRTConnect")
 
         # self.init_user_planner(planner="BFMT")
-        self.init_user_planner(planner="IRRTstar")
+        # self.init_user_planner(planner="IRRTstar")
         # self.init_user_planner(planner="TRRT")
         
     def init_fk_service(self):
@@ -1340,7 +1340,7 @@ class MoveGroupPythonInterfaceTutorial(object):
             average_all[i] /= l
             
         
-        csv_file ="/home/wyhboos/Project/MPMDN/Data/panda_arm/irrtstar_110_average.csv"
+        csv_file ="/home/wyhboos/Project/MPMDN/Data/panda_arm/bitstar_110_average.csv"
         header = ["time_all", "time_rp", "length","suc"]
         with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
             writer = csv.writer(f)
@@ -1348,7 +1348,7 @@ class MoveGroupPythonInterfaceTutorial(object):
             writer.writerow(average_all)
             f.close()
         
-        csv_file ="/home/wyhboos/Project/MPMDN/Data/panda_arm/irrtstar_110_detail.csv"
+        csv_file ="/home/wyhboos/Project/MPMDN/Data/panda_arm/bitstar_110_detail.csv"
         header = ["time_all", "time_rp", "length","suc"]
         with open(file=csv_file, mode='w', encoding='utf-8', newline='') as f:
             writer = csv.writer(f)

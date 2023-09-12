@@ -116,6 +116,18 @@ def get_same_point_for_grasp_place():
     np.save("/home/wyh/data/table_case_new_s_g_e20_p10000_grasp.npy", np.array(grasp))
 
 
+def get_length_when_suc(read_file, save_file):
+    suc_time = []
+    suc_length = []
+    dict_list = read_csv(read_file)
+    l = len(dict_list)
+    for i in range(l):
+        suc = int(dict_list[i]['suc'])
+        if suc:
+            suc_time.append()
+    
+    
+
 
 
 
