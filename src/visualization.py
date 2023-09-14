@@ -468,7 +468,7 @@ def plot_single_cube_3D_plotly(fig, vertices, color='dodgerblue', alpha=0.3):
         i=triangles_faces_index_0,
         j=triangles_faces_index_1,
         k=triangles_faces_index_2,
-        facecolor=['rgba(255, 0, 0, 0.1)'] * 12  # 设置面的颜色和透明度
+        facecolor=['rgba(255, 0, 0, 0.3)'] * 12  # 设置面的颜色和透明度
     )
     fig.add_trace(cube)
     return fig
@@ -485,6 +485,43 @@ def plot_multiple_cube_3D_plotly(fig, cubes, color='dodgerblue', alpha=0.3):
     for i in range(len(cubes)):
         fig = plot_single_cube_3D_plotly(fig, cubes[i], color, alpha)
     return fig
+
+
+def plot_multiple_point_3D_plotly(fig, points, color='blue', size=10):
+    x = [p[0] for p in points]
+    y = [p[1] for p in points]
+    z = [p[2] for p in points]
+    scatter = go.Scatter3d(
+        x=x,
+        y=y,
+        z=z,
+        mode='markers',
+        marker=dict(
+            size=size,
+            color=color
+        )
+    )
+    fig.add_trace(scatter)
+    return fig
+
+
+def save_fig_plotly(fig, save_fig_file):
+    pio.write_html(fig, save_fig_file + '.html')
+
+
+def init_3D_fig_plotly():
+    layout = go.Layout(
+        scene=dict(
+            xaxis=dict(showticklabels=False, title='X'),
+            yaxis=dict(showticklabels=False, title='Y'),
+            zaxis=dict(showticklabels=False, title='Z'),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1, z=1)
+        )
+    )
+    fig = go.Figure(layout=layout)
+    return fig
+
 
 def vis_for_3D_planning_point_plotly(cubes, path, start, goal, save_fig_file):
     # init figure
@@ -586,14 +623,282 @@ def vis_for_2D_planning_three_link(rec_env, start, goal, path, size, pixel_per_m
     return fig
 
 
+def coordinate_transform_2D_plotly(transform, pos):
+    x_t = transform[0]
+    y_t = transform[1]
+    theta = transform[2]
+    x = pos[0]
+    y = pos[1]
+    x_ = x * math.cos(theta) - y * math.sin(theta) + x_t
+    y_ = x * math.sin(theta) + y * math.cos(theta) + y_t
+    return [x_, y_]
+
+def plot_single_rotate_rectangle_2D_plotly(fig, size, pos, fill="toself", fillcolor='rgba(255, 0, 0, 0.5)', line='rgba(255, 0, 0, 0)'):
+    x_length = size[0]
+    y_length = size[1]
+    x_center = pos[0]
+    y_center = pos[1]
+    theta = pos[2]
+    v_tr = coordinate_transform_2D_plotly(transform=[x_center, y_center, theta], pos=[0.5 * x_length, 0.5 * y_length])
+    v_tl = coordinate_transform_2D_plotly(transform=[x_center, y_center, theta], pos=[-0.5 * x_length, 0.5 * y_length])
+    v_br = coordinate_transform_2D_plotly(transform=[x_center, y_center, theta], pos=[0.5 * x_length, -0.5 * y_length])
+    v_bl = coordinate_transform_2D_plotly(transform=[x_center, y_center, theta], pos=[-0.5 * x_length, -0.5 * y_length])
+    vertices_all = [v_tr, v_tl, v_br, v_bl]
+    vertices_x = [v[0] for v in vertices_all]
+    vertices_y = [v[1] for v in vertices_all]
+    index_order = [0, 1, 3, 2, 0]
+    # plot
+    rect = go.Scatter(
+        x = [vertices_x[i] for i in index_order],
+        y = [vertices_y[i] for i in index_order],
+        mode='lines',
+        fill = fill,
+        fillcolor=fillcolor,  # 填充颜色，这里使用蓝色
+        line=dict(color=line),  # 边框颜色，这里使用蓝色
+        # facecolor=['rgba(255, 0, 0, 0.3)'] * 12  # 设置面的颜色和透明度
+    )
+    fig.add_trace(rect)
+    return fig
+
+    # fig.update_layout(
+    #     xaxis=dict(scaleanchor="y", scaleratio=1),
+    #     yaxis=dict(scaleanchor="x", scaleratio=1),
+    # )
+    # fig.update_xaxes(showgrid=False)
+    # fig.update_yaxes(showgrid=False)
+    # fig.update_xaxes(dtick=1)
+    # fig.update_yaxes(dtick=1)
+    # pio.write_html(fig, 'test_0914' + '.html')
+
+def plot_line_2D_plotly(fig, path, marker_size=10, marker_color='green', line_width=10, line_color='red'):
+    path_x = [p[0] for p in path]
+    path_y = [p[1] for p in path]
+    path_line = go.Scatter(
+        x=path_x,
+        y=path_y,
+        marker=dict(
+            size=marker_size,
+            color=marker_color
+        ),
+        line=dict(
+            width=line_width,
+            color=line_color
+        )
+    )
+    fig.add_trace(path_line)
+    return fig
+
+def plot_rotat_rec_env_2D_plotly(fig, rec_env):
+    for rec in rec_env:
+        fig = plot_single_rotate_rectangle_2D_plotly(fig, size=rec[:2], pos=rec[2:])
+    return fig
+
+def plot_rotat_rec_start_goal_rigid_2D_plotly(fig, start, goal):
+    fig = plot_single_rotate_rectangle_2D_plotly(fig=fig, size=start[:2], pos=start[2:], fill='', line='rgba(0, 0, 255, 1)')
+    fig = plot_single_rotate_rectangle_2D_plotly(fig=fig, size=goal[:2], pos=goal[2:], fill='', line='rgba(255, 0, 0, 1)')
+    return fig
+
+def plot_rotat_rec_start_goal_point_2D_plotly(fig, start, goal):
+    start_p = go.Scatter(
+        x=[start[0]],
+        y=[start[1]],
+        marker=dict(
+            size=10,
+            color='blue'
+        ),
+    )
+    goal_p = go.Scatter(
+        x=[goal[0]],
+        y=[goal[1]],
+        marker=dict(
+            size=10,
+            color='red'
+        ),
+    )
+    fig.add_trace(start_p)
+    fig.add_trace(goal_p)
+    return fig
+
+def plot_rotat_rec_start_goal_Two_link_2D_plotly(fig, start, goal):
+    for link in start:
+        fig = plot_single_rotate_rectangle_2D_plotly(fig=fig, size=link[:2], pos=link[2:], fill='', line='rgba(0, 0, 255, 1)')
+    for link in goal:
+        fig = plot_single_rotate_rectangle_2D_plotly(fig=fig, size=link[:2], pos=link[2:], fill='', line='rgba(255, 0, 0, 1)')
+    return fig
+
+def plot_rotat_rec_start_goal_Three_link_2D_plotly(fig, start, goal):
+    for link in start:
+        fig = plot_single_rotate_rectangle_2D_plotly(fig=fig, size=link[:2], pos=link[2:], fill='', line='rgba(0, 0, 255, 1)')
+    for link in goal:
+        fig = plot_single_rotate_rectangle_2D_plotly(fig=fig, size=link[:2], pos=link[2:], fill='', line='rgba(255, 0, 0, 1)')
+    return fig
+
+def plot_rotat_rec_path_rigid_2D_plotly(fig, path):
+    centers = []
+    # plot line to connect centers
+    for rec in path:
+        fig = plot_single_rotate_rectangle_2D_plotly(fig=fig, size=rec[:2], pos=rec[2:], fill='', line='rgba(0, 255, 0, 1)')
+        centers.append(rec[:2])
+
+    # plot line to connect centers
+    fig = plot_line_2D_plotly(fig=fig, path=centers, marker_size=0, line_width=5)
+
+    return fig
+
+def plot_rotat_rec_path_point_2D_plotly(fig, path):
+    plot_line_2D_plotly(fig=fig, path=path)
+    return fig
+
+def plot_rotat_rec_path_Two_link_2D_plotly(fig, path):
+    link1_path = []
+    link2_path = []
+    for links in path:
+        link1_path.append(links[0])
+        link2_path.append(links[1])
+    plot_rotat_rec_path_rigid_2D_plotly(fig, link1_path)
+    plot_rotat_rec_path_rigid_2D_plotly(fig, link2_path)
+    return fig
+
+def plot_rotat_rec_path_Three_link_2D_plotly(fig, path):
+    link1_path = []
+    link2_path = []
+    link3_path = []
+    for links in path:
+        link1_path.append(links[0])
+        link2_path.append(links[1])
+        link3_path.append(links[2])
+    plot_rotat_rec_path_rigid_2D_plotly(fig, link1_path)
+    plot_rotat_rec_path_rigid_2D_plotly(fig, link2_path)
+    plot_rotat_rec_path_rigid_2D_plotly(fig, link3_path)
+    return fig
+
+
+def vis_for_2D_planning_point_plotly(rec_env, start, goal, path, save_fig_dir):
+    # init layout and fig
+    layout = go.Layout(
+        scene=dict(
+            xaxis=dict(showticklabels=False, title='X'),
+            yaxis=dict(showticklabels=False, title='Y'),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1)
+        )
+    )
+    fig = go.Figure(layout=layout)
+    # plot environment
+    fig = plot_rotat_rec_env_2D_plotly(fig, rec_env)
+    # plot start and goal
+    fig = plot_rotat_rec_start_goal_point_2D_plotly(fig, start, goal)
+    # plot path
+    fig = plot_rotat_rec_path_point_2D_plotly(fig, path)
+
+    # adjust the html formats
+    # keep the zoom of x and y the same
+    fig.update_layout(
+        xaxis=dict(scaleanchor="y", scaleratio=1),
+        yaxis=dict(scaleanchor="x", scaleratio=1),
+    )
+    # keep the scale per unit length
+    fig.update_xaxes(dtick=1)
+    fig.update_yaxes(dtick=1)
+    pio.write_html(fig,  save_fig_dir + '.html')
+
+def vis_for_2D_planning_rigidbody_plotly(rec_env, start, goal, path, save_fig_dir):
+    # init layout and fig
+    layout = go.Layout(
+        scene=dict(
+            xaxis=dict(showticklabels=False, title='X'),
+            yaxis=dict(showticklabels=False, title='Y'),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1)
+        )
+    )
+    fig = go.Figure(layout=layout)
+    # plot environment
+    fig = plot_rotat_rec_env_2D_plotly(fig, rec_env)
+    # plot start and goal
+    fig = plot_rotat_rec_start_goal_rigid_2D_plotly(fig, start, goal)
+    # plot path
+    fig = plot_rotat_rec_path_rigid_2D_plotly(fig, path)
+
+    # adjust the html formats
+    # keep the zoom of x and y the same
+    fig.update_layout(
+        xaxis=dict(scaleanchor="y", scaleratio=1),
+        yaxis=dict(scaleanchor="x", scaleratio=1),
+    )
+    # keep the scale per unit length
+    fig.update_xaxes(dtick=1)
+    fig.update_yaxes(dtick=1)
+    pio.write_html(fig,  save_fig_dir + '.html')
+
+def vis_for_2D_planning_two_link_plotly(rec_env, start, goal, path, save_fig_dir):
+    # init layout and fig
+    layout = go.Layout(
+        scene=dict(
+            xaxis=dict(showticklabels=False, title='X'),
+            yaxis=dict(showticklabels=False, title='Y'),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1)
+        )
+    )
+    fig = go.Figure(layout=layout)
+    # plot environment
+    fig = plot_rotat_rec_env_2D_plotly(fig, rec_env)
+    # plot start and goal
+    fig = plot_rotat_rec_start_goal_Two_link_2D_plotly(fig, start, goal)
+    # plot path
+    fig = plot_rotat_rec_path_Two_link_2D_plotly(fig, path)
+
+    # adjust the html formats
+    # keep the zoom of x and y the same
+    fig.update_layout(
+        xaxis=dict(scaleanchor="y", scaleratio=1),
+        yaxis=dict(scaleanchor="x", scaleratio=1),
+    )
+    # keep the scale per unit length
+    fig.update_xaxes(dtick=1)
+    fig.update_yaxes(dtick=1)
+    pio.write_html(fig,  save_fig_dir + '.html')
+
+def vis_for_2D_planning_three_link_plotly(rec_env, start, goal, path, save_fig_dir):
+    # init layout and fig
+    layout = go.Layout(
+        scene=dict(
+            xaxis=dict(showticklabels=False, title='X'),
+            yaxis=dict(showticklabels=False, title='Y'),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1)
+        )
+    )
+    fig = go.Figure(layout=layout)
+    # plot environment
+    fig = plot_rotat_rec_env_2D_plotly(fig, rec_env)
+    # plot start and goal
+    fig = plot_rotat_rec_start_goal_Three_link_2D_plotly(fig, start, goal)
+    # plot path
+    fig = plot_rotat_rec_path_Three_link_2D_plotly(fig, path)
+
+    # adjust the html formats
+    # keep the zoom of x and y the same
+    fig.update_layout(
+        xaxis=dict(scaleanchor="y", scaleratio=1),
+        yaxis=dict(scaleanchor="x", scaleratio=1),
+    )
+    # keep the scale per unit length
+    fig.update_xaxes(dtick=1)
+    fig.update_yaxes(dtick=1)
+    pio.write_html(fig,  save_fig_dir + '.html')
+
 if __name__ == '__main__':
     # fig = plt.figure()
     # plot_single_cube_3D_plotly(None, vertices=[[0, 0, 0], [1, 1, 1]])
-    vis_for_3D_planning_point_plotly([[[0, 0, 0], [1, 1, 1]], [[2,2,2], [3,3,3]]], [[2,2,2],[1,2,3], [7,5,2]])
+    # vis_for_3D_planning_point_plotly([[[0, 0, 0], [1, 1, 1]], [[2, 2, 2], [3, 3, 3]]],
+    #                                  [[2, 2, 2], [1, 2, 3], [7, 5, 2]])
     # ax = fig.add_subplot(111, projection='3d')
     # fig, ax = plot_cube_3D(fig, ax, [[0, 0, 0], [5, 5, 5]])
     # fig, ax = plot_cube_3D(fig, ax, [[1, 2, 3], [4, 5, 6]])
     # print(fig)
     # plt.show()
-#     rec_obs = [[4, 5, 5, 6, -0.1*math.pi]]
-#     plot_rotat_rec_env_start_goal_2D(rec_env=rec_obs, pixel_per_meter=100)
+    #     rec_obs = [[4, 5, 5, 6, -0.1*math.pi]]
+    #     plot_rotat_rec_env_start_goal_2D(rec_env=rec_obs, pixel_per_meter=100)
+    # plot_rotate_rectangle_2D_plotly()
