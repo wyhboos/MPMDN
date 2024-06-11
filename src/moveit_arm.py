@@ -1501,7 +1501,7 @@ class MoveGroupPythonInterfaceTutorial(object):
         for i in range(7):
             s_g_env_i = []
             self.load_box_scene(env_file, index=i)
-            for j in range(2000):
+            for j in range(4000):
                 print("Env:", i, "Path:", j)
                 while True:
                     start, goal = self.generate_valid_start_goal()
@@ -2120,15 +2120,15 @@ def arm_main():
         print(thread_index)
         print(args)
         tutorial.load_box_scene(file="/home/wyh/Code/MPMDN/Data/panda_arm/random_box_scence.npy", index=int(thread_index/4))
-        tutorial.generate_paths_user_plan(s_g_file="/home/wyh/Code/MPMDN/Data/panda_arm/box_sence_sg_7_2000.npy", 
-                                          path_save_file="/home/wyh/Code/MPMDN/Data/panda_arm/0909/box_sence_ABITstar", 
+        tutorial.generate_paths_user_plan(s_g_file="/home/wyh/Code/MPMDN/Data/panda_arm/box_sence_sg_7_4000_1.npy", 
+                                          path_save_file="/home/wyh/Code/MPMDN/Data/panda_arm/0912/box_sence_ABITstar", 
                                           thread=thread_index, env_index=int(thread_index/4))
         
 
         # tutorial.generate_paths_user_plan(s_g_file="/home/wyh/data/table_case_s_g_60000.npy", path_save_file="/home/wyh/data/table_case_BIT_star_part", thread=thread_index)
         tutorial.init_ik_service()
         # tutorial.generate_valid_start_goal_for_multiple_box_scene(env_file="/home/wyh/Code/MPMDN/Data/panda_arm/random_box_scence.npy", 
-        #                                                           save_sg_file="/home/wyh/Code/MPMDN/Data/panda_arm/box_sence_sg_7_2000.npy")
+        #                                                           save_sg_file="/home/wyh/Code/MPMDN/Data/panda_arm/box_sence_sg_7_4000_1.npy")
         # tutorial.query_inverse_kinematic_service(position=[0.5,0.1,0.5], orientation=[0,0,0,1])
 
         # tutorial.init_planning_scene_service()

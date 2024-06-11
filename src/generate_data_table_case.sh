@@ -9,13 +9,13 @@
 
 
 # launch different move_group in different namespace
-for i in {0..2}
+for i in {3..5}
 do
   gnome-terminal --tab --title="move_group $i" --command="bash -c 'roslaunch panda_moveit_config group_demo.launch __ns:=/robot$i; $SHELL'"
   sleep 3
 done
 
-for i in {0..11}
+for i in {12..23}
 do
 # if [ "$i" == "1" ] || [ "$i" == "4" ] || [ "$i" == "7" ] || [ "$i" == "9" ] || [ "$i" == "9" ] || [ "$i" == "9" ]; then
   move_group_index=$((i/4))
