@@ -430,15 +430,19 @@ std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> ompl::geom
     // ompl::base::plannerOrTerminationCondition(ompl::base::exactSolnPlannerTerminationCondition(replan_ss->getProblemDefinition()), ompl::base::timedPlannerTerminationCondition(10))
     std::vector<ompl::base::ScopedState<ompl::base::CompoundStateSpace>*> path_;
     // std::vector<ompl::base::CompoundStateSpace*> states = replan_ss->getSolutionPath().getStates();
-    std::vector<ompl::base::State*> states = replan_ss->getSolutionPath().getStates();
-    int l = replan_ss->getSolutionPath().getStateCount();
-    for (int i = 0; i < l; i++)
+    if (solved)
     {
-        auto sco_state_tmp = (states[i]->as<ompl::base::CompoundState>());
-        // auto sco_state = sco_state_tmp->as<ompl::base::ScopedState<ompl::base::CompoundStateSpace>>();
-        ompl::base::ScopedState<ompl::base::CompoundStateSpace>* sco_s = new ompl::base::ScopedState<ompl::base::CompoundStateSpace>(space);
-        *sco_s = sco_state_tmp;
-        path_.push_back(sco_s);
+        std::vector<ompl::base::State*> states = replan_ss->getSolutionPath().getStates();
+        int l = replan_ss->getSolutionPath().getStateCount();
+        for (int i = 0; i < l; i++)
+        {
+            auto sco_state_tmp = (states[i]->as<ompl::base::CompoundState>());
+            // auto sco_state = sco_state_tmp->as<ompl::base::ScopedState<ompl::base::CompoundStateSpace>>();
+            ompl::base::ScopedState<ompl::base::CompoundStateSpace>* sco_s = new ompl::base::ScopedState<ompl::base::CompoundStateSpace>(space);
+            *sco_s = sco_state_tmp;
+            path_.push_back(sco_s);
+        }
+
     }
     if (solved && solved.asString() == "Exact solution")
     {

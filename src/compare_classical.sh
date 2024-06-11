@@ -15,7 +15,7 @@ gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compa
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_classical.py --para_index 14; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_classical.py --para_index 15; $SHELL'"
 
-# S2D ThreeL RRTstar
+S2D ThreeL RRTstar
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_classical.py --para_index 30; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_classical.py --para_index 31; $SHELL'"
 # gnome-terminal --tab --title="Terminal $i" --command="bash -c 'python3 src/compare_classical.py --para_index 32; $SHELL'"
